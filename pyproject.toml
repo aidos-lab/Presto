@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "pesto"
+version = "0.1.0"
+description = "Pairwise Embedding Score using Topological Overlays"
+authors = ["jeremy.wayland <jeremy.don.wayland@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+numpy = "^1.26.3"
+gudhi = "3.8.0"
+SciPy = "^1.11.4"
+scikit-learn = "^1.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
