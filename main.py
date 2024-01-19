@@ -25,4 +25,4 @@ if __name__ == "__main__":
     elapsed_time = end_time - start_time
 
     print("Execution time: {:.2f} seconds".format(elapsed_time))
-    print("PESTO Score: {:.4f}".format(np.round(score, 4)))
+    print("PESTO Score: {:.4f}".format(score))

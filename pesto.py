@@ -1,4 +1,4 @@
-"PESTO-MAP: Pairwise Embedding Score using Topological Overlays - Metric for Analysis and Performance"
+"PESTO: Pairwise Embedding Score using Topological Overlays"
 
 import gudhi as gd
 import numpy as np
@@ -18,7 +18,8 @@ class PESTO:
         normalization_approx_iterations: int = 1000,
     ) -> None:
         """
-        Initialize the PESTO object.
+        Initialize `PESTO` an object for efficienctly computing the structural similarity of embeddings.
+
 
         Parameters:
         - projector : class, optional
