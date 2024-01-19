@@ -61,7 +61,7 @@ class PESTO:
 
         This function computes `N` random projections of X and Y
         using `projector`. Each projection is transformed into
-        a persistence landscape using the `guhdi` library.
+        a persistence landscape using the `gudhi` library.
 
         The fitted topological descriptor is the average persistence
         landscape, aggregated over each of the projections. Stored as:
