@@ -14,7 +14,7 @@ if __name__ == "__main__":
     datasets = {d: load_dataset(*d.split()) for d in config.datasets}
     max_samples = max(config.n_samples)
     max_projections = max(config.n_projections)
-    data_dir = "./data"
+    data_dir = "data"
 
     embeddings = {d: dict() for d in config.datasets}
     for dataset in datasets:
@@ -32,7 +32,7 @@ if __name__ == "__main__":
             for n_samples in config.n_samples:
                 filename = f"{data_dir}/derivatives_{re.sub(' ', '___', dataset)}_{n_samples}_{model}.pkl"
                 if overwrite or not os.path.isfile(filename):
-                    print(model, dataset, max_projections)
+                    print(f"Working to create {filename}")
                     projections = metric.generate_projections(e[:n_samples, :], max_projections)
                     landscapes = metric.generate_landscapes(projections)
                     with open(filename, "wb") as f:
