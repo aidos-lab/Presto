@@ -1,5 +1,3 @@
-"PESTO: Pairwise Embedding Score using Topological Overlays"
-
 import gudhi as gd
 import numpy as np
 from gudhi.representations import Landscape
