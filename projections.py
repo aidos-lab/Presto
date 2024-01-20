@@ -24,17 +24,16 @@ if __name__ == "__main__":
                 with open(filename, "rb") as f:
                     embeddings[dataset][model] = pickle.load(f)
 
-    embedding_combinations = list(combinations(embeddings, 2)) + [(e, e) for e in embeddings]
-
     metric = Presto(max_homology_dim=config.max_homology_dim, n_components=config.n_components,
                     normalize=config.normalize)
 
     for dataset in datasets:
         for model, e in embeddings[dataset].items():
-            filename = f"{data_dir}/derivatives_{re.sub(' ', '___', dataset)}_{max_samples}_{model}.pkl"
-            if overwrite or not os.path.isfile(filename):
-                print(model, dataset, max_projections)
-                projections = metric.generate_projections(e, max_projections)
-                landscapes = metric.generate_landscapes(projections)
-                with open(filename, "wb") as f:
-                    pickle.dump(dict(projections=projections, landscapes=landscapes), f)
+            for n_samples in config.n_samples:
+                filename = f"{data_dir}/derivatives_{re.sub(' ', '___', dataset)}_{n_samples}_{model}.pkl"
+                if overwrite or not os.path.isfile(filename):
+                    print(model, dataset, max_projections)
+                    projections = metric.generate_projections(e[:n_samples, :], max_projections)
+                    landscapes = metric.generate_landscapes(projections)
+                    with open(filename, "wb") as f:
+                        pickle.dump(dict(projections=projections, landscapes=landscapes), f)
