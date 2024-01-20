@@ -1,0 +1,10 @@
+models:
+- all-mpnet-base-v2
+- multi-qa-mpnet-base-dot-v1
+- all-MiniLM-L6-v2
+- all-distilroberta-v1
+- paraphrase-multilingual-mpnet-base-v2
+datasets:
+- "big_patent a"
+- gfissore/arxiv-abstracts-2021
+- "cnn_dailymail 3.0.0"

@@ -17,6 +17,7 @@ seaborn = "^0.13.1"
 jupyterlab = "^4.0.11"
 sentence-transformers = "^2.2.2"
 datasets = "^2.16.1"
+omegaconf = "^2.3.0"
 
 
 [build-system]
