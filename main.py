@@ -2,12 +2,12 @@ import time
 
 import numpy as np
 
-from pesto import PESTO
+from presto import Presto
 
 if __name__ == "__main__":
     start_time = time.time()
 
-    metric = PESTO(max_homology_dim=2, normalize=True)
+    metric = Presto(max_homology_dim=2, normalize=True)
 
     X = np.random.random(size=(15000, 100))
     Y = np.random.random(size=(10000, 256))

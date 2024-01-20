@@ -1,8 +1,9 @@
 models:
     - all-mpnet-base-v2
-    - multi-qa-mpnet-base-dot-v1
+    #- multi-qa-mpnet-base-dot-v1 # these embeddings are not normalized!
     - all-MiniLM-L6-v2
     - all-distilroberta-v1
+    - multi-qa-distilbert-cos-v1
 datasets:
     - "big_patent a"
     - gfissore/arxiv-abstracts-2021

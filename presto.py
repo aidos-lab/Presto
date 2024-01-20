@@ -7,7 +7,7 @@ from scipy.spatial.distance import cdist
 from sklearn.random_projection import GaussianRandomProjection as Gauss
 
 
-class PESTO:
+class Presto:
     def __init__(
             self,
             projector=Gauss,
@@ -44,7 +44,7 @@ class PESTO:
 
         # Initialize Projector
         self.projection_dimension = n_components
-        self.P = projector(n_components=self.projection_dimension)
+        self.P = projector(n_components=self.projection_dimension, random_state=np.random.RandomState(self.seed))
 
         # Set Normalization parameters
         self.normalize = normalize
@@ -155,7 +155,7 @@ class PESTO:
         - normalized_X : np.ndarray
             The normalized space.
         """
-        subset = [self.rng.random.choice(len(X))]
+        subset = [self.rng.choice(len(X))]
         for _ in range(self.diameter_iterations - 1):
             distances = cdist([X[subset[-1]]], X).ravel()
             new_point = np.argmax(distances)
@@ -224,9 +224,9 @@ class PESTO:
         """
         avg = {}
         for dim, landscapes in L.items():
-            sum_ = landscapes[0]
+            sum_ = np.zeros_like(landscapes[0])
             N = len(landscapes)
-            for l in landscapes[1:]:
+            for l in landscapes:
                 sum_ += l
             avg[dim] = sum_.__truediv__(N)
         return avg

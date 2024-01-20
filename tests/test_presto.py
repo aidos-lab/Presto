@@ -1,9 +1,9 @@
 from unittest import TestCase
-from pesto import PESTO
+from presto import Presto
 from sklearn.random_projection import GaussianRandomProjection as Gauss
 
 
-class PestoTest(TestCase):
+class PrestoTest(TestCase):
     def setUp(self) -> None:
         self.projector = Gauss
         self.n_components = 3
@@ -12,9 +12,9 @@ class PestoTest(TestCase):
         self.resolution = 100
         self.normalization_approx_iterations = 1000
         self.seed = 42
-        self.pesto = PESTO(projector=self.projector, n_components=self.n_components, normalize=self.normalize,
-                           max_homology_dim=self.max_homology_dim, resolution=self.resolution,
-                           normalization_approx_iterations=self.normalization_approx_iterations, seed=self.seed)
+        self.pesto = Presto(projector=self.projector, n_components=self.n_components, normalize=self.normalize,
+                            max_homology_dim=self.max_homology_dim, resolution=self.resolution,
+                            normalization_approx_iterations=self.normalization_approx_iterations, seed=self.seed)
         self.n_projections = 15
         self.X = self.pesto.rng.random(size=(100, 1000))
         self._projectionsX = self.pesto._generate_projections(self.X, self.n_projections)
