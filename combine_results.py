@@ -15,7 +15,7 @@ if __name__ == "__main__":
     models = {m: SentenceTransformer(*m.split()) for m in config.models}
     datasets = {d: load_dataset(*d.split()) for d in config.datasets}
     max_samples = max(config.n_samples)
-    data_dir = "./data"
+    data_dir = "data"
 
     embedding_combinations = list(combinations(models, 2)) + [(m, m) for m in models]
 
@@ -29,5 +29,7 @@ if __name__ == "__main__":
             with open(filename, "rb") as f:
                 results[dataset][model][n_samples] = pickle.load(f)
 
-    # TODO and now we can flexibly compute scores, varying the number of projections considered
+    with open(f"{data_dir}/combined_results.pkl", "wb") as f:
+        pickle.dump(results, f)
+    # ...now we can flexibly compute scores, varying the number of projections considered
     # and the number of samples used to create the projections and landscapes

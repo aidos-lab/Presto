@@ -6,6 +6,7 @@ import pickle
 import os
 from itertools import combinations
 from presto import Presto
+from embeddings import clean_dataset_name
 
 if __name__ == "__main__":
     overwrite = False
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     embeddings = {d: dict() for d in config.datasets}
     for dataset in datasets:
         for model in models:
-            filename = f"{data_dir}/embeddings_{re.sub(' ', '___', dataset)}_{max_samples}_{model}.pkl"
+            filename = f"{data_dir}/embeddings_{clean_dataset_name(dataset)}_{max_samples}_{model}.pkl"
             if os.path.isfile(filename):
                 with open(filename, "rb") as f:
                     embeddings[dataset][model] = pickle.load(f)

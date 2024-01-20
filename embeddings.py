@@ -34,9 +34,13 @@ def worker_init(M, D, S, DD, O):
     overwrite = O
 
 
+def clean_dataset_name(dataset):
+    return re.sub("/", "_-_", re.sub(' ', '___', dataset))
+
+
 def embed(model, dataset):
     print(dataset, max_samples, model)
-    filename = f"{data_dir}/embeddings_{re.sub(' ', '___', dataset)}_{max_samples}_{model}.pkl"
+    filename = f"{data_dir}/embeddings_{clean_dataset_name(dataset)}_{max_samples}_{model}.pkl"
     if overwrite or not os.path.isfile(filename):
         embeddings = models[model].encode(get_sample_data(datasets[dataset], dataset, max_samples),
                                           show_progress_bar=True)
