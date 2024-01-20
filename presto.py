@@ -5,6 +5,7 @@ import numpy as np
 from gudhi.representations import Landscape
 from scipy.spatial.distance import cdist
 from sklearn.random_projection import GaussianRandomProjection as Gauss
+from typing import Dict, List
 
 
 class Presto:
@@ -54,20 +55,23 @@ class Presto:
         self.homology_dims = list(range(0, max_homology_dim + 1))
         self.landscape_resolution = resolution
         self.LS = Landscape(resolution=self.landscape_resolution, keep_endpoints=False)
+        self._projectionsX = None
+        self._projectionsY = None
+        self._all_landscapesX = None
+        self._all_landscapesY = None
         self._landscapeX = None
         self._landscapeY = None
-        self._pestos = None
 
     def fit(
             self,
             X,
             Y,
-            N=15,
+            n_projections=100,
     ):
         """
         Fit a topological descriptor to embeddings X & Y.
 
-        This function computes `N` random projections of X and Y
+        This function computes `n_projections` random projections of X and Y
         using `projector`. Each projection is transformed into
         a persistence landscape using the `gudhi` library.
 
@@ -81,24 +85,26 @@ class Presto:
             The first embedding to fit. Shape(n_samples,n_features)
         - Y : np.ndarray
             The second embedding to fit. NEED NOT share the same shape as X.
+        - n_projections : int, optional
+            The number of random projections. Default is 100.
         """
 
         if self.normalize:
-            X, Y = self._normalize_space(X), self._normalize_space(Y)
+            X, Y = self.normalize_space(X), self.normalize_space(Y)
 
         # Project
-        self._projectionsX = self._generate_projections(X, N)
-        self._projectionsY = self._generate_projections(Y, N)
+        self._projectionsX = self._projectionsX or self.generate_projections(X, n_projections)
+        self._projectionsY = self._projectionsY or self.generate_projections(Y, n_projections)
 
         # Fit Landscapes
-        self._all_landscapesX = self._generate_landscapes(self._projectionsX)
-        self._all_landscapesY = self._generate_landscapes(self._projectionsY)
+        self._all_landscapesX = self._all_landscapesX or self.generate_landscapes(self._projectionsX)
+        self._all_landscapesY = self._all_landscapesY or self.generate_landscapes(self._projectionsY)
 
         # Average Landscapes
-        self._landscapeX = self._average_landscape(self._all_landscapesX)
-        self._landscapeY = self._average_landscape(self._all_landscapesY)
+        self._landscapeX = self._landscapeX or Presto.average_landscape(self._all_landscapesX)
+        self._landscapeY = self._landscapeY or Presto.average_landscape(self._all_landscapesY)
 
-    def fit_transform(self, X, Y, N: int = 15, score_type: str = "aggregate"):
+    def fit_transform(self, X, Y, n_projections: int = 15, score_type: str = "aggregate"):
         """
         Fit a topological descriptor and compute the PESTO score.
 
@@ -107,7 +113,7 @@ class Presto:
             Ignored. Placeholder for compatibility.
         - Y : array-like or pd.DataFrame, shape (n_samples, n_features)
             The second set of embeddings.
-        - N : int, optional
+        - n_projections : int, optional
             The number of random projections. Default is 100.
         - score_type: str, optional
             Which type of PESTO score to return. Options are:
@@ -120,30 +126,27 @@ class Presto:
         - pesto_score : float
             The computed PESTO score representing the distance between the topological descriptors of X and Y.
         """
-        self._set_pestos(X, Y, N)
+        self.fit(X, Y, n_projections)
+        presto_scores = self.compute_presto_scores(self._landscapeX, self._landscapeY)
         if score_type == "aggregate":
-            return sum(self._pestos.values())
+            return sum(presto_scores.values())
         elif score_type == "average":
-            return sum(self._pestos.values()) / len(self._pestos.values())
+            return sum(presto_scores.values()) / len(presto_scores.values())
         elif score_type == "separate":
-            return self._pestos
+            return presto_scores
         else:
             raise NotImplementedError(score_type)
 
-    def _set_pestos(self, X, Y, N: int = 15):
-        if self._landscapeX is None or self._landscapeY is None:
-            self.fit(X, Y, N)
-
-        assert self._landscapeX is not None
-        pestos = dict()
+    def compute_presto_scores(self, landscapeX, landscapeY):
+        prestos = dict()
         for dim in self.homology_dims:
-            lambdaX = self._landscapeX[dim]
-            lambdaY = self._landscapeY[dim]
+            lambdaX = landscapeX[dim]
+            lambdaY = landscapeY[dim]
             if not np.isnan(lambdaX - lambdaY).any():
-                pestos[dim] = np.linalg.norm(lambdaX - lambdaY)
-        self._pestos = pestos
+                prestos[dim] = np.linalg.norm(lambdaX - lambdaY)
+        return prestos
 
-    def _normalize_space(self, X):
+    def normalize_space(self, X):
         """
         Normalize a space based on an approximate diameter.
 
@@ -164,14 +167,14 @@ class Presto:
         diameter = np.max(pairwise_distances)
         return X / diameter
 
-    def _generate_projections(self, X, N):
+    def generate_projections(self, X, n_projections):
         """
         Generate random projections of the input data.
 
         Parameters:
         - X : np.ndarray
             The input data.
-        - N : int
+        - n_projections : int
             The number of random projections.
 
         Returns:
@@ -179,12 +182,12 @@ class Presto:
             List of random projections.
         """
         random_projections = []
-        for _ in range(N):
+        for _ in range(n_projections):
             P_X = self.P.fit_transform(X)
             random_projections.append(P_X)
         return random_projections
 
-    def _generate_landscapes(self, projections: list):
+    def generate_landscapes(self, projections: List[np.array]) -> Dict[int, List[np.array]]:
         """
         Generate persistence landscapes from a list of projections.
 
@@ -197,7 +200,6 @@ class Presto:
             Dictionary containing persistence landscapes for each homology dimension.
         """
         landscapes = {dim: list() for dim in self.homology_dims}
-        # all_persistence_pairs = {dim: list() for dim in self.homology_dims}
         for X_ in projections:
             alpha_complex = gd.AlphaComplex(points=X_).create_simplex_tree()
             # Compute Peristence
@@ -206,11 +208,23 @@ class Presto:
                 persistence_pairs = mask_infinities(alpha_complex.persistence_intervals_in_dimension(
                     dim
                 ))
-                # all_persistence_pairs[dim].append(persistence_pairs)
                 landscapes[dim].append(self.LS.fit_transform([persistence_pairs]))
         return landscapes
 
-    def _average_landscape(self, L: dict):
+    def set_projections(self, projectionsX, projectionsY):
+        self._projectionsX = projectionsX
+        self._projectionsY = projectionsY
+
+    def set_landscapes(self, landscapeX, landscapeY):
+        self._landscapeX = landscapeX
+        self._landscapeY = landscapeY
+
+    def set_all_landscapes(self, all_landscapesX, all_landscapesY):
+        self._all_landscapesX = all_landscapesX
+        self._all_landscapesY = all_landscapesY
+
+    @staticmethod
+    def average_landscape(L: Dict[int, List[np.array]]) -> Dict[int, float]:
         """
         Average persistence landscapes over multiple projections.
 

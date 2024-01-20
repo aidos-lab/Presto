@@ -5,6 +5,8 @@ from datasets import load_dataset
 import os
 import pickle
 import re
+from multiprocessing import Pool, cpu_count
+from itertools import product
 
 
 def get_sample_data(data, dataset, n_samples):
@@ -19,6 +21,29 @@ def get_sample_data(data, dataset, n_samples):
     return return_data
 
 
+def worker_init(M, D, S, DD, O):
+    global models
+    global datasets
+    global max_samples
+    global data_dir
+    global overwrite
+    models = M
+    datasets = D
+    max_samples = S
+    data_dir = DD
+    overwrite = O
+
+
+def embed(model, dataset):
+    print(dataset, max_samples, model)
+    filename = f"{data_dir}/embeddings_{re.sub(' ', '___', dataset)}_{max_samples}_{model}.pkl"
+    if overwrite or not os.path.isfile(filename):
+        embeddings = models[model].encode(get_sample_data(datasets[dataset], dataset, max_samples),
+                                          show_progress_bar=True)
+        with open(filename, "wb") as f:
+            pickle.dump(embeddings, f)
+
+
 if __name__ == "__main__":
     overwrite = False
     config = OmegaConf.load("config.yml")
@@ -28,13 +53,10 @@ if __name__ == "__main__":
 
     models = {m: SentenceTransformer(*m.split()) for m in config.models}
     datasets = {d: load_dataset(*d.split()) for d in config.datasets}
+    max_samples = max(config.n_samples)
+    # we can get the smaller ones simply by slicing
+    all_combinations = list(product(models, datasets))
 
-    for dataset in config.datasets:
-        for n_samples in config.n_samples:
-            for model in models:
-                print(dataset, n_samples, model)
-                filename = f"{data_dir}/embeddings_{re.sub(' ', '___', dataset)}_{n_samples}_{model}.pkl"
-                if overwrite or not os.path.isfile(filename):
-                    embeddings = models[model].encode(get_sample_data(datasets[dataset], dataset, n_samples))
-                    with open(filename, "wb") as f:
-                        pickle.dump(embeddings, f)
+    with Pool(cpu_count() - 2, initializer=worker_init,
+              initargs=(models, datasets, max_samples, data_dir, overwrite)) as p:
+        p.starmap(embed, all_combinations)

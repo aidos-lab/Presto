@@ -11,18 +11,18 @@ if __name__ == "__main__":
 
     X = np.random.random(size=(15000, 100))
     Y = np.random.random(size=(10000, 256))
-    N = 10
+    n_projections = 10
     print("--------------------------")
     print(f"Embedding 1: {X.shape}")
     print(f"Embedding 2: {Y.shape}")
     print("--------------------------")
 
     print()
-    print(f"Aggregating Landsacpes for {N} Random Projections...")
-    score = metric.fit_transform(X, Y, N=N)
+    print(f"Aggregating Landscapes for {n_projections} Random Projections...")
+    score = metric.fit_transform(X, Y, n_projections=n_projections)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
 
     print("Execution time: {:.2f} seconds".format(elapsed_time))
-    print("PESTO Score: {:.4f}".format(score))
+    print("Presto Score: {:.4f}".format(score))
