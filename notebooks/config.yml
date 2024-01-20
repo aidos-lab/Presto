@@ -1,10 +1,21 @@
 models:
-- all-mpnet-base-v2
-- multi-qa-mpnet-base-dot-v1
-- all-MiniLM-L6-v2
-- all-distilroberta-v1
-- paraphrase-multilingual-mpnet-base-v2
+    - all-mpnet-base-v2
+    - multi-qa-mpnet-base-dot-v1
+    - all-MiniLM-L6-v2
+    - all-distilroberta-v1
 datasets:
-- "big_patent a"
-- gfissore/arxiv-abstracts-2021
-- "cnn_dailymail 3.0.0"
+    - "big_patent a"
+    - gfissore/arxiv-abstracts-2021
+    - "cnn_dailymail 3.0.0"
+max_homology_dim: 2
+n_components: 3
+normalize: False
+n_projections: 
+    - 4
+    - 8
+    - 16
+    - 32
+    - 64
+    - 128
+    - 256
+    - 512

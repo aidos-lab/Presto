@@ -11,7 +11,7 @@ class PESTO:
     def __init__(
             self,
             projector=Gauss,
-            n_components=2,
+            n_components: int = 2,
             normalize: bool = False,
             max_homology_dim: int = 1,
             resolution: int = 100,
@@ -19,7 +19,7 @@ class PESTO:
             seed: int = 42
     ) -> None:
         """
-        Initialize `PESTO` an object for efficienctly computing the structural similarity of embeddings.
+        Initialize `Presto` to efficiently compute the topological similarity of embeddings.
 
 
         Parameters:
@@ -44,7 +44,7 @@ class PESTO:
 
         # Initialize Projector
         self.projection_dimension = n_components
-        self.P = projector(n_components=self.projection_dimension, random_state=self.seed)
+        self.P = projector(n_components=self.projection_dimension)
 
         # Set Normalization parameters
         self.normalize = normalize
