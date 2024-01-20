@@ -180,6 +180,8 @@ class PESTO:
                 persistence_pairs = alpha_complex.persistence_intervals_in_dimension(
                     dim
                 )
+                # TODO debug it looks like you're overwriting, rather than appending to a list – that could explain the volatility I observed
+                # Also, I get only nans for 0th dimension and only 0s for 2nd dimension, so only 1st dimension appears to "work"/be meaningful?
                 landscapes[dim] = self.LS.fit_transform([persistence_pairs])
         return landscapes
 
