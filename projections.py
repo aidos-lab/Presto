@@ -12,9 +12,8 @@ if __name__ == "__main__":
     config = OmegaConf.load("config.yml")
     models = {m: SentenceTransformer(*m.split()) for m in config.models}
     datasets = {d: load_dataset(*d.split()) for d in config.datasets}
-    sample_ns = config.n_samples
-    max_samples = max(sample_ns)
-    max_projections = config.n_projections.max()
+    max_samples = max(config.n_samples)
+    max_projections = max(config.n_projections)
     data_dir = "./data"
 
     embeddings = {d: dict() for d in config.datasets}
