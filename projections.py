@@ -1,10 +1,8 @@
 from omegaconf import OmegaConf
 from sentence_transformers import SentenceTransformer
 from datasets import load_dataset
-import re
 import pickle
 import os
-from itertools import combinations
 from presto import Presto
 from embeddings import clean_dataset_name
 
@@ -31,7 +29,7 @@ if __name__ == "__main__":
     for dataset in datasets:
         for model, e in embeddings[dataset].items():
             for n_samples in config.n_samples:
-                filename = f"{data_dir}/derivatives_{re.sub(' ', '___', dataset)}_{n_samples}_{model}.pkl"
+                filename = f"{data_dir}/derivatives_{clean_dataset_name(dataset)}_{n_samples}_{model}.pkl"
                 if overwrite or not os.path.isfile(filename):
                     print(f"Working to create {filename}")
                     projections = metric.generate_projections(e[:n_samples, :], max_projections)
