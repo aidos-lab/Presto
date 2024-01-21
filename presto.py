@@ -91,16 +91,16 @@ class Presto:
             X, Y = self.normalize_space(X), self.normalize_space(Y)
 
         # Project
-        self._projectionsX = self._projectionsX or self.generate_projections(X, n_projections)
-        self._projectionsY = self._projectionsY or self.generate_projections(Y, n_projections)
+        self._projectionsX = self.generate_projections(X, n_projections)
+        self._projectionsY = self.generate_projections(Y, n_projections)
 
         # Fit Landscapes
-        self._all_landscapesX = self._all_landscapesX or self.generate_landscapes(self._projectionsX)
-        self._all_landscapesY = self._all_landscapesY or self.generate_landscapes(self._projectionsY)
+        self._all_landscapesX = self.generate_landscapes(self._projectionsX)
+        self._all_landscapesY = self.generate_landscapes(self._projectionsY)
 
         # Average Landscapes
-        self._landscapeX = self._landscapeX or Presto.average_landscape(self._all_landscapesX)
-        self._landscapeY = self._landscapeY or Presto.average_landscape(self._all_landscapesY)
+        self._landscapeX = Presto.average_landscape(self._all_landscapesX)
+        self._landscapeY = Presto.average_landscape(self._all_landscapesY)
 
     def fit_transform(self, X, Y, n_projections: int = 15, score_type: str = "aggregate"):
         """
