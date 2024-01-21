@@ -8,6 +8,7 @@ datasets:
   - "big_patent a"
   - gfissore/arxiv-abstracts-2021
   - "cnn_dailymail 3.0.0"
+  - EdinburghNLP/xsum
 max_homology_dim: 2
 n_components: 3
 normalize: False

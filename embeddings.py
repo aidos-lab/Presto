@@ -16,6 +16,8 @@ def get_sample_data(data, dataset, n_samples):
         return_data = data["train"]["abstract"][:n_samples]
     elif dataset == "gfissore/arxiv-abstracts-2021":
         return_data = data["train"]["abstract"][:n_samples]
+    elif dataset == "EdinburghNLP/xsum":
+        return_data = data["train"]["summary"][:n_samples]
     else:
         raise NotImplementedError(dataset)
     return return_data
