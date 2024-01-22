@@ -50,14 +50,6 @@ class Atom:
             i, j = pair
             X, Y = self.data[i], self.data[j]
             if np.isnan(X).any() or np.isnan(Y).any():
-                return i, j, np.nan
-            else:
-                return self.presto.fit_transform(X, Y, n_projections=n_projections, score_type=score_type), i, j
-
-        def compute_distance_parallelized(pair):
-            i, j = pair
-            X, Y = self.data[i], self.data[j]
-            if np.isnan(X).any() or np.isnan(Y).any():
                 return np.nan, i, j
             else:
                 return Presto(n_components=self.presto.projection_dimension,
@@ -71,10 +63,11 @@ class Atom:
         if parallelize:
             with ThreadPoolExecutor(max_workers=os.cpu_count() - 2) as executor:
                 # scores now have the shape (data, row, col)
-                scores = tqdm(list(executor.map(compute_distance_parallelized, pairs)))
+                scores = tqdm(list(executor.map(compute_distance, pairs)), total=n_pairs, unit="universes",
+                              desc="Computing Presto Distances")
         else:
             scores = list()
-            for pair in tqdm(pairs):
+            for pair in tqdm(pairs, total=n_pairs, unit="universes", desc="Computing Presto Distances"):
                 scores.append(compute_distance(pair))
 
         values = list(map(lambda tup: tup[0], scores))
