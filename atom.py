@@ -10,38 +10,43 @@ from concurrent.futures import ThreadPoolExecutor
 from presto import Presto
 
 
-
 class Atom:
     def __init__(
-        self,
-        data: list,
-        n_components: int = 2,
-        normalize: bool = False,
-        max_homology_dim: int = 1,
-        resolution: int = 100,
-        normalization_approx_iterations: int = 1000,
-        seed: int = 42
+            self,
+            data: list,
+            n_components: int = 2,
+            normalize: bool = False,
+            max_homology_dim: int = 1,
+            resolution: int = 100,
+            normalization_approx_iterations: int = 1000,
+            seed: int = 42
     ) -> None:
-        
+
         self.presto = Presto(n_components=n_components,
-                            normalize=normalize,
-                            max_homology_dim=max_homology_dim,
-                            resolution=resolution,
-                            normalization_approx_iterations=normalization_approx_iterations,
-                            seed=seed)
+                             normalize=normalize,
+                             max_homology_dim=max_homology_dim,
+                             resolution=resolution,
+                             normalization_approx_iterations=normalization_approx_iterations,
+                             seed=seed)
         self.data = data
-        self.mutliverse_size = len(data) 
+        self.multiverse_size = len(data)
         self.MMS = None
-        
-    def compute_MMS(self,n_projections: int = 15,score_type: str = "aggregate",):
+
+    def compute_MMS(self, n_projections: int = 15, score_type: str = "aggregate", ):
         """
-        Compute a mutliverse metric space (MMS).
+        Compute a multiverse metric space (MMS).
         Returns a pairwise distances matrix based on the 
         `presto` score between embeddings.
         """
-        pairs = list(itertools.combinations(self.data,2))
+        # TODO I think we need to make the indices of the elements part of the pairs and then return them along
+        # with the scores in a tuple to be able to allocate our scores correctly after the parallel execution
+        # also, do you really want to copy the data this many times? We could generate combinations of indices,
+        # initialize each worker with the entire data (if that works with this executor – which I believe it does),
+        # and then have compute_distance use the indices to pick the correct elements from data?
+        pairs = list(itertools.combinations(self.data, 2))
+        # TODO we don't use that anywhere, and below it becomes a list
         scores = np.ndarray(shape=len(pairs))
-        if score_type not in ["aggregate","average"]:
+        if score_type not in ["aggregate", "average"]:
             raise NotImplementedError(score_type)
 
         def compute_distance(pair):
@@ -51,20 +56,25 @@ class Atom:
             else:
                 return self.presto.fit_transform(X, Y, n_projections=n_projections, score_type=score_type)
 
-        with ThreadPoolExecutor(max_workers=os.cpu_count()-2) as executor:
-            scores = list(tqdm(executor.map(compute_distance, pairs), total=len(pairs), desc="Computing Presto Distances", unit="universes"))
-        
-        self.MMS = np.zeros((self.mutliverse_size, self.mutliverse_size))
+        # TODO executor.map might evaluate pairs out of order, so we cannot simply set the scores as we do currently
+        # See above for suggestion – also, I hope you didn't rely on in-order returns anywhere else (e.g., in other experiments?)
+        with ThreadPoolExecutor(max_workers=os.cpu_count() - 2) as executor:
+            scores = list(
+                tqdm(executor.map(compute_distance, pairs), total=len(pairs), desc="Computing Presto Distances",
+                     unit="universes"))
 
-        triu_indices = np.triu_indices(self.mutliverse_size, k=1)
+        self.MMS = np.zeros((self.multiverse_size, self.multiverse_size))
+
+        triu_indices = np.triu_indices(self.multiverse_size, k=1)
         self.MMS[triu_indices] = scores
         self.MMS.T[triu_indices] = scores
-            
+        # TODO you probably want to enable saving and loading of an MMS, such that we can more easily play around with
+        # clustering, set cover, sensitivity analysis, etc.
 
     def cluster(
-        self,
-        epsilon,
-        linkage: str = "complete",
+            self,
+            epsilon,
+            linkage: str = "complete",
     ) -> AgglomerativeClustering:
         if self.MMS is None:
             self.compute_MMS()
@@ -84,11 +94,10 @@ class Atom:
 
         return self.clustering
 
-    
     # TODO untested
     def compute_set_cover(
-        self,
-        epsilon
+            self,
+            epsilon
     ):
         """
         Compute a set of representatives for a given set of embeddings
