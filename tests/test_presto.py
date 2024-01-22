@@ -30,6 +30,10 @@ class PrestoTest(TestCase):
         self.toy_landscape_norm = {i: np.sqrt(sum(x ** 2 for x in L)) for i, L in self.toy_landscape.items()}
         self.toy_landscape_norm2 = {i: np.sqrt(sum(x ** 2 for x in L)) for i, L in self.toy_landscape2.items()}
         self.toy_landscapes = [self.toy_landscape, self.toy_landscape2]
+        self.toy_landscapes2 = [{0: [1, 2, 3], 1: [0.25, 0.2, 1.1], 2: [1.1, 2, -2]},
+                                {0: [1, 1, 1], 1: [0.15, 0.72, -0.91], 2: [2.1, 2, -2]},
+                                {0: [1, 0, 0], 1: [0.5, 2.2, 0.1], 2: [-0.1, 0, -2]}
+                                ]
 
     def test_homology_dims(self):
         self.assertListEqual([0, 1, 2], self.presto_.homology_dims)
@@ -69,13 +73,26 @@ class PrestoTest(TestCase):
         self.assertEqual(expected, self.presto_.compute_presto_variance(self.toy_landscapes))
 
     def test_compute_presto_coordinate_sensitivity(self):
-        pass
+        expected = np.sqrt(self.presto_.compute_presto_variance(self.toy_landscapes))
+        self.assertEqual(expected,
+                         self.presto_.compute_presto_coordinate_sensitivity(self.toy_landscapes))
 
     def test_compute_local_presto_sensitivity(self):
-        pass
+        v1 = self.presto_.compute_presto_variance(self.toy_landscapes)
+        v2 = self.presto_.compute_presto_variance(self.toy_landscapes2)
+        expected = np.sqrt((v1 + v2) / 2)
+        self.assertEqual(expected,
+                         self.presto_.compute_local_presto_sensitivity([self.toy_landscapes, self.toy_landscapes2]))
 
     def test_compute_global_presto_sensitivity(self):
-        pass
+        presto_sensitivity_1 = self.presto_.compute_local_presto_sensitivity(
+            [self.toy_landscapes, self.toy_landscapes2])
+        presto_sensitivity_2 = self.presto_.compute_local_presto_sensitivity(
+            [self.toy_landscapes, self.toy_landscapes2, self.toy_landscapes2])
+        expected = np.sqrt(sum([presto_sensitivity_1 ** 2, presto_sensitivity_2 ** 2]) / 2)
+        self.assertEqual(expected, self.presto_.compute_global_presto_sensitivity(
+            [[self.toy_landscapes, self.toy_landscapes2],
+             [self.toy_landscapes, self.toy_landscapes2, self.toy_landscapes2]]))
 
     def test_normalize_space(self):
         pass

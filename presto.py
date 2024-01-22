@@ -208,7 +208,7 @@ class Presto:
         """
         N = len(landscapes)
         max_homology_dimension = max(landscapes[0].keys())
-        landscape_norms = list(map(Presto._compute_landscape_norm, landscapes))
+        landscape_norms = [Presto._compute_landscape_norm(L) for L in landscapes]
         landscape_norm_means = {i: sum(L[i] for L in landscape_norms) / N for i in range(max_homology_dimension + 1)}
         if return_norms:
             return landscape_norm_means, landscape_norms
