@@ -29,7 +29,7 @@ if __name__ == "__main__":
     n_samples = 1024
     n_projections = 64
     data_dir = "component_variation_data"
-    max_homology_dim = 2
+    max_homology_dim = 1
 
     component_ns = [5, 4, 3, 2, 1]
 
