@@ -1,6 +1,7 @@
 from unittest import TestCase
 from presto import Presto
 from sklearn.random_projection import GaussianRandomProjection as Gauss
+import numpy as np
 
 
 class PrestoTest(TestCase):
@@ -24,6 +25,10 @@ class PrestoTest(TestCase):
         self._projectionsY = self.presto_.generate_projections(self.Y, self.n_projections)
         self._landscapesY = self.presto_.generate_landscapes(self._projectionsY)
         self._landscapeY = self.presto_.average_landscape(self._landscapesY)
+        self.toy_landscape = {0: [1, 2, 3], 1: [0.5, 0.2, 0.1], 2: [0.1, 2, -2]}
+        self.toy_landscape2 = {0: [0, 1, 2], 1: [0.5, 0.2, 0.1], 2: [0.1, 2, -2]}
+        self.toy_landscape_norm = {i: np.sqrt(sum(x ** 2 for x in L)) for i, L in self.toy_landscape.items()}
+        self.toy_landscape_norm2 = {i: np.sqrt(sum(x ** 2 for x in L)) for i, L in self.toy_landscape2.items()}
 
     def test_homology_dims(self):
         self.assertListEqual([0, 1, 2], self.presto_.homology_dims)
@@ -42,6 +47,26 @@ class PrestoTest(TestCase):
 
     def test_compute_presto_scores(self):
         self.presto_.compute_presto_scores(self._landscapeX, self._landscapeY)
+
+    def test_compute_landscape_norm(self):
+        self.assertDictEqual(self.toy_landscape_norm, Presto._compute_landscape_norm(self.toy_landscape))
+
+    def test_compute_landscape_norm_means(self):
+        dict_mean = {i: (self.toy_landscape_norm[i] + self.toy_landscape_norm2[i]) / 2 for i in
+                     self.toy_landscape_norm.keys()}
+        self.assertDictEqual(dict_mean, Presto._compute_landscape_norm_means([self.toy_landscape, self.toy_landscape2]))
+
+    def test_compute_presto_variance(self):
+        pass
+
+    def test_compute_presto_coordinate_sensitivity(self):
+        pass
+
+    def test_compute_local_presto_sensitivity(self):
+        pass
+
+    def test_compute_global_presto_sensitivity(self):
+        pass
 
     def test_normalize_space(self):
         pass
