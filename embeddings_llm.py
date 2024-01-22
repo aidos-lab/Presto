@@ -53,7 +53,7 @@ if __name__ == "__main__":
     data_dir = "data"
     os.makedirs(os.path.join(os.curdir, data_dir), exist_ok=True)
 
-    models = ["mistral-embed"]
+    models = ["ada-002", "mistral-embed"]
     max_samples = max(config.n_samples)
     datasets = {d: load_dataset(*d.split()) for d in config.datasets}
 
