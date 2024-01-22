@@ -24,7 +24,7 @@ sbatch -p cpu_p               \
        -J ${NAME}             \
        -o "${NAME}_%j.out"    \
        --qos=cpu_normal       \
-       --cpus-per-task=8      \
+       --cpus-per-task=1      \
        --mem=8G               \
        --nice=10000           \
        --wrap "${CMD}"
