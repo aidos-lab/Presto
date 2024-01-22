@@ -54,7 +54,6 @@ class Atom:
             else:
                 return self.presto.fit_transform(X, Y, n_projections=n_projections, score_type=score_type), i, j
 
-        # TODO check if we can simply use self.data here instead of the complicated init
         def compute_distance_parallelized(pair):
             i, j = pair
             X, Y = self.data[i], self.data[j]
