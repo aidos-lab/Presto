@@ -24,23 +24,25 @@ if __name__ == "__main__":
                     embeddings[dataset][model] = pickle.load(f)
 
     # Let's try for one fixed config first
-    dataset = "EdinburghNLP/xsum"
-    model = "all-mpnet-base-v2"
+    # dataset = "EdinburghNLP/xsum"
+    # model = "all-mpnet-base-v2"
     n_samples = 1024
     n_projections = 64
     data_dir = "component_variation_data"
-    max_homology_dim = 0
+    max_homology_dim = 2
 
-    component_ns = [5, 4, 3, 2, 1]
+    component_ns = [4, 3, 2, 1]
 
-    for n_components in component_ns:
-        metric = Presto(max_homology_dim=max_homology_dim, n_components=n_components,
-                        normalize=config.normalize)
-        filename = f"{data_dir}/derivatives_{clean_dataset_name(dataset)}_{n_samples}_{model}_np-{n_projections}_nc-{n_components}_hd-{max_homology_dim}.pkl"
-        if overwrite or not os.path.isfile(filename):
-            print(f"Working to create {filename}")
-            e = embeddings[dataset][model]
-            projections = metric.generate_projections(e[:n_samples, :], max_projections)
-            landscapes = metric.generate_landscapes(projections)
-            with open(filename, "wb") as f:
-                pickle.dump(dict(projections=projections, landscapes=landscapes), f)
+    for dataset in config.datasets:
+        for model in config.models:
+            for n_components in component_ns:
+                metric = Presto(max_homology_dim=max_homology_dim, n_components=n_components,
+                                normalize=config.normalize)
+                filename = f"{data_dir}/derivatives_d-{clean_dataset_name(dataset)}_m-{model}_ns-{n_samples}_np-{n_projections}_nc-{n_components}_hd-{max_homology_dim}.pkl"
+                if overwrite or not os.path.isfile(filename):
+                    print(f"Working to create {filename}")
+                    e = embeddings[dataset][model]
+                    projections = metric.generate_projections(e[:n_samples, :], max_projections)
+                    landscapes = metric.generate_landscapes(projections)
+                    with open(filename, "wb") as f:
+                        pickle.dump(dict(projections=projections, landscapes=landscapes), f)
