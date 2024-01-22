@@ -145,9 +145,46 @@ class Presto:
                 prestos[dim] = np.linalg.norm(lambdaX - lambdaY)
         return prestos
 
-    def compute_presto_variance(self, landscapes: list):
+    def compute_local_presto_sensitivity(self, landscape_equivalence_classes: List[List[Dict[int, np.array]]]) -> float:
         """
-        PV^2_k(LL) = 1/|LL| * sum_{x=0}^k sum_{L \in LL^x} (||L||_2 - mean_{||LL^x||})^2
+        PS^2_k(MM | i) := sqrt( 1/q_i * sum_{Q \in QQ_i} PV^2_k(LL[Q]) ),
+        where q_i is the number equivalence classes of models in dimension i.
+        NB: We expect the caller to have grouped the relevant landscapes corresponding to the analysis of interest.
+        :param landscape_equivalence_classes:
+        :return:
+        """
+        q_i = len(landscape_equivalence_classes)
+        sum_of_variances = sum(self.compute_presto_variance(Q) for Q in landscape_equivalence_classes)
+        return np.sqrt(sum_of_variances / q_i)
+
+    def compute_global_presto_sensitivity(self,
+                                          landscape_equivalence_classes_per_dim: List[
+                                              List[List[Dict[int, np.array]]]]) -> float:
+        """
+        PS^2_k(MM) := sqrt( 1/c * sum_{i \in [c]} PS^2_k(MM | i) ),
+        where c is the dimensionality of models in MM
+        NB: We expect the caller to have grouped the relevant landscapes corresponding to the analysis of interest.
+        :param landscape_equivalence_classes_per_dim:
+        :return:
+        """
+        c = len(landscape_equivalence_classes_per_dim)
+        sum_of_local_sensitivities = sum(
+            self.compute_local_presto_sensitivity(landscape_equivalence_classes) for landscape_equivalence_classes in
+            landscape_equivalence_classes_per_dim)
+        return np.sqrt(sum_of_local_sensitivities / c)
+
+    def compute_presto_coordinate_sensitivity(self, landscapes: List[Dict[int, np.array]]) -> float:
+        """
+        PCS^2_k(theta | MM) := sqrt( PV^2_k(LL[theta^{\pm 1}]) )
+        NB: We expect the caller to have selected the relevant landscapes corresponding to the coordinates of interest.
+        :param landscapes:
+        :return:
+        """
+        return np.sqrt(self.compute_presto_variance(landscapes))
+
+    def compute_presto_variance(self, landscapes: List[Dict[int, np.array]]) -> float:
+        """
+        PV^2_k(LL) := 1/|LL| * sum_{x=0}^k sum_{L \in LL^x} (||L||_2 - mean_{||LL^x||})^2
         :param landscapes:
         :return:
         """
@@ -162,9 +199,9 @@ class Presto:
         return dim_sums / N
 
     @staticmethod
-    def _compute_landscape_norm_means(landscapes: List[Dict[int, np.array]], return_norms=False):
+    def _compute_landscape_norm_means(landscapes: List[Dict[int, np.array]], return_norms: bool = False):
         """
-        We expect each landscape to be of the shape returned by average_landscape
+        We expect each landscape in the input list to be of the shape returned by average_landscape, i.e., Dict[int, np.array].
         :param landscapes:
         :return:
         """
