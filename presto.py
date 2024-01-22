@@ -50,6 +50,7 @@ class Presto:
         self.diameter_iterations = normalization_approx_iterations
 
         # Set Topological parameters
+        self.max_homology_dim = max_homology_dim
         self.homology_dims = list(range(0, max_homology_dim + 1))
         self.landscape_resolution = resolution
         self.LS = Landscape(resolution=self.landscape_resolution, keep_endpoints=False)
