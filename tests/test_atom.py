@@ -21,23 +21,22 @@ class AtomTest(TestCase):
                           max_homology_dim=self.max_homology_dim, resolution=self.resolution,
                           normalization_approx_iterations=self.normalization_approx_iterations)
         # self.MMS is the correct answer from the sequential implementation
-        self.MMS = np.array([[0.00000, 28.27533, 25.71661],
-                             [28.27533, 0.00000, 21.28422],
-                             [25.71661, 21.28422, 0.00000]])
+        self.MMS = np.array(
+            [[0., 28.27532526, 18.48391443], [28.27532526, 0., 22.60160161], [18.48391443, 22.60160161, 0.]])
 
     def test_compute_MMS_sequential(self):
         self.atom_.compute_MMS(n_projections=15, score_type="aggregate", parallelize=False)
         self.assertSequenceEqual(self.MMS.shape, self.atom_.MMS.shape)
         self.assertTrue(np.allclose(self.MMS, self.atom_.MMS))
+        # Ensure Symmetry
+        self.assertTrue(np.allclose(self.atom_.MMS[0, :], self.atom_.MMS[:, 0]))
 
     def test_compute_MMS_parallel(self):
         self.atom_.compute_MMS(n_projections=15, score_type="aggregate", parallelize=True)
         self.assertSequenceEqual(self.MMS.shape, self.atom_.MMS.shape)
-        # FIXME The randomness between the sequential and the parallelized implementation is not the same
-        # So we get different projections here
-        self.assertTrue(np.allclose(self.MMS[0, 1], self.atom_.MMS[0, 1]))
-        self.assertTrue(np.allclose(self.MMS[1, 0], self.atom_.MMS[1, 0]))
-        self.assertTrue(np.allclose(self.atom_.MMS[0, 1], self.atom_.MMS[1, 0]))
+        self.assertTrue(np.allclose(self.MMS, self.atom_.MMS))
+        # Ensure Symmetry
+        self.assertTrue(np.allclose(self.atom_.MMS[0, :], self.atom_.MMS[:, 0]))
 
     def test_cluster(self):
         pass
