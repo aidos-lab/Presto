@@ -1,4 +1,6 @@
 "ATOM: Approximate Topological Operations in the Multiverse "
+import pickle
+
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 import itertools
@@ -6,7 +8,7 @@ import networkx as nx
 import os
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
-
+from scipy.sparse import coo_array
 from presto import Presto
 
 
@@ -32,44 +34,72 @@ class Atom:
         self.multiverse_size = len(data)
         self.MMS = None
 
-    def compute_MMS(self, n_projections: int = 15, score_type: str = "aggregate", ):
+    def compute_MMS(self, n_projections: int = 15, score_type: str = "aggregate", parallelize=True):
         """
         Compute a multiverse metric space (MMS).
         Returns a pairwise distances matrix based on the 
         `presto` score between embeddings.
         """
-        # TODO I think we need to make the indices of the elements part of the pairs and then return them along
-        # with the scores in a tuple to be able to allocate our scores correctly after the parallel execution
-        # also, do you really want to copy the data this many times? We could generate combinations of indices,
-        # initialize each worker with the entire data (if that works with this executor – which I believe it does),
-        # and then have compute_distance use the indices to pick the correct elements from data?
-        pairs = list(itertools.combinations(self.data, 2))
-        # TODO we don't use that anywhere, and below it becomes a list
-        scores = np.ndarray(shape=len(pairs))
         if score_type not in ["aggregate", "average"]:
             raise NotImplementedError(score_type)
 
+        data_indices = list(range(self.multiverse_size))
+        pairs = list(itertools.combinations(data_indices, 2))
+        n_pairs = len(pairs)
+
         def compute_distance(pair):
-            X, Y = pair
+            i, j = pair
+            X, Y = self.data[i], self.data[j]
             if np.isnan(X).any() or np.isnan(Y).any():
-                return np.nan
+                return i, j, np.nan
             else:
-                return self.presto.fit_transform(X, Y, n_projections=n_projections, score_type=score_type)
+                return self.presto.fit_transform(X, Y, n_projections=n_projections, score_type=score_type), i, j
 
-        # TODO executor.map might evaluate pairs out of order, so we cannot simply set the scores as we do currently
-        # See above for suggestion – also, I hope you didn't rely on in-order returns anywhere else (e.g., in other experiments?)
-        with ThreadPoolExecutor(max_workers=os.cpu_count() - 2) as executor:
-            scores = list(
-                tqdm(executor.map(compute_distance, pairs), total=len(pairs), desc="Computing Presto Distances",
-                     unit="universes"))
+        # TODO check if we can simply use self.data here instead of the complicated init
+        def compute_distance_parallelized(pair):
+            i, j = pair
+            X, Y = data[i], data[j]
+            if np.isnan(X).any() or np.isnan(Y).any():
+                return i, j, np.nan
+            else:
+                return self.presto.fit_transform(X, Y, n_projections=n_projections, score_type=score_type), i, j
 
-        self.MMS = np.zeros((self.multiverse_size, self.multiverse_size))
+        def initialize(D):
+            global data
+            data = D
 
-        triu_indices = np.triu_indices(self.multiverse_size, k=1)
-        self.MMS[triu_indices] = scores
-        self.MMS.T[triu_indices] = scores
-        # TODO you probably want to enable saving and loading of an MMS, such that we can more easily play around with
-        # clustering, set cover, sensitivity analysis, etc.
+        if parallelize:
+            with ThreadPoolExecutor(max_workers=os.cpu_count() - 2, initializer=initialize,
+                                    initargs=(self.data,)) as executor:
+                # scores now have the shape (data, row, col)
+                scores = list(
+                    tqdm(executor.map(compute_distance_parallelized, pairs), total=n_pairs,
+                         desc="Computing Presto Distances",
+                         unit="universes"))
+        else:
+            scores = list()
+            for pair in tqdm(pairs):
+                scores.append(compute_distance(pair))
+
+        values = list(map(lambda tup: tup[0], scores))
+        rows = list(map(lambda tup: tup[1], scores))
+        cols = list(map(lambda tup: tup[1], scores))
+
+        self.MMS = coo_array((values, (rows, cols)),
+                             shape=(self.multiverse_size, self.multiverse_size)).todense().A
+        self.MMS += self.MMS.T
+
+    def save_mms(self, path: str):
+        with open(path, "wb") as f:
+            pickle.dump(self.MMS, f)
+
+    def load_mms(self, path: str):
+        with open(path, "rb") as f:
+            MMS = pickle.load(f)
+        self.set_mss(MMS)
+
+    def set_mss(self, MMS):
+        self.MMS = MMS
 
     def cluster(
             self,
