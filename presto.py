@@ -105,7 +105,7 @@ class Presto:
 
     def fit_transform(self, X, Y, n_projections: int = 15, score_type: str = "aggregate"):
         """
-        Fit a topological descriptor and compute the PESTO score.
+        Fit a topological descriptor and compute the Presto score.
 
         Parameters:
         - X : array-like or pd.DataFrame, shape (n_samples, n_features), default=None
@@ -115,15 +115,15 @@ class Presto:
         - n_projections : int, optional
             The number of random projections. Default is 100.
         - score_type: str, optional
-            Which type of PESTO score to return. Options are:
+            Which type of Presto score to return. Options are:
             - "aggregate" (sum normed distances across all dimensions)
             - "average" (average distance across al dimensions)
             - "separate" (list of distances by dimension)
             Default is "aggregate".
 
         Returns:
-        - pesto_score : float
-            The computed PESTO score representing the distance between the topological descriptors of X and Y.
+        - presto_score : float
+            The computed Presto score representing the distance between the topological descriptors of X and Y.
         """
         self.fit(X, Y, n_projections)
         presto_scores = self.compute_presto_scores(self._landscapeX, self._landscapeY)
@@ -136,7 +136,7 @@ class Presto:
         else:
             raise NotImplementedError(score_type)
 
-    def compute_presto_scores(self, landscapeX, landscapeY):
+    def compute_presto_scores(self, landscapeX, landscapeY) -> Dict[int, float]:
         prestos = dict()
         for dim in self.homology_dims:
             lambdaX = landscapeX[dim]
@@ -144,6 +144,44 @@ class Presto:
             if not np.isnan(lambdaX - lambdaY).any():
                 prestos[dim] = np.linalg.norm(lambdaX - lambdaY)
         return prestos
+
+    def compute_presto_variance(self, landscapes: list):
+        """
+        PV^2_k(LL) = 1/|LL| * sum_{x=0}^k sum_{L \in LL^x} (||L||_2 - mean_{||LL^x||})^2
+        :param landscapes:
+        :return:
+        """
+        N = len(landscapes)
+        landscape_norm_means, landscape_norms = Presto._compute_landscape_norm_means(landscapes, return_norms=True)
+        dim_sums = 0
+        for dim in self.homology_dims:
+            dim_sum = 0
+            for L in landscape_norms:
+                dim_sum += (L[dim] - landscape_norm_means[dim]) ** 2
+            dim_sums += dim_sum
+        return dim_sums / N
+
+    @staticmethod
+    def _compute_landscape_norm_means(landscapes: List[Dict[int, np.array]], return_norms=False):
+        """
+        We expect each landscape to be of the shape returned by average_landscape
+        :param landscapes:
+        :return:
+        """
+        N = len(landscapes)
+        max_homology_dimension = max(landscapes[0].keys())
+        landscape_norms = list(map(Presto._compute_landscape_norm, landscapes))
+        landscape_norm_means = {i: sum(L[i] for L in landscape_norms) / N for i in range(max_homology_dimension + 1)}
+        if return_norms:
+            return landscape_norm_means, landscape_norms
+        else:
+            return landscape_norm_means
+
+    @staticmethod
+    def _compute_landscape_norm(landscape: Dict[int, np.array]) -> Dict[int, float]:
+        return {
+            k: np.linalg.norm(v) for k, v in landscape.items()
+        }
 
     def normalize_space(self, X):
         """
@@ -223,7 +261,7 @@ class Presto:
         self._all_landscapesY = all_landscapesY
 
     @staticmethod
-    def average_landscape(L: Dict[int, List[np.array]]) -> Dict[int, float]:
+    def average_landscape(L: Dict[int, List[np.array]]) -> Dict[int, np.array]:
         """
         Average persistence landscapes over multiple projections.
 
