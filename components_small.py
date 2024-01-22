@@ -28,13 +28,15 @@ if __name__ == "__main__":
     model = "all-mpnet-base-v2"
     n_samples = 1024
     n_projections = 64
+    data_dir = "component_variation_data"
+    max_homology_dim = 2
 
-    component_ns = [2, 3, 4, 5]
+    component_ns = [5, 4, 3, 2, 1]
 
     for n_components in component_ns:
-        metric = Presto(max_homology_dim=config.max_homology_dim, n_components=n_components,
+        metric = Presto(max_homology_dim=max_homology_dim, n_components=n_components,
                         normalize=config.normalize)
-        filename = f"{data_dir}/derivatives_{clean_dataset_name(dataset)}_{n_samples}_{model}_np-{n_projections}_nc-{n_components}.pkl"
+        filename = f"{data_dir}/derivatives_{clean_dataset_name(dataset)}_{n_samples}_{model}_np-{n_projections}_nc-{n_components}_hd-{max_homology_dim}.pkl"
         if overwrite or not os.path.isfile(filename):
             print(f"Working to create {filename}")
             e = embeddings[dataset][model]
