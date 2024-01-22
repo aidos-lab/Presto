@@ -87,7 +87,7 @@ class Atom:
             MMS = pickle.load(f)
         self.set_mss(MMS)
 
-    def set_mss(self, MMS):
+    def set_mms(self, MMS):
         self.MMS = MMS
 
     def cluster(
