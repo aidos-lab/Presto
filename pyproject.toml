@@ -18,7 +18,14 @@ jupyterlab = "^4.0.11"
 sentence-transformers = "^2.2.2"
 datasets = "^2.16.1"
 omegaconf = "^2.3.0"
+llm = "^0.12"
 
+
+[tool.poetry.dev-dependencies]
+black = "^23.12.1"
+
+[tool.black]
+line-length = 79
 
 [build-system]
 requires = ["poetry-core"]
