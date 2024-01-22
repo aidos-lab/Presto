@@ -83,10 +83,10 @@ class Atom:
 
         values = list(map(lambda tup: tup[0], scores))
         rows = list(map(lambda tup: tup[1], scores))
-        cols = list(map(lambda tup: tup[1], scores))
+        cols = list(map(lambda tup: tup[2], scores))
 
         self.MMS = coo_array((values, (rows, cols)),
-                             shape=(self.multiverse_size, self.multiverse_size)).todense().A
+                             shape=(self.multiverse_size, self.multiverse_size)).todense()
         self.MMS += self.MMS.T
 
     def save_mms(self, path: str):
