@@ -161,7 +161,7 @@ class Presto:
                                           landscape_equivalence_classes_per_dim: List[
                                               List[List[Dict[int, np.array]]]]) -> float:
         """
-        PS^2_k(MM) := sqrt( 1/c * sum_{i \in [c]} PS^2_k(MM | i) ),
+        PS^2_k(MM) := sqrt( 1/c * sum_{i \in [c]} 1/q_i * sum_{Q \in QQ_i} PV^2_k(LL[Q]) ),
         where c is the dimensionality of models in MM
         NB: We expect the caller to have grouped the relevant landscapes corresponding to the analysis of interest.
         :param landscape_equivalence_classes_per_dim:
@@ -169,7 +169,8 @@ class Presto:
         """
         c = len(landscape_equivalence_classes_per_dim)
         sum_of_local_sensitivities = sum(
-            self.compute_local_presto_sensitivity(landscape_equivalence_classes) for landscape_equivalence_classes in
+            self.compute_local_presto_sensitivity(landscape_equivalence_classes) ** 2 for landscape_equivalence_classes
+            in
             landscape_equivalence_classes_per_dim)
         return np.sqrt(sum_of_local_sensitivities / c)
 
