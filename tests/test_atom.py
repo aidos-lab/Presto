@@ -20,9 +20,10 @@ class AtomTest(TestCase):
         self.atom_ = Atom(self.data, n_components=self.n_components, normalize=self.normalize,
                           max_homology_dim=self.max_homology_dim, resolution=self.resolution,
                           normalization_approx_iterations=self.normalization_approx_iterations)
-        self.MMS = np.array([[0., 28.27532526, 25.71660789],
-                             [28.27532526, 0., 21.28421828],
-                             [25.71660789, 21.28421828, 0.]])
+        # self.MMS is the correct answer from the sequential implementation
+        self.MMS = np.array([[0.00000, 28.27533, 25.71661],
+                             [28.27533, 0.00000, 21.28422],
+                             [25.71661, 21.28422, 0.00000]])
 
     def test_compute_MMS_sequential(self):
         self.atom_.compute_MMS(n_projections=15, score_type="aggregate", parallelize=False)
@@ -32,9 +33,11 @@ class AtomTest(TestCase):
     def test_compute_MMS_parallel(self):
         self.atom_.compute_MMS(n_projections=15, score_type="aggregate", parallelize=True)
         self.assertSequenceEqual(self.MMS.shape, self.atom_.MMS.shape)
-        # we cannot use np.allclose on the entire array b/c the randomness will diverge
-        # b/c we need independent presto objects
+        # FIXME The randomness between the sequential and the parallelized implementation is not the same
+        # So we get different projections here
         self.assertTrue(np.allclose(self.MMS[0, 1], self.atom_.MMS[0, 1]))
+        self.assertTrue(np.allclose(self.MMS[1, 0], self.atom_.MMS[1, 0]))
+        self.assertTrue(np.allclose(self.atom_.MMS[0, 1], self.atom_.MMS[1, 0]))
 
     def test_cluster(self):
         pass
