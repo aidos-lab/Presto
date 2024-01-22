@@ -29,6 +29,7 @@ class PrestoTest(TestCase):
         self.toy_landscape2 = {0: [0, 1, 2], 1: [0.5, 0.2, 0.1], 2: [0.1, 2, -2]}
         self.toy_landscape_norm = {i: np.sqrt(sum(x ** 2 for x in L)) for i, L in self.toy_landscape.items()}
         self.toy_landscape_norm2 = {i: np.sqrt(sum(x ** 2 for x in L)) for i, L in self.toy_landscape2.items()}
+        self.toy_landscapes = [self.toy_landscape, self.toy_landscape2]
 
     def test_homology_dims(self):
         self.assertListEqual([0, 1, 2], self.presto_.homology_dims)
@@ -55,9 +56,17 @@ class PrestoTest(TestCase):
         dict_mean = {i: (self.toy_landscape_norm[i] + self.toy_landscape_norm2[i]) / 2 for i in
                      self.toy_landscape_norm.keys()}
         self.assertDictEqual(dict_mean, Presto._compute_landscape_norm_means([self.toy_landscape, self.toy_landscape2]))
+        dict_mean = {i: (2 * self.toy_landscape_norm[i] + 2 * self.toy_landscape_norm2[i]) / 4 for i in
+                     self.toy_landscape_norm.keys()}
+        self.assertDictEqual(dict_mean,
+                             Presto._compute_landscape_norm_means(self.toy_landscapes * 2))
 
     def test_compute_presto_variance(self):
-        pass
+        landscape_norm_means, landscape_norms = Presto._compute_landscape_norm_means(self.toy_landscapes,
+                                                                                     return_norms=True)
+        expected = sum([sum([(L[dim] - landscape_norm_means[dim]) ** 2 for L in landscape_norms]) for dim in
+                        self.presto_.homology_dims]) / len(landscape_norms)
+        self.assertEqual(expected, self.presto_.compute_presto_variance(self.toy_landscapes))
 
     def test_compute_presto_coordinate_sensitivity(self):
         pass
