@@ -23,13 +23,12 @@ if __name__ == "__main__":
     runs = []
     for _ in range(1000):
         X = np.random.random(size=(100, 1000))
-        Y = np.random.random(size=(100, 1000))
 
         projections1 = metric.generate_projections(X, n_projections)
         projections2 = metric.generate_projections(X, n_projections)
 
         P1 = projections1[0]
-        P2 = projections1[0]
+        P2 = projections2[0]
 
         assert np.isclose(P1,P2).all(), "Projections are not equal"
 
