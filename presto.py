@@ -276,7 +276,7 @@ class Presto:
         """
         landscapes = {dim: list() for dim in self.homology_dims}
         for X_ in projections:
-            alpha_complex = gd.AlphaComplex(points=X_).create_simplex_tree()
+            alpha_complex = gd.AlphaComplex(points=X_,precision="exact").create_simplex_tree()
             # Compute Peristence
             alpha_complex.persistence()
             for dim in self.homology_dims:
