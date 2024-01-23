@@ -43,7 +43,7 @@ class Presto:
 
         # Initialize Projector
         self.projection_dimension = n_components
-        self.P = projector(n_components=self.projection_dimension, random_state=np.random.RandomState(self.seed))
+        self.P = projector(n_components=self.projection_dimension, random_state=self.seed)
 
         # Set Normalization parameters
         self.normalize = normalize
