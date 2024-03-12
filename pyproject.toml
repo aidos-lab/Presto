@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "presto"
+version = "0.1.0"
+description = ""
+authors = ["jeremy.wayland <jeremy.don.wayland@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "^1.26.4"
+scikit-learn = "^1.4.1.post1"
+pytest = "^8.0.2"
+gudhi = "^3.9.0"
+tqdm = "^4.66.2"
+networkx = "^3.2.1"
+omegaconf = "^2.3.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
