@@ -1,5 +1,5 @@
 import pytest
-from presto.compare import Presto
+from presto import Presto
 from sklearn.random_projection import GaussianRandomProjection as Gauss
 from sklearn.decomposition import PCA
 import numpy as np

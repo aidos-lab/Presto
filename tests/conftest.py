@@ -1,5 +1,5 @@
 import pytest
-from presto.compare import Presto
+from presto import Presto, Atom
 from sklearn.decomposition import PCA
 from sklearn.random_projection import GaussianRandomProjection as Gauss
 from gudhi.representations import Landscape
@@ -194,3 +194,49 @@ def toy_landscapes2():
         {0: [1, 1, 1], 1: [0.15, 0.72, -0.91], 2: [2.1, 2, -2]},
         {0: [1, 0, 0], 1: [0.5, 2.2, 0.1], 2: [-0.1, 0, -2]},
     ]
+
+
+@pytest.fixture
+def data(rng):
+    X = rng.random(size=(100, 10))
+    Y = rng.random(size=(100, 10))
+    Z = rng.random(size=(100, 10))
+    return [X, Y, Z]
+
+
+@pytest.fixture
+def atom(data):
+    return Atom(data)
+
+
+@pytest.fixture
+def MMS():
+    return np.array(
+        [
+            [0.0, 0.297733, 0.25940901],
+            [0.297733, 0.0, 0.2136469],
+            [0.25940901, 0.2136469, 0.0],
+        ]
+    )
+
+
+@pytest.fixture
+def linkage():
+    return "complete"
+
+
+@pytest.fixture
+def epsilon():
+    return 0.5
+
+
+@pytest.fixture
+def MMS1():
+    return np.array(
+        [
+            [0, 0.1, 0.2, 0.3],
+            [0.1, 0, 0.8, 0.6],
+            [0.2, 0.8, 0, 0.1],
+            [0.4, 0.6, 0.1, 0],
+        ]
+    )
