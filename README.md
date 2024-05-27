@@ -1,6 +1,6 @@
-# Presto
+# Presto 🎶
 
-Presto is a powerful package designed to facilitate analysis on the multiverse of latent representations. The name Presto stands for PRojected Embedding Similarity based on Topological Overlays.
+Presto is a powerful package designed to facilitate analysis on the multiverse of latent representations. The name Presto stands for *Pr*ojected *E*mbedding *S*imilarity based on *T*opological *O*verlays.
 
 ## Features
 
