@@ -523,7 +523,8 @@ class Presto:
         :return:
         """
         N = len(landscapes)
-        homology_dims = range(max(landscapes[0].keys()))
+        print(landscapes[0])
+        homology_dims = range(max(landscapes[0]))
         landscape_norm_means, landscape_norms = (
             Presto._compute_landscape_norm_means(landscapes, return_norms=True)
         )
@@ -570,7 +571,8 @@ class Presto:
 
     @staticmethod
     def _compute_landscape_norm(
-        landscape: Dict[int, np.array], score_type: str = "separate"
+        landscape: Dict[int, np.array],
+        score_type: str = "aggregate",
     ) -> Union[Dict[int, float], float]:
         norms = {k: np.linalg.norm(v) for k, v in landscape.items()}
         if score_type == "aggregate":
@@ -594,7 +596,8 @@ class Presto:
         N = len(landscapes)
         max_homology_dimension = max(landscapes[0].keys())
         landscape_norms = [
-            Presto._compute_landscape_norm(L) for L in landscapes
+            Presto._compute_landscape_norm(L, score_type="separate")
+            for L in landscapes
         ]
         landscape_norm_means = {
             i: sum(L[i] for L in landscape_norms) / N

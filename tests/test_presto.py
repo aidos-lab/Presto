@@ -1,128 +1,146 @@
-from unittest import TestCase
-from presto.comparisons import Presto
+import pytest
+from presto.compare import Presto
 from sklearn.random_projection import GaussianRandomProjection as Gauss
 from sklearn.decomposition import PCA
 import numpy as np
 
 
-class PrestoTest(TestCase):
-    def setUp(self) -> None:
-        self.projector = PCA
-        self.n_components = 3
-        self.normalize = False
-        self.max_homology_dim = 2
-        self.resolution = 100
-        self.normalization_approx_iterations = 1000
-        self.seed = 42
-        self.presto_ = Presto(projector=self.projector, n_components=self.n_components, normalize=self.normalize,
-                              max_homology_dim=self.max_homology_dim, resolution=self.resolution,
-                              normalization_approx_iterations=self.normalization_approx_iterations, seed=self.seed)
-        self.n_projections = 10
-        self.X = self.presto_.rng.random(size=(100, 1000))
-        self._projectionsX = self.presto_.generate_projections(self.X, self.n_projections)
-        self._projectionsX2 = self.presto_.generate_projections(self.X, self.n_projections)
-        self._landscapesX = self.presto_.generate_landscapes(self._projectionsX)
-        self._landscapesX2 = self.presto_.generate_landscapes(self._projectionsX2)
-        self._landscapeX = self.presto_.average_landscape(self._landscapesX)
-        self._landscapeX2 = self.presto_.average_landscape(self._landscapesX2)
-        self.Y = self.presto_.rng.random(size=(100, 1000))
-        self._projectionsY = self.presto_.generate_projections(self.Y, self.n_projections)
-        self._landscapesY = self.presto_.generate_landscapes(self._projectionsY)
-        self._landscapeY = self.presto_.average_landscape(self._landscapesY)
-        self.toy_landscape = {0: [1, 2, 3], 1: [0.5, 0.2, 0.1], 2: [0.1, 2, -2]}
-        self.toy_landscape2 = {0: [0, 1, 2], 1: [0.5, 0.2, 0.1], 2: [0.1, 2, -2]}
-        self.toy_landscape_norm = {i: np.sqrt(sum(x ** 2 for x in L)) for i, L in self.toy_landscape.items()}
-        self.toy_landscape_norm2 = {i: np.sqrt(sum(x ** 2 for x in L)) for i, L in self.toy_landscape2.items()}
-        self.toy_landscapes = [self.toy_landscape, self.toy_landscape2]
-        self.toy_landscapes2 = [{0: [1, 2, 3], 1: [0.25, 0.2, 1.1], 2: [1.1, 2, -2]},
-                                {0: [1, 1, 1], 1: [0.15, 0.72, -0.91], 2: [2.1, 2, -2]},
-                                {0: [1, 0, 0], 1: [0.5, 2.2, 0.1], 2: [-0.1, 0, -2]}
-                                ]
-
-    def test_homology_dims(self):
-        self.assertListEqual([0, 1, 2], self.presto_.homology_dims)
-
-    def test_generate_projections(self):
-        self.assertEqual(self.n_projections, len(self._projectionsX))
-        self.assertEqual(self.X.shape[0], self._projectionsX[0].shape[0])
-        self.assertEqual(self.n_components, self._projectionsX[0].shape[1])
-
-    def test_generate_landscapes(self):
-        self.assertEqual(self.max_homology_dim, len(self._landscapesX) - 1)
-        self.assertEqual(self.n_projections, len(self._landscapesX[0]))
-
-    def test_average_landscape(self):
-        self.assertEqual(self.max_homology_dim, len(self._landscapeX) - 1)
-
-    def test_compute_presto_scores(self):
-        scores_different = self.presto_.compute_presto_scores(self._landscapeX, self._landscapeY,score_type="aggregate")
-        self.assertNotEqual(0, scores_different)
-        scores_same = self.presto_.compute_presto_scores(self._landscapeX, self._landscapeX2,score_type="aggregate")
-        self.assertEqual(0,scores_same)
-        self.assertEqual(0, self.presto_.fit_transform(self.X, self.X, score_type="aggregate",
-                                                       n_projections=self.n_projections))
-        print(scores_different, scores_same)
-
-    def test_compute_landscape_norm(self):
-        self.assertSetEqual(set(self.toy_landscape_norm.keys()), set(Presto._compute_landscape_norm(self.toy_landscape).keys()))
-        #Floating point precision
-        for key in self.toy_landscape_norm.keys():
-            self.assertAlmostEqual(self.toy_landscape_norm[key], Presto._compute_landscape_norm(self.toy_landscape)[key], places=12)
-
-    def test_compute_landscape_norm_means(self):
-        dict_mean = {i: (self.toy_landscape_norm[i] + self.toy_landscape_norm2[i]) / 2 for i in
-                     self.toy_landscape_norm.keys()}
-        self.assertSetEqual(set(dict_mean.keys()), set(Presto._compute_landscape_norm_means([self.toy_landscape, self.toy_landscape2]).keys()))
-        #Floating point precision
-        for key in dict_mean.keys():
-            self.assertAlmostEqual(dict_mean[key], Presto._compute_landscape_norm_means([self.toy_landscape, self.toy_landscape2])[key], places=12)
-
-        dict_mean = {i: (2 * self.toy_landscape_norm[i] + 2 * self.toy_landscape_norm2[i]) / 4 for i in
-                     self.toy_landscape_norm.keys()}
-        
-        self.assertSetEqual(set(dict_mean.keys()), set(Presto._compute_landscape_norm_means(self.toy_landscapes*2).keys()))
-        #Floating point precision
-        for key in dict_mean.keys():
-            self.assertAlmostEqual(dict_mean[key], Presto._compute_landscape_norm_means(self.toy_landscapes*2)[key], places=12)
+def test_homology_dims(presto):
+    assert [0, 1, 2] == presto.homology_dims
 
 
-    def test_compute_presto_variance(self):
-        landscape_norm_means, landscape_norms = Presto._compute_landscape_norm_means(self.toy_landscapes,
-                                                                                     return_norms=True)
-        expected = sum([sum([(L[dim] - landscape_norm_means[dim]) ** 2 for L in landscape_norms]) for dim in
-                        self.presto_.homology_dims]) / len(landscape_norms)
-        self.assertEqual(expected, self.presto_.compute_presto_variance(self.toy_landscapes))
+def test_generate_projections(
+    presto, random_projector, X, n_projections, n_components, seed
+):
+    projectionsX = presto._generate_projections(
+        random_projector,
+        X,
+        dim=n_components,
+        n_projections=n_projections,
+        seed=seed,
+    )
+    assert n_projections == len(projectionsX)
+    assert X.shape[0] == projectionsX[0].shape[0]
+    assert n_components == projectionsX[0].shape[1]
 
-    def test_compute_presto_coordinate_sensitivity(self):
-        expected = np.sqrt(self.presto_.compute_presto_variance(self.toy_landscapes))
-        self.assertEqual(expected,
-                         self.presto_.compute_presto_coordinate_sensitivity(self.toy_landscapes))
+    # Test Determinism
+    for test_seed in [42, 68, 172]:
+        projection1 = presto._generate_projections(Gauss, X, 10, 2, test_seed)
+        projection2 = presto._generate_projections(Gauss, X, 10, 2, test_seed)
+        for i, P1 in enumerate(projection1):
+            P2 = projection2[i]
+            assert np.allclose(P1, P2)
 
-    def test_compute_local_presto_sensitivity(self):
-        v1 = self.presto_.compute_presto_variance(self.toy_landscapes)
-        v2 = self.presto_.compute_presto_variance(self.toy_landscapes2)
-        expected = np.sqrt((v1 + v2) / 2)
-        self.assertEqual(expected,
-                         self.presto_.compute_local_presto_sensitivity([self.toy_landscapes, self.toy_landscapes2]))
 
-    def test_compute_global_presto_sensitivity(self):
-        presto_sensitivity_1 = self.presto_.compute_local_presto_sensitivity(
-            [self.toy_landscapes, self.toy_landscapes2])
-        presto_sensitivity_2 = self.presto_.compute_local_presto_sensitivity(
-            [self.toy_landscapes, self.toy_landscapes2, self.toy_landscapes2])
-        expected = np.sqrt(sum([presto_sensitivity_1 ** 2, presto_sensitivity_2 ** 2]) / 2)
-        self.assertEqual(expected, self.presto_.compute_global_presto_sensitivity(
-            [[self.toy_landscapes, self.toy_landscapes2],
-             [self.toy_landscapes, self.toy_landscapes2, self.toy_landscapes2]]))
+def test_generate_landscapes(
+    presto, projectionsX, max_homology_dim, n_projections
+):
+    test_landscapesX = presto._generate_landscapes(
+        projectionsX, homology_dims=range(0, max_homology_dim + 1)
+    )
+    assert n_projections == len(test_landscapesX)
+    assert presto.max_homology_dim == len(test_landscapesX[0]) - 1
 
-    def test_normalize_space(self):
-        pass
 
-    def test_fit(self):
-        pass
+def test_average_landscape(presto, landscapesX, max_homology_dim):
+    landscapeX = presto._average_landscape(landscapesX)
+    assert max_homology_dim == len(landscapeX) - 1
 
-    def test_fit_transform(self):
-        pass
 
-    def tearDown(self) -> None:
-        pass
+def test_compute_presto_scores(
+    presto, landscapeX, landscapeX2, landscapeY, X, n_projections
+):
+    scores_different = presto.compute_presto_scores(
+        landscapeX, landscapeY, score_type="aggregate"
+    )
+    assert scores_different != 0
+    scores_same = presto.compute_presto_scores(
+        landscapeX, landscapeX2, score_type="aggregate"
+    )
+    assert scores_same == 0
+    assert 0 == presto.fit_transform(
+        X,
+        X,
+        score_type="aggregate",
+        n_projections=n_projections,
+    )
+
+
+def test_compute_landscape_norm(toy_landscape, toy_landscape_norm):
+    computed_norm = Presto._compute_landscape_norm(
+        toy_landscape, score_type="separate"
+    )
+    assert set(toy_landscape_norm.keys()) == set(computed_norm.keys())
+    for key in toy_landscape_norm.keys():
+        assert (
+            pytest.approx(toy_landscape_norm[key], 0.000000000001)
+            == computed_norm[key]
+        )
+
+
+def test_compute_landscape_norm_means(
+    toy_landscape, toy_landscape2, toy_landscape_norm, toy_landscape_norm2
+):
+    dict_mean = {
+        i: (toy_landscape_norm[i] + toy_landscape_norm2[i]) / 2
+        for i in toy_landscape_norm.keys()
+    }
+    computed_means = Presto._compute_landscape_norm_means(
+        [toy_landscape, toy_landscape2],
+    )
+    assert set(dict_mean.keys()) == set(computed_means.keys())
+    for key in dict_mean.keys():
+        assert (
+            pytest.approx(dict_mean[key], 0.000000000001) == computed_means[key]
+        )
+
+
+def test_compute_presto_variance(presto, toy_landscapes):
+    landscape_norm_means, landscape_norms = (
+        Presto._compute_landscape_norm_means(toy_landscapes, return_norms=True)
+    )
+    expected = sum(
+        [
+            sum(
+                [
+                    (L[dim] - landscape_norm_means[dim]) ** 2
+                    for L in landscape_norms
+                ]
+            )
+            for dim in presto.homology_dims
+        ]
+    ) / len(landscape_norms)
+    assert expected == presto.compute_presto_variance(toy_landscapes)
+
+
+def test_compute_presto_coordinate_sensitivity(presto, toy_landscapes):
+    expected = np.sqrt(presto.compute_presto_variance(toy_landscapes))
+    assert expected == presto.compute_presto_coordinate_sensitivity(
+        toy_landscapes
+    )
+
+
+def test_compute_local_presto_sensitivity(
+    presto, toy_landscapes, toy_landscapes2
+):
+    v1 = presto.compute_presto_variance(toy_landscapes)
+    v2 = presto.compute_presto_variance(toy_landscapes2)
+    expected = np.sqrt((v1 + v2) / 2)
+    assert expected == presto.compute_local_presto_sensitivity(
+        [toy_landscapes, toy_landscapes2]
+    )
+
+
+def test_compute_global_presto_sensitivity(
+    presto, toy_landscapes, toy_landscapes2
+):
+    prestosensitivity_1 = presto.compute_local_presto_sensitivity(
+        [toy_landscapes, toy_landscapes2]
+    )
+    prestosensitivity_2 = presto.compute_local_presto_sensitivity(
+        [toy_landscapes2, toy_landscapes]
+    )
+    expected = (prestosensitivity_1 + prestosensitivity_2) / 2
+    assert expected == presto.compute_global_presto_sensitivity(
+        [[toy_landscapes, toy_landscapes2]]
+    )
