@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "presto"
 version = "0.1.0"
-description = ""
-authors = ["jeremy.wayland <jeremy.don.wayland@gmail.com>"]
+description = "Presto: Projected Embedding Similarty based on Topological Overlays"
+authors = ["jeremy.wayland <jeremy.don.wayland@gmail.com>","corrina.coupette <coupette@mpi-inf.mpg.de>","Bastian Rieck <bastian@rieck.me>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
