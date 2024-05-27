@@ -9,7 +9,7 @@ import os
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from scipy.sparse import coo_array
-from presto.compare.presto import Presto
+from presto.presto import Presto
 from sklearn.decomposition import PCA
 
 
@@ -137,7 +137,6 @@ class Atom:
 
         return self.clustering
 
-    # TODO untested
     def compute_set_cover(self, epsilon):
         """
         Compute a set of representatives for a given set of embeddings
@@ -146,23 +145,21 @@ class Atom:
         the set of representatives will be at most H(k) \in O(log k) times the size
         of the optimum.
         """
-        # Log Set Cover Parameters
-        self.set_cover_epsilon = epsilon
-
         # Compute Set Cover
-        self.compute_MMS()
-        self.set_cover = self._compute_set_cover()
+        if self.MMS is None:
+            self.compute_MMS()
 
-        return self.set_cover
+        G = self._set_cover_graph(self.MMS, epsilon)
+        set_cover = self._compute_set_cover(G)
 
-    # TODO untested + naive implementation (but scalability is probably not an issue here)
-    # TODO do we really want to set attributes _and_ return their values?
-    def _compute_set_cover(self):
+        return set_cover
+
+    @staticmethod
+    def _compute_set_cover(G_original):
         """
         Compute a set-cover approximation based on a greedy bipartite-graph heuristic.
         """
-        self.set_cover_representatives = dict()
-        G_original = self._set_cover_graph()
+        set_cover_representatives = dict()
         G = G_original.copy(as_view=False)
         right = {i for i in G.nodes() if i[-1] == 1}
         while right:
@@ -170,32 +167,29 @@ class Atom:
                 {(i, G.out_degree(i)) for i in G.nodes() if i[-1] == 0},
                 key=lambda tup: tup[-1],
             )
-            self.set_cover_representatives[rep[0]] = sorted(
+            set_cover_representatives[rep[0]] = sorted(
                 [i[0] for i in G_original.successors(rep)]
             )
             current_successors = list(G.successors(rep))
             G.remove_nodes_from([rep, *current_successors])
             right -= set(current_successors)
-        return self.set_cover_representatives
+        return set_cover_representatives
 
-    # TODO untested
-    def _set_cover_graph(self):
+    @staticmethod
+    def _set_cover_graph(MMS, epsilon):
         """
         Construct a bipartite graph for set-cover approximation.
         Left node set has 0 as second coordinate, right node set has 1 as second coordinate.
         There is an edge from (i,0) to (j,1) if the distance between i and j is at most epsilon.
         TODO: At most or less than?
         """
-        n_probes = self.MMS.shape[0]
+        n_probes = MMS.shape[0]
         G = nx.DiGraph()
         G.add_nodes_from([(i, 0) for i in range(n_probes)])
         G.add_nodes_from([(i, 1) for i in range(n_probes)])
         for i in range(n_probes):
             edges = [
-                ((i, 0), (j, 1))
-                for j in np.argwhere(
-                    self.MMS[i] <= self.set_cover_epsilon
-                ).ravel()
+                ((i, 0), (j, 1)) for j in np.argwhere(MMS[i] <= epsilon).ravel()
             ]
             if edges:
                 G.add_edges_from(edges)
