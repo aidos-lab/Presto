@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
-import utils
+import presto.generate.utils as utils
 
 
 @dataclass(frozen=True)
@@ -35,23 +35,30 @@ class Meta:
 
 @dataclass
 class DimReductionConfig:
-    name: str = "Dim Reduction"
-    module: str = "dim_reduction.dr"
+    name: str = "DimReduction"
+    module: str = "presto.generate.dim_reduction.dr"
     seed: int = 42
 
 
 @dataclass
 class AutoEncoderConfig:
     name: str = "Autoencoder"
-    module: str = "autoencoders.ae"
+    module: str = "presto.generate.autoencoders.ae"
     seed: int = 42
 
 
 @dataclass
 class TransformerConfig:
     name: str = "Transformer"
-    module: str = "transformers.tf"
+    module: str = "presto.generate.transformers.tf"
     seed: int = 42
+
+
+generator_mapping = {
+    "Autoencoder": "AutoEncoderConfig",
+    "DimReduction": "DimReductionConfig",
+    "Transformer": "TransformerConfig",
+}
 
 
 #  ╭──────────────────────────────────────────────────────────╮
@@ -63,7 +70,7 @@ class TransformerConfig:
 @dataclass
 class DataModuleConfig(Protocol):
     module: str
-    data_dir: str = f"{utils.project_root_dir()}" + "data/"
+    data_dir: str = "data/"
     num_workers: int = 8
     batch_size: int = 64
     pin_memory: bool = False
