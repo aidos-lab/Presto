@@ -1,3 +1,8 @@
-__version__ = "0.1.0"
-from .compare.presto import Presto
-from .compare.atom import Atom
+from .presto import Presto
+from .atom import Atom
+
+
+__all__ = [
+    "Atom",
+    "Presto",
+]
