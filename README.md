@@ -25,8 +25,8 @@ from sklearn.random_projection import GaussianRandomProjection as Gauss
 
 #Compare Two Embeddings X,Y based on a collection of low-dimensional random embeddings
 
-X = np.random.rand((1000,10))
-Y = np.random.rand((1000,12))
+X = np.random.rand(1000,10)
+Y = np.random.rand(1000,12)
 
 presto = Presto(projector=Gauss)
 
@@ -45,10 +45,10 @@ import numpy as np
 from presto import Atom
 
 # A list of embeddings in the multiverse
-data = [np.random(10, 10) for _ in range(3)]
+data = [np.random.rand(100, 10) for _ in range(3)]
 
 atom = Atom(data)
-atom.compute_MMS(parallel=True)
+atom.compute_MMS(parallelize=True)
 print(atom.MMS)
 ```
 
