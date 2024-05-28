@@ -1,6 +1,6 @@
 # Presto 🎶
 
-## Confidently and efficiently navigate the multiverse with `Presto` 🧭🚀
+## Confidently and efficiently navigate the multiverse 🧭🚀
 
 The world of machine learning research is riddled with small decisions, from data collection, cleaning, into model selection and parameter tuning. Each combination of data, implementation, and modeling decisions leads to a potential universe where we can analyze and interpret results. Together, these form a multiverse! 🌌
 
