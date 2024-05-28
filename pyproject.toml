@@ -1,9 +1,13 @@
 [tool.poetry]
-name = "presto"
+name = "presto-multiverse"
 version = "0.1.0"
 description = "Presto: Projected Embedding Similarty based on Topological Overlays"
 authors = ["jeremy.wayland <jeremy.don.wayland@gmail.com>","corrina.coupette <coupette@mpi-inf.mpg.de>","Bastian Rieck <bastian@rieck.me>"]
 readme = "README.md"
+license = "BSD-3"
+packages = [
+    { include = "presto", from = "." },
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
