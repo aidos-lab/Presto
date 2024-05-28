@@ -12,7 +12,7 @@ In this project, we focus on mapping out the multiverse of latent representation
 
 You can install Presto using pip:
 
-`pip install Presto`
+`pip install presto-multiverse`
 
 ## Basic Usage
 
