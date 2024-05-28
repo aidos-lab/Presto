@@ -78,117 +78,115 @@ class Atom:
         self.multiverse_size = len(data)
         self.MMS = None
         self.seed = seed
-    
+
     def compute_MMS(
         self,
         projector=PCA,
-            self,
-            projector=PCA,
-            n_projections: int = 1,
-            score_type: str = "aggregate",
-            n_components: int = 2,
-            normalize: bool = False,
-            max_homology_dim: int = 1,
-            resolution: int = 100,
-            normalization_approx_iterations: int = 1000,
-            parallelize=True,
-        ):
-            """
-            Compute a multiverse metric space (MMS).
+        n_projections: int = 1,
+        score_type: str = "aggregate",
+        n_components: int = 2,
+        normalize: bool = False,
+        max_homology_dim: int = 1,
+        resolution: int = 100,
+        normalization_approx_iterations: int = 1000,
+        parallelize=True,
+    ):
+        """
+        Compute a multiverse metric space (MMS).
 
-            Parameters:
-            ----------
-            projector : class, optional
-                The class of the projection method to use. Default is PCA.
-            n_projections : int, optional
-                The number of projections to use for computing the Presto score. Default is 1.
-            score_type : str, optional
-                The type of score to compute. Must be either "aggregate" or "average". Default is "aggregate".
-            n_components : int, optional
-                The number of components to keep in the projected space. Default is 2.
-            normalize : bool, optional
-                Whether to normalize the data before computing the Presto score. Default is False.
-            max_homology_dim : int, optional
-                The maximum homology dimension to consider when computing the Presto score. Default is 1.
-            resolution : int, optional
-                The resolution parameter for computing the Presto score. Default is 100.
-            normalization_approx_iterations : int, optional
-                The number of iterations to use for the normalization approximation. Default is 1000.
-            parallelize : bool, optional
-                Whether to parallelize the computation. Default is True.
+        Parameters:
+        ----------
+        projector : class, optional
+            The class of the projection method to use. Default is PCA.
+        n_projections : int, optional
+            The number of projections to use for computing the Presto score. Default is 1.
+        score_type : str, optional
+            The type of score to compute. Must be either "aggregate" or "average". Default is "aggregate".
+        n_components : int, optional
+            The number of components to keep in the projected space. Default is 2.
+        normalize : bool, optional
+            Whether to normalize the data before computing the Presto score. Default is False.
+        max_homology_dim : int, optional
+            The maximum homology dimension to consider when computing the Presto score. Default is 1.
+        resolution : int, optional
+            The resolution parameter for computing the Presto score. Default is 100.
+        normalization_approx_iterations : int, optional
+            The number of iterations to use for the normalization approximation. Default is 1000.
+        parallelize : bool, optional
+            Whether to parallelize the computation. Default is True.
 
-            Returns:
-            -------
-            None
+        Returns:
+        -------
+        None
 
-            Examples:
-            ---------
-            >>> # Compute MMS with default parameters
-            >>> atom.compute_MMS()
+        Examples:
+        ---------
+        >>> # Compute MMS with default parameters
+        >>> atom.compute_MMS()
 
-            >>> # Compute MMS with custom parameters
-            >>> atom.compute_MMS(projector=Gauss, n_projections=100, n_components=3, score_type="average", normalize=True, max_homology_dim=2, resolution=100, normalization_approx_iterations=1000, parallelize=True)
-            """
-            if score_type not in ["aggregate", "average"]:
-                raise NotImplementedError(score_type)
+        >>> # Compute MMS with custom parameters
+        >>> atom.compute_MMS(projector=Gauss, n_projections=100, n_components=3, score_type="average", normalize=True, max_homology_dim=2, resolution=100, normalization_approx_iterations=1000, parallelize=True)
+        """
+        if score_type not in ["aggregate", "average"]:
+            raise NotImplementedError(score_type)
 
-            data_indices = list(range(self.multiverse_size))
-            pairs = list(itertools.combinations(data_indices, 2))
-            n_pairs = len(pairs)
+        data_indices = list(range(self.multiverse_size))
+        pairs = list(itertools.combinations(data_indices, 2))
+        n_pairs = len(pairs)
 
-            def compute_distance(pair):
-                i, j = pair
-                X, Y = self.data[i], self.data[j]
-                if np.isnan(X).any() or np.isnan(Y).any():
-                    return np.nan, i, j
-                else:
-                    return (
-                        Presto(
-                            projector=projector,
-                            max_homology_dim=max_homology_dim,
-                            resolution=resolution,
-                        ).fit_transform(
-                            X,
-                            Y,
-                            n_components=n_components,
-                            normalize=normalize,
-                            n_projections=n_projections,
-                            score_type=score_type,
-                            normalization_approx_iterations=normalization_approx_iterations,
-                            seed=self.seed,
-                        ),
-                        i,
-                        j,
-                    )
-
-            if parallelize:
-                with ThreadPoolExecutor(max_workers=os.cpu_count() - 2) as executor:
-                    # scores now have the shape (data, row, col)
-                    scores = tqdm(
-                        list(executor.map(compute_distance, pairs)),
-                        total=n_pairs,
-                        unit="universes",
-                        desc="Computing Presto Distances",
-                    )
+        def compute_distance(pair):
+            i, j = pair
+            X, Y = self.data[i], self.data[j]
+            if np.isnan(X).any() or np.isnan(Y).any():
+                return np.nan, i, j
             else:
-                scores = list()
-                for pair in tqdm(
-                    pairs,
+                return (
+                    Presto(
+                        projector=projector,
+                        max_homology_dim=max_homology_dim,
+                        resolution=resolution,
+                    ).fit_transform(
+                        X,
+                        Y,
+                        n_components=n_components,
+                        normalize=normalize,
+                        n_projections=n_projections,
+                        score_type=score_type,
+                        normalization_approx_iterations=normalization_approx_iterations,
+                        seed=self.seed,
+                    ),
+                    i,
+                    j,
+                )
+
+        if parallelize:
+            with ThreadPoolExecutor(max_workers=os.cpu_count() - 2) as executor:
+                # scores now have the shape (data, row, col)
+                scores = tqdm(
+                    list(executor.map(compute_distance, pairs)),
                     total=n_pairs,
                     unit="universes",
                     desc="Computing Presto Distances",
-                ):
-                    scores.append(compute_distance(pair))
+                )
+        else:
+            scores = list()
+            for pair in tqdm(
+                pairs,
+                total=n_pairs,
+                unit="universes",
+                desc="Computing Presto Distances",
+            ):
+                scores.append(compute_distance(pair))
 
-            values = list(map(lambda tup: tup[0], scores))
-            rows = list(map(lambda tup: tup[1], scores))
-            cols = list(map(lambda tup: tup[2], scores))
+        values = list(map(lambda tup: tup[0], scores))
+        rows = list(map(lambda tup: tup[1], scores))
+        cols = list(map(lambda tup: tup[2], scores))
 
-            self.MMS = coo_array(
-                (values, (rows, cols)),
-                shape=(self.multiverse_size, self.multiverse_size),
-            ).todense()
-            self.MMS += self.MMS.T
+        self.MMS = coo_array(
+            (values, (rows, cols)),
+            shape=(self.multiverse_size, self.multiverse_size),
+        ).todense()
+        self.MMS += self.MMS.T
 
     def save_mms(self, path: str):
         """
@@ -318,7 +316,6 @@ class Atom:
         set_cover = self._compute_set_cover(G)
 
         return set_cover
-    
 
     @staticmethod
     def _compute_set_cover(G_original):
