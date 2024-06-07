@@ -3,6 +3,10 @@
 .venv
 notebooks
 .vscode
+.venv
+__pycache__
+*.md
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
