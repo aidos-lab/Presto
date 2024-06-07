@@ -2,16 +2,16 @@ from dataclasses import dataclass
 
 from umap import UMAP
 
-from ..dr import DimReductionConfig, DimReductionModule
+from ..dr import DimReductionModule
 
 
-@dataclass
-class UMAPConfig(DimReductionConfig):
-    n_neighbors: int = 15
-    min_dist: float = 0.1
-    init: str = "spectral"
-    metric: str = "euclidean"
-    dim: int = 2
+# @dataclass
+# class UMAPConfig(DimReductionConfig):
+#     n_neighbors: int = 15
+#     min_dist: float = 0.1
+#     init: str = "spectral"
+#     metric: str = "euclidean"
+#     dim: int = 2
 
 
 class UMAPProjector(DimReductionModule):
