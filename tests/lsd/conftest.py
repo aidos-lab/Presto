@@ -137,14 +137,51 @@ def test_nested_dict():
 
 
 @pytest.fixture
-def test_dict3():
-    return {
-        "celebA": {
-            "batch_size": [64, 128],
-            "train_test_split": [[0.6, 0.3, 0.1]],
-        },
-        "MNIST": {
-            "batch_size": [64, 128],
-            "train_test_split": [[0.6, 0.3, 0.1]],
-        },
-    }
+def test_multiverse3():
+    return """
+    data_choices:
+      DimReduction:
+        MNIST:
+          samples:
+            - 1000
+            - 10000
+
+    model_choices:
+      DimReduction:
+        UMAP:
+          nn:
+            - 16
+            - 20
+          min_dist:
+            - 0
+        tSNE:
+          perplexity:
+            - 15
+            - 30
+
+    implementation_choices:
+      DimReduction:
+        Thread:
+          n_jobs:
+            - 1
+            - -1
+    """
+
+
+@pytest.fixture
+def test_dict3(test_multiverse3):
+    config = OmegaConf.create(test_multiverse3)
+    return config
+
+
+@pytest.fixture
+def test_yaml3_file(test_multiverse3):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_multiverse3)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
