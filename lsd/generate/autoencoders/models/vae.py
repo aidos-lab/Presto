@@ -10,14 +10,13 @@ from abc import abstractmethod
 
 import numpy as np
 import torch
-from config import AutoEncoderConfig
 from torch import Tensor, nn
 
 from .types_ import *
 
 
-class VAE(nn.Module):
-    def __init__(self, config: AutoEncoderConfig):
+class BaseVAE(nn.Module):
+    def __init__(self, config):
         super(VAE, self).__init__()
         self.config = config
 
@@ -160,9 +159,9 @@ class VAE(nn.Module):
         encoder = nn.Sequential(*modules)
 
         # Tracking Encoder Shapes
-        encoded_shape = encoder(torch.rand(1, in_channels, img_size, img_size)).shape[
-            1:
-        ]
+        encoded_shape = encoder(
+            torch.rand(1, in_channels, img_size, img_size)
+        ).shape[1:]
         num_features = functools.reduce(
             operator.mul,
             list(encoded_shape),

@@ -2,8 +2,6 @@ import functools
 import operator
 
 import torch
-from loaders.factory import register
-from torch import nn
 from torch.nn import functional as F
 
 from .types_ import *
@@ -56,4 +54,4 @@ class BetaVAE(BaseVAE):
 
 
 def initialize():
-    register("vae", BetaVAE)
+    return BetaVAE
