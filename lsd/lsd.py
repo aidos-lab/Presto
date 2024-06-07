@@ -11,7 +11,11 @@ class LSD:
     def __init__(
         self,
         multiverseConfig,
-        labels=["data_choices", "model_choices", "implementation_choices"],
+        labels: list = [
+            "data_choices",
+            "model_choices",
+            "implementation_choices",
+        ],
     ):
         try:
             self.cfg = getattr(config, multiverseConfig)
@@ -37,6 +41,7 @@ class LSD:
     def multiverse(self):
         if self._multiverse is None:
             self._load_multiverse()
+
         return self._multiverse
 
     @multiverse.setter
@@ -44,13 +49,13 @@ class LSD:
         assert isinstance(multiverse, dict) or isinstance(
             multiverse, omegaconf.dictconfig.DictConfig
         ), "Multiverse must be a dictionary."
-
+        self._multiverse = {}
         for label in self.multiverse_labels:
             assert (
                 label in multiverse.keys()
             ), f"Multiverse must have {label} key."
             self.__setattr__(label, multiverse[label])
-        self._multiverse = multiverse
+            self._multiverse[label] = multiverse[label][self.cfg.base]
 
     def design(self):
         """Read in Multiverse configuration, create a direct product, and write individual config files for each model in the multiverse."""
@@ -58,22 +63,21 @@ class LSD:
         if self._multiverse is None:
             self._load_multiverse()
 
-        for label in self.multiverse_labels:
-            choices = self._multiverse[label]
-            for generator, parameters in choices.items():
-                keys = list(parameters.keys())
-                vectors = list(product(*list(parameters.values())))
+        print(self._multiverse)
+        generators = product(*list(self._multiverse.values()))
 
-        # for choice, tag in zip(
-        #     [self.D, self.M, self.I],
-        #     self.multiverse_labels,
-        # ):
-        #     choices = {}
-        #     for generator, parameters in choice.items():
-        #         keys = list(parameters.keys())
-        #         vectors = list(product(*list(parameters.values())))
-        #         choices[generator] = (keys, vectors)
-        #     self._multiverse[tag] = choices
+        module = importlib.import_module(self.cfg.module)
+        for D, M, I in generators:
+            Dconfig = getattr(module, D)
+            Mconfig = getattr(module, M)
+            Iconfig = getattr(module, I)
+
+            print(Dconfig.name, Mconfig.name, Iconfig.name)
+
+        base = getattr(module, self.cfg.base)
+        print(base)
+
+        # Given 3 config objects, assign each a vector in the
 
     def generate(self):
 
@@ -101,10 +105,10 @@ class LSD:
             params = self.filter_params(
                 getattr(self.cfg, label),
                 label,
-                self.cfg.id_,
+                self.cfg.base,
             )
             self.__setattr__(label, params)
-            self._multiverse[label] = getattr(self.cfg, label)
+            self._multiverse[label] = params
 
     @staticmethod
     def load_generator(module):
@@ -133,7 +137,7 @@ class LSD:
     def filter_params(
         path: str,
         choices: str,
-        id_: str,
+        base: str,
     ):
         content = LSD.load_params(path)
-        return content.get(choices).get(id_)
+        return content.get(choices).get(base)
