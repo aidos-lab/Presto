@@ -1,4 +1,4 @@
-from ..base import Base
+from lsd import Base
 
 
 class DimReduction(Base):
