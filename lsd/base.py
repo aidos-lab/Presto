@@ -5,9 +5,6 @@ from abc import ABC, abstractmethod
 #  ╰──────────────────────────────────────────────────────────╯
 
 
-# Train/generate for all configs in the multiverse
-
-
 class Base(ABC):
     def __init__(self, params: dict):
         self.params = params
