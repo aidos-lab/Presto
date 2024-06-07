@@ -51,31 +51,31 @@ def test_filter_params(test_dict1, test_yaml1_file):
     lsd.cfg.data_choices = test_yaml1_file
     lsd.cfg.implementation_choices = test_yaml1_file
 
-    assert lsd.cfg.id_ == "Autoencoder"
+    assert lsd.cfg.base == "Autoencoder"
 
     with pytest.raises(AttributeError):
         lsd.filter_params(
             path=lsd.cfg.data_choices,
             choices="NonExistent",
-            id_="Autoencoder",
+            base="Autoencoder",
         )
 
     assert (
         lsd.filter_params(
             path=lsd.cfg.data_choices,
             choices="model_choices",
-            id_="Autoencoder",
+            base="Autoencoder",
         )
         is None
     )
 
     D = lsd.filter_params(
-        path=lsd.cfg.data_choices, choices="data_choices", id_=lsd.cfg.id_
+        path=lsd.cfg.data_choices, choices="data_choices", base=lsd.cfg.base
     )
     I = lsd.filter_params(
         path=lsd.cfg.implementation_choices,
         choices="implementation_choices",
-        id_=lsd.cfg.id_,
+        base=lsd.cfg.base,
     )
 
     assert D == test_dict1["data_choices"]["Autoencoder"]
@@ -125,3 +125,18 @@ def test_load_generator(test_yaml2_file):
 
     with pytest.raises(ImportError):
         lsd.load_generator("non_existent_module")
+
+
+def test_design(test_yaml2_file, test_dict3):
+    ae_lsd = LSD("AutoencoderMultiverse")
+
+    ae_lsd.cfg.model_choices = test_yaml2_file
+    ae_lsd.cfg.data_choices = test_yaml2_file
+    ae_lsd.cfg.implementation_choices = test_yaml2_file
+
+    ae_lsd.design()
+
+    dr_lsd = LSD("DimReductionMultiverse")
+
+    dr_lsd.multiverse = test_dict3
+    dr_lsd.design()
