@@ -1,38 +1,48 @@
 from dataclasses import dataclass
+from typing import Any
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │ Multiverse Configurations                                │
 #  ╰──────────────────────────────────────────────────────────╯
 
 
+@dataclass(frozen=True)
+class Multiverse:
+    meta: Any
+    data_choices: Any
+    model_choices: Any
+    implementation_choices: Any
+
+
 @dataclass
 class Guide:
-    id_: str = "Unpack all parameters under this ID to create multiverse"
-    data_choices: str = "A path to a yaml file containing data choices."
-    model_choices: str = "A path to yaml file containing model choices"
-    implementation_choices: str = "/design/implementation/ae.yaml"
-    base: str = "lsd.generate.autoencoders.ae"
-    generators: str = "lsd.generate.autoencoders.models"
+    base: str = (
+        "Class name of the base generator: unpacks all parameters under this ID to create multiverse."
+    )
+    data_choices: str = "Path to yaml file with data choices."
+    model_choices: str = "Path to yaml file with model choices"
+    implementation_choices: str = (
+        "Path to yaml file with implementation choices"
+    )
+    module: str = "Path to module Generator Module"
 
 
 @dataclass
 class AutoencoderMultiverse:
-    id_: str = "Autoencoder"
+    base: str = "Autoencoder"
+    module: str = "lsd.generate.autoencoders"
     data_choices: str = "lsd/design/data/ae.yaml"
     model_choices: str = "lsd/design/model/ae.yaml"
     implementation_choices: str = "/design/implementation/ae.yaml"
-    base: str = "lsd.generate.autoencoders.ae"
-    generators: str = "lsd.generate.autoencoders.models"
 
 
 @dataclass
 class DimReductionMultiverse:
-    id_: str = "DimReduction"
+    base: str = "DimReduction"
+    module: str = "lsd.generate.dim_reductions"
     model_choices: str = "lsd/design/model/dr.yaml"
     data_choices: str = "lsd/design/data/dr.yaml"
     implementation_choices: str = "/design/implementation/dr.yaml"
-    base: str = "lsd.generate.dim_reduction.dr"
-    generators: str = "lsd.generate.dim_reductions.models"
 
 
 @dataclass
@@ -41,8 +51,8 @@ class TransformerMultiverse:
     model_choices: str = "lsd/design/model/tf.yaml"
     data_choices: str = "lsd/design/data/tf.yaml"
     implementation_choices: str = "/design/implementation/tf.yaml"
+    module: str = "lsd.generate.transformers"
     base: str = "lsd.generate.transformers.tf"
-    generators: str = "lsd.generate.transformers.models"
 
 
 # Development Stub
