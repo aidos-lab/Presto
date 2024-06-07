@@ -2,7 +2,7 @@ import os
 
 from .gym import Gym
 
-from ..base import Base
+from lsd import Base
 
 
 class Autoencoder(Base):
@@ -46,11 +46,6 @@ class Autoencoder(Base):
     @staticmethod
     def read_trainer_params(params: dict):
         pass
-
-
-# def initialize(registry: dict):
-#     registry["generator"] = Autoencoder
-#     return registry
 
 
 def initialize():
