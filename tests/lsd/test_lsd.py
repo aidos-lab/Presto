@@ -3,6 +3,9 @@ import omegaconf
 from itertools import product
 
 from lsd.lsd import LSD
+from lsd.generate.autoencoders.models.beta import BetaVAE
+
+# from lsd.generate.dim_reductions.models.umap import UMAP
 from lsd import utils as ut
 from lsd.config import AutoencoderMultiverse
 
@@ -13,6 +16,9 @@ def test_cfg():
 
     with pytest.raises(ValueError):
         lsd = LSD("TestMultiverse")
+
+    with pytest.raises(AssertionError):
+        lsd = LSD("CustomMultiverse")
 
 
 def test_load_params(test_dict1, test_yaml1_file):
@@ -76,32 +82,46 @@ def test_filter_params(test_dict1, test_yaml1_file):
     assert I == test_dict1["implementation_choices"]["Autoencoder"]
 
 
-def test_get_all_keys(test_nested_dict):
-
-    assert set(ut.get_all_keys(test_nested_dict)) == set(
-        [
-            "Test1",
-            "Test1.Test2",
-            "Test1.Test3",
-            "Test1.Test2.Test4",
-        ]
-    )
-
-
-def test_load_multiverse(test_yaml1_file, test_yaml2_file):
+def test_multiverse_getter_setter(
+    test_dict1,
+    test_dict2,
+    test_nested_dict,
+    test_yaml1_file,
+    test_yaml2_file,
+):
     lsd = LSD("AutoencoderMultiverse")
+
+    lsd.multiverse = test_dict2
+
+    assert lsd._multiverse is not None
+
+    with pytest.raises(AssertionError):
+        lsd.multiverse = test_nested_dict
+
+    assert lsd.data_choices == test_dict2["data_choices"]
+    assert lsd.model_choices == test_dict2["model_choices"]
+    assert lsd.implementation_choices == test_dict2["implementation_choices"]
 
     lsd.cfg.model_choices = test_yaml1_file
     lsd.cfg.data_choices = test_yaml1_file
     lsd.cfg.implementation_choices = test_yaml1_file
 
-    with pytest.raises(AssertionError):
-        lsd.load_multiverse()
-
     lsd.cfg.model_choices = test_yaml2_file
 
-    multiverse = lsd.multiverse
+    assert lsd.multiverse is not None
+    assert lsd.data_choices == test_dict1["data_choices"]
+    assert lsd.model_choices != test_dict1["model_choices"]
+    assert lsd.model_choices == test_dict2["model_choices"]
+    assert lsd.implementation_choices == test_dict1["implementation_choices"]
 
-    assert type(lsd.D) == omegaconf.dictconfig.DictConfig
-    assert type(lsd.M) == omegaconf.dictconfig.DictConfig
-    assert type(lsd.I) == omegaconf.dictconfig.DictConfig
+
+def test_load_generator(test_yaml2_file):
+    lsd = LSD("AutoencoderMultiverse")
+
+    assert isinstance(
+        lsd.load_generator("lsd.generate.autoencoders.models.beta"),
+        type(BetaVAE),
+    )
+
+    with pytest.raises(ImportError):
+        lsd.load_generator("non_existent_module")
