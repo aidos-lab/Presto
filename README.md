@@ -8,6 +8,18 @@ In this project, we focus on mapping out the multiverse of latent representation
 
 `Presto`, our *Pr*ojected *E*mbedding *S*imilarity based on *T*opological *O*verlays. 🔍✨
 
+If you happen to find `Presto` useful, please cite:
+
+```
+@inproceedings{wayland2024mapping,
+	title={Mapping the multiverse of latent representations},
+	author={Wayland, Jeremy and Coupette†, Corinna and Rieck†, Bastian},
+	booktitle={International Conference on Machine Learning (ICML)},
+	pages={to appear},
+	year={2024}
+}
+```
+
 ## Installation
 
 You can install Presto using pip:
