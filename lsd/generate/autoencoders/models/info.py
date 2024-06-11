@@ -2,12 +2,9 @@ import functools
 import operator
 
 import torch
-from loaders.factory import register
-from torch import nn
 from torch.nn import functional as F
 
-from .types_ import *
-from .vae import BaseVAE
+from lsd.generate.autoencoders.models.vae import BaseVAE
 
 
 class InfoVAE(BaseVAE):
@@ -49,7 +46,10 @@ class InfoVAE(BaseVAE):
             "MMD": mmd_loss,
             "KLD": -kld_loss,
         }
-     def compute_kernel(self, x1: Tensor, x2: Tensor) -> Tensor:
+
+    def compute_kernel(
+        self, x1: torch.tensor, x2: torch.tensor
+    ) -> torch.tensor:
         # Convert the tensors into row and column vectors
         D = x1.size(1)
         N = x1.size(0)
@@ -74,11 +74,13 @@ class InfoVAE(BaseVAE):
 
         return result
 
-    def compute_rbf(self, x1: Tensor, x2: Tensor, eps: float = 1e-7) -> Tensor:
+    def compute_rbf(
+        self, x1: torch.tensor, x2: torch.tensor, eps: float = 1e-7
+    ) -> torch.tensor:
         """
         Computes the RBF Kernel between x1 and x2.
-        :param x1: (Tensor)
-        :param x2: (Tensor)
+        :param x1: (torch.tensor)
+        :param x2: (torch.tensor)
         :param eps: (Float)
         :return:
         """
@@ -89,15 +91,15 @@ class InfoVAE(BaseVAE):
         return result
 
     def compute_inv_mult_quad(
-        self, x1: Tensor, x2: Tensor, eps: float = 1e-7
-    ) -> Tensor:
+        self, x1: torch.tensor, x2: torch.tensor, eps: float = 1e-7
+    ) -> torch.tensor:
         """
         Computes the Inverse Multi-Quadratics Kernel between x1 and x2,
         given by
 
                 k(x_1, x_2) = \sum \frac{C}{C + \|x_1 - x_2 \|^2}
-        :param x1: (Tensor)
-        :param x2: (Tensor)
+        :param x1: (torch.tensor)
+        :param x2: (torch.tensor)
         :param eps: (Float)
         :return:
         """
@@ -110,7 +112,7 @@ class InfoVAE(BaseVAE):
 
         return result
 
-    def compute_mmd(self, z: Tensor) -> Tensor:
+    def compute_mmd(self, z: torch.tensor) -> torch.tensor:
         # Sample from prior (Gaussian) distribution
         prior_z = torch.randn_like(z)
 
@@ -118,9 +120,13 @@ class InfoVAE(BaseVAE):
         z__kernel = self.compute_kernel(z, z)
         priorz_z__kernel = self.compute_kernel(prior_z, z)
 
-        mmd = prior_z__kernel.mean() + z__kernel.mean() - 2 * priorz_z__kernel.mean()
+        mmd = (
+            prior_z__kernel.mean()
+            + z__kernel.mean()
+            - 2 * priorz_z__kernel.mean()
+        )
         return mmd
 
 
 def initialize():
-    register("vae", InfoVAE)
+    return InfoVAE

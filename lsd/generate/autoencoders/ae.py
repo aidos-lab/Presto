@@ -1,5 +1,4 @@
-import os
-
+import importlib
 from .gym import Gym
 
 from lsd import Base
@@ -8,13 +7,15 @@ from lsd import Base
 class Autoencoder(Base):
     def __init__(self, params: dict):
         super().__init__(params)
-        self.cfg_folder = self.setup(params)
+        self.setup()
 
     def setup(self):
-        "process and unpack the parameters into their proper configs."
         print("Setting up Autoencoder")
-        path = "path/to/ae/configs/"
-        return path
+        self.model = importlib.import_module(
+            self.params.model_choices.module
+        ).initialize()
+
+        print(self.model)
 
     def train(self):
         """Train a list of autoencoder configurations."""

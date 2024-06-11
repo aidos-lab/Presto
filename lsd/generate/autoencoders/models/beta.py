@@ -1,11 +1,8 @@
-import functools
-import operator
-
 import torch
 from torch.nn import functional as F
 
-from .types_ import *
-from .vae import BaseVAE
+
+from lsd.generate.autoencoders.models.vae import BaseVAE
 
 
 class BetaVAE(BaseVAE):

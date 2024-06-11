@@ -33,6 +33,7 @@ class LSD:
             self.__setattr__(label, None)
         self.multiverse_labels = labels
         self._multiverse = None
+        self.design_path = None
 
         assert os.path.isdir(outDir), "Output directory must be specified."
         self.outDir = outDir
@@ -84,12 +85,12 @@ class LSD:
         if self._multiverse is None:
             self._load_multiverse()
 
-        module = importlib.import_module(self.cfg.module)
+        self.module = importlib.import_module(self.cfg.module)
         universes = []
         for label, generators in self.generators.items():
             configs = []
             for G in generators:
-                gen_cfg = getattr(module, G)
+                gen_cfg = getattr(self.module, G)
                 params, vectors = self._design_parameter_space(
                     gen_cfg, label, G
                 )
@@ -98,32 +99,27 @@ class LSD:
                     configs.append(ut.LoadClass.instantiate(gen_cfg, data))
             universes.append(configs)
 
+        self.design_path = os.path.join(
+            self.outDir, f"{self.experimentName}/configs/"
+        )
         for i, U in enumerate(product(*universes)):
             universe = config.Universe(*U)
-            outPath = os.path.join(
-                self.outDir, f"{self.experimentName}/configs/universe_{i}.yml"
-            )
+            outPath = os.path.join(self.design_path, f"universe_{i}.yml")
             self.write_cfg(outPath, universe)
 
     def generate(self):
 
-        self.logger.log(msg="Starting LSD")
-        self.logger.log(msg="Reading parameters")
+        if self.design_path is None:
+            self.design()
 
-        # NOTE: Old idea
-        # Start a logger
-        # read parameter driver, log parameters
-        # find the correct experiment class
-        # instantiate the experiment class
-        # execute the setup method to write necessary config files
-        # execute the train method (might be trivial) (iterating over config files)
-        # execute the generate method to generate and save latent spaces
+        base = getattr(self.module, self.cfg.base)
 
-        # TODO:
-        # for config in generated_experiment_folder:
-        # read in
-
-        pass
+        for cfg in os.listdir(self.design_path):
+            if cfg.startswith("universe_") and cfg.endswith(".yml"):
+                cfg_path = os.path.join(self.design_path, cfg)
+                theta = omegaconf.OmegaConf.load(cfg_path)
+                M = base(theta)
+                break
 
     def _load_multiverse(self):
         self._multiverse = {}
