@@ -7,8 +7,7 @@ from typing import Any
 
 
 @dataclass(frozen=True)
-class Multiverse:
-    meta: Any
+class Universe:
     data_choices: Any
     model_choices: Any
     implementation_choices: Any
@@ -47,15 +46,18 @@ class DimReductionMultiverse:
 
 @dataclass
 class TransformerMultiverse:
-    id_: str = "Transformer"
+    base: str = "Transformer"
+    module: str = "lsd.generate.transformers"
     model_choices: str = "lsd/design/model/tf.yaml"
     data_choices: str = "lsd/design/data/tf.yaml"
     implementation_choices: str = "/design/implementation/tf.yaml"
-    module: str = "lsd.generate.transformers"
-    base: str = "lsd.generate.transformers.tf"
 
 
 # Development Stub
 @dataclass
 class CustomMultiverse:
-    pass
+    base: str = "Custom"
+    module: str = "lsd.generate.transformers"
+    model_choices: str = str()
+    data_choices: str = str()
+    implementation_choices: str = str()

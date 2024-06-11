@@ -41,7 +41,7 @@ def test_multiverse1():
           lr:
             - 0.1
             - 0.01
-          Epochs:
+          epochs:
             - 50
             - 100
     """
@@ -106,7 +106,7 @@ def test_multiverse2():
           lr:
             - 0.1
             - 0.01
-          Epochs:
+          epochs:
             - 50
             - 100
     """
@@ -180,6 +180,93 @@ def test_yaml3_file(test_multiverse3):
         delete=False, mode="w", suffix=".yaml"
     ) as temp_file:
         temp_file.write(test_multiverse3)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_multiverse4():
+    return """
+    data_choices:
+      Transformer:
+        CNN:
+          samples:
+            - 1000
+            - 10000
+
+    model_choices:
+      Transformer:
+        Mistral:
+          nn:
+            - 16
+            - 20
+          min_dist:
+            - 0
+        tSNE:
+          perplexity:
+            - 15
+            - 30
+
+    implementation_choices:
+    """
+
+
+@pytest.fixture
+def test_dict4(test_multiverse4):
+    config = OmegaConf.create(test_multiverse4)
+    return config
+
+
+@pytest.fixture
+def test_yaml4_file(test_multiverse4):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_multiverse4)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_multiverse5():
+    return """
+    data_choices:
+      Custom:
+        arXiv:
+          batch_size:
+            - 64
+            - 128
+          train_test_split:
+            - [0.6, 0.3, 0.1]
+        CNN:
+          batch_size:
+            - 64
+            - 128
+          train_test_split:
+            - [0.6, 0.3, 0.1]
+    model_choices:
+    implementation_choices:
+    """
+
+
+@pytest.fixture
+def test_dict5(test_multiverse5):
+    config = OmegaConf.create(test_multiverse5)
+    return config
+
+
+@pytest.fixture
+def test_yaml5_file(test_multiverse5):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_multiverse5)
         temp_file_path = temp_file.name
 
     yield temp_file_path

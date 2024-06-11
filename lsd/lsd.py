@@ -5,12 +5,15 @@ import omegaconf
 from itertools import product
 
 import lsd.config as config
+import lsd.utils as ut
 
 
 class LSD:
     def __init__(
         self,
         multiverseConfig,
+        outDir: str,
+        experimentName: str = None,
         labels: list = [
             "data_choices",
             "model_choices",
@@ -31,6 +34,14 @@ class LSD:
         self.multiverse_labels = labels
         self._multiverse = None
 
+        assert os.path.isdir(outDir), "Output directory must be specified."
+        self.outDir = outDir
+
+        if experimentName:
+            self.experimentName = experimentName
+        else:
+            self.experimentName = self.cfg.base + ut.temporal_id()
+
     def __repr__(self):
         return f"Latent Space Designer: {self.cfg.__name__}"
 
@@ -44,6 +55,13 @@ class LSD:
 
         return self._multiverse
 
+    @property
+    def generators(self):
+        return {
+            label: sorted(list(self.multiverse[label].keys()))
+            for label in self.multiverse_labels
+        }
+
     @multiverse.setter
     def multiverse(self, multiverse):
         assert isinstance(multiverse, dict) or isinstance(
@@ -55,7 +73,10 @@ class LSD:
                 label in multiverse.keys()
             ), f"Multiverse must have {label} key."
             self.__setattr__(label, multiverse[label])
-            self._multiverse[label] = multiverse[label][self.cfg.base]
+            if multiverse[label]:
+                self._multiverse[label] = multiverse[label][self.cfg.base]
+            else:
+                self._multiverse[label] = {}
 
     def design(self):
         """Read in Multiverse configuration, create a direct product, and write individual config files for each model in the multiverse."""
@@ -63,21 +84,26 @@ class LSD:
         if self._multiverse is None:
             self._load_multiverse()
 
-        print(self._multiverse)
-        generators = product(*list(self._multiverse.values()))
-
         module = importlib.import_module(self.cfg.module)
-        for D, M, I in generators:
-            Dconfig = getattr(module, D)
-            Mconfig = getattr(module, M)
-            Iconfig = getattr(module, I)
+        universes = []
+        for label, generators in self.generators.items():
+            configs = []
+            for G in generators:
+                gen_cfg = getattr(module, G)
+                params, vectors = self._design_parameter_space(
+                    gen_cfg, label, G
+                )
+                for theta in vectors:
+                    data = dict(zip(params, theta))
+                    configs.append(ut.LoadClass.instantiate(gen_cfg, data))
+            universes.append(configs)
 
-            print(Dconfig.name, Mconfig.name, Iconfig.name)
-
-        base = getattr(module, self.cfg.base)
-        print(base)
-
-        # Given 3 config objects, assign each a vector in the
+        for i, U in enumerate(product(*universes)):
+            universe = config.Universe(*U)
+            outPath = os.path.join(
+                self.outDir, f"{self.experimentName}/configs/universe_{i}.yml"
+            )
+            self.write_cfg(outPath, universe)
 
     def generate(self):
 
@@ -110,23 +136,33 @@ class LSD:
             self.__setattr__(label, params)
             self._multiverse[label] = params
 
-    @staticmethod
-    def load_generator(module):
-        return importlib.import_module(module).initialize()
+    def _design_parameter_space(self, cfg, label, generator):
+        user_params = self.multiverse[label][generator].keys()
+        params = self._intersection(cfg.__annotations__, user_params)
+        vectors = self._cartesian_product(
+            label,
+            generator,
+            params,
+        )
+        return params, vectors
+
+    def _cartesian_product(self, label: str, generator: str, parameters: list):
+
+        return product(
+            *[
+                self.multiverse[label][generator][param]
+                for param in parameters
+                if generator in self.multiverse[label]
+                and param in self.multiverse[label][generator].keys()
+            ]
+        )
 
     @staticmethod
-    def read_params(config_file_path: str) -> dict:
-        assert os.path.isfile(
-            config_file_path
-        ), f"Config file not found at {config_file_path}"
-        assert config_file_path.endswith(
-            (".yaml", ".yml")
-        ), "Config must be a `yaml` file."
-
-        return omegaconf.OmegaConf.load(config_file_path)
+    def _intersection(x, y):
+        return sorted(list(set(x).intersection(y)))
 
     @staticmethod
-    def load_params(path: str):
+    def read_params(path: str):
         assert path.endswith((".yaml", ".yml")), "File must be a `yaml` file."
         assert os.path.isfile(path), f"File not found at {path}"
         with open(path, "r") as f:
@@ -134,10 +170,21 @@ class LSD:
         return content
 
     @staticmethod
+    def write_cfg(config_file_path: str, cfg):
+        assert config_file_path.endswith(
+            (".yaml", ".yml")
+        ), "Config must be a `yaml` file."
+        if not os.path.exists(os.path.dirname(config_file_path)):
+            os.makedirs(os.path.dirname(config_file_path))
+        c = omegaconf.OmegaConf.create(cfg)
+        with open(config_file_path, "w") as f:
+            omegaconf.OmegaConf.save(c, f)
+
+    @staticmethod
     def filter_params(
         path: str,
         choices: str,
         base: str,
     ):
-        content = LSD.load_params(path)
+        content = LSD.read_params(path)
         return content.get(choices).get(base)

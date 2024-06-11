@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from dataclasses import field
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │ Data Configurations                                      │
@@ -7,12 +8,24 @@ from dataclasses import dataclass
 
 @dataclass
 class celebA:
-    name = "celebA TEST"
+    name: str = "celebA"
+    module: str = "lsd.generate.autoencoders.datasets.celebA"
+    batch_size: int = 128
+    train_test_split: list[float] = field(default_factory=list)
+    in_channels: int = 3
+    image_size: int = 64
+    num_classes: int = 40
 
 
 @dataclass
 class MNIST:
-    name = "MNIST TEST"
+    name: str = "MNIST"
+    module: str = "lsd.generate.autoencoders.datasets.mnist"
+    batch_size: int = 64
+    train_test_split: list[float] = field(default_factory=list)
+    in_channels: int = 1
+    image_size: int = 28
+    num_classes: int = 10
 
 
 #  ╭──────────────────────────────────────────────────────────╮
@@ -20,12 +33,35 @@ class MNIST:
 #  ╰──────────────────────────────────────────────────────────╯
 @dataclass
 class betaVAE:
-    name = "betaVAE TEST"
+    name: str = "Beta Variational Autoencoder"
+    module: str = "lsd.generate.autoencoders.models.beta"
+    latent_dim: int = 10
+    hidden_dims: list[int] = field(default_factory=list)
+    beta: float = 2
+    gamma: float = 1
+    loss: str = "B"
 
 
 @dataclass
 class infoVAE:
-    name = "infoVAE TEST"
+    name: str = "Information Maximizing Variational Autoencoder"
+    module: str = "lsd.generate.autoencoders.models.info"
+    latent_dim: int = 10
+    hidden_dims: list[int] = field(default_factory=list)
+    alpha: float = 0.01
+    beta: float = 100
+    kernel: str = "rbf"
+
+
+@dataclass
+class WAE:
+    name: str = "Wasserstein Autoencoder"
+    module: str = "lsd.generate.autoencoders.models.info"
+    latent_dim: int = 10
+    hidden_dims: list[int] = field(default_factory=list)
+    lambda_: float = 0.01
+    kernel: str = "rbf"
+    kernel_width: int = 100
 
 
 #  ╭──────────────────────────────────────────────────────────╮
@@ -35,4 +71,7 @@ class infoVAE:
 
 @dataclass
 class Adam:
-    name = "Adam TEST"
+    name: str = "Adam"
+    module: str = "torch.optim"
+    lr: float = 0.001
+    epochs: int = 100
