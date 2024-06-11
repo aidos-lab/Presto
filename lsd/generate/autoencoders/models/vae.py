@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from torch import Tensor, nn
 
-from .types_ import *
+from typing import Any, Callable, List, Tuple, TypeVar, Union
 
 
 class BaseVAE(nn.Module):
@@ -226,3 +226,7 @@ class BaseVAE(nn.Module):
         )
 
         return decoder, fc_decoder_input, final_layer
+
+    @staticmethod
+    def tensor_type():
+        return TypeVar("torch.tensor")

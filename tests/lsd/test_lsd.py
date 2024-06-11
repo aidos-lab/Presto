@@ -248,3 +248,14 @@ def test_design(
         assert cfg1.model_choices.nn == 16
         assert cfg1.model_choices.min_dist == 0
         assert cfg1.implementation_choices.n_jobs == -1
+
+
+def test_generate(test_yaml2_file):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
+
+        lsd.cfg.model_choices = test_yaml2_file
+        lsd.cfg.data_choices = test_yaml2_file
+        lsd.cfg.implementation_choices = test_yaml2_file
+
+        lsd.generate()

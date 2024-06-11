@@ -1,16 +1,10 @@
-import functools
-import operator
-
 import torch
-from loaders.factory import register
-from torch import nn
 from torch.nn import functional as F
 
-from .types_ import *
-from .vae import BaseVAE
+from lsd.generate.autoencoders.models.vae import BaseVAE
 
 
-class WaeVAE(BaseVAE):
+class WAE(BaseVAE):
     def __init__(
         self,
         config,
@@ -39,13 +33,15 @@ class WaeVAE(BaseVAE):
             "MMD": mmd_loss,
         }
 
-    def compute_kernel(self, x1: Tensor, x2: Tensor) -> Tensor:
-        # Convert the tensors into row and column vectors
+    def compute_kernel(
+        self, x1: torch.tensor, x2: torch.tensor
+    ) -> torch.tensor:
+        # Convert the torch.tensors into row and column vectors
         D = x1.size(1)
         N = x1.size(0)
 
-        x1 = x1.unsqueeze(-2)  # Make it into a column tensor
-        x2 = x2.unsqueeze(-3)  # Make it into a row tensor
+        x1 = x1.unsqueeze(-2)  # Make it into a column torch.tensor
+        x2 = x2.unsqueeze(-3)  # Make it into a row torch.tensor
 
         """
         Usually the below lines are not required, especially in our case,
@@ -64,11 +60,13 @@ class WaeVAE(BaseVAE):
 
         return result
 
-    def compute_rbf(self, x1: Tensor, x2: Tensor, eps: float = 1e-7) -> Tensor:
+    def compute_rbf(
+        self, x1: torch.tensor, x2: torch.tensor, eps: float = 1e-7
+    ) -> torch.tensor:
         """
         Computes the RBF Kernel between x1 and x2.
-        :param x1: (Tensor)
-        :param x2: (Tensor)
+        :param x1: (torch.tensor)
+        :param x2: (torch.tensor)
         :param eps: (Float)
         :return:
         """
@@ -80,15 +78,15 @@ class WaeVAE(BaseVAE):
 
     # TODO: Make these statics in the BaseVAE class
     def compute_inv_mult_quad(
-        self, x1: Tensor, x2: Tensor, eps: float = 1e-7
-    ) -> Tensor:
+        self, x1: torch.tensor, x2: torch.tensor, eps: float = 1e-7
+    ) -> torch.tensor:
         """
         Computes the Inverse Multi-Quadratics Kernel between x1 and x2,
         given by
 
                 k(x_1, x_2) = \sum \frac{C}{C + \|x_1 - x_2 \|^2}
-        :param x1: (Tensor)
-        :param x2: (Tensor)
+        :param x1: (torch.tensor)
+        :param x2: (torch.tensor)
         :param eps: (Float)
         :return:
         """
@@ -101,7 +99,7 @@ class WaeVAE(BaseVAE):
 
         return result
 
-    def compute_mmd(self, z: Tensor, reg_weight: float) -> Tensor:
+    def compute_mmd(self, z: torch.tensor, reg_weight: float) -> torch.tensor:
         # Sample from prior (Gaussian) distribution
         prior_z = torch.randn_like(z)
 
