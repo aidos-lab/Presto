@@ -14,6 +14,13 @@ class BetaVAE(BaseVAE):
         self.num_iter = 0
         super(BetaVAE, self).__init__(config)
 
+        # Beta VAE parameters
+        self.beta = config.beta
+        self.gamma = config.gamma
+        self.loss_type = config.loss_type
+        self.C_max = torch.Tensor([config.max_capacity])
+        self.C_stop_iter = config.Capacity_max_iter
+
     def loss_function(self, *args, **kwargs) -> dict:
         self.num_iter += 1
         recons = args[0]

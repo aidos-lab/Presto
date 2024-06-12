@@ -30,7 +30,7 @@ class BaseVAE(nn.Module):
         (
             self.encoder,  # Encoder Layers
             self.fc_mu,  # Linear layer for mean
-            self.dc_var,  # Linear layer for variance
+            self.fc_var,  # Linear layer for variance
             self.encoded_shape,  # Pre-latent shape
             self.num_features,  # Pre-latent dimension
         ) = self.build_encoder(
@@ -85,7 +85,7 @@ class BaseVAE(nn.Module):
         :param z: (Tensor) [B x D]
         :return: (Tensor) [B x C x H x W]
         """
-        result = self.decoder_input(z)
+        result = self.fc_decoder_input(input)
         result = result.view(-1, *self.encoded_shape)
         result = self.decoder(result)
 
