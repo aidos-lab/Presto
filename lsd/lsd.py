@@ -103,10 +103,12 @@ class LSD:
         self.design_path = os.path.join(
             self.outDir, f"{self.experimentName}/configs/"
         )
+        self.multiverse_size = 0
         for i, U in enumerate(product(*universes)):
             universe = config.Universe(*U)
             outPath = os.path.join(self.design_path, f"universe_{i}.yml")
             self.write_cfg(outPath, universe)
+            self.multiverse_size += 1
 
     def generate(self):
 
@@ -116,7 +118,9 @@ class LSD:
         base = getattr(self.module, self.cfg.base)
 
         # TODO: Look for existing files and ask if user wants to overwrite
-
+        print(
+            f"Generating representations for {self.multiverse_size} universes..."
+        )
         for cfg in sorted(os.listdir(self.design_path), key=ut.file_id_sorter):
             if cfg.startswith("universe_") and cfg.endswith(".yml"):
                 cfg_path = os.path.join(self.design_path, cfg)
@@ -130,6 +134,7 @@ class LSD:
         M = base(theta)
         M.train()
         M.generate()
+        del M
 
     def _load_multiverse(self):
         self._multiverse = {}
