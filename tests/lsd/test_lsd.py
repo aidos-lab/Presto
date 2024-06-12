@@ -4,6 +4,7 @@ import tempfile
 from itertools import product
 import omegaconf
 from omegaconf.errors import ConfigKeyError
+from memory_profiler import profile
 
 
 from lsd.lsd import LSD
@@ -250,12 +251,13 @@ def test_design(
         assert cfg1.implementation_choices.n_jobs == -1
 
 
-def test_generate(test_yaml2_file):
+@profile
+def test_generate(test_yaml_ae_beta_file):
     with tempfile.TemporaryDirectory() as tmp_dir:
         lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
 
-        lsd.cfg.model_choices = test_yaml2_file
-        lsd.cfg.data_choices = test_yaml2_file
-        lsd.cfg.implementation_choices = test_yaml2_file
+        lsd.cfg.model_choices = test_yaml_ae_beta_file
+        lsd.cfg.data_choices = test_yaml_ae_beta_file
+        lsd.cfg.implementation_choices = test_yaml_ae_beta_file
 
         lsd.generate()
