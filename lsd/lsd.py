@@ -3,6 +3,7 @@ import os
 import importlib
 import omegaconf
 from itertools import product
+from typing import Callable, Any, Optional
 
 import lsd.config as config
 import lsd.utils as ut
@@ -117,9 +118,14 @@ class LSD:
         for cfg in os.listdir(self.design_path):
             if cfg.startswith("universe_") and cfg.endswith(".yml"):
                 cfg_path = os.path.join(self.design_path, cfg)
-                theta = omegaconf.OmegaConf.load(cfg_path)
-                M = base(theta)
+                self._generate(cfg_path, base)  # Save Yaml files
                 break
+
+    @staticmethod
+    def _generate(cfg_path, base):
+        theta = omegaconf.OmegaConf.load(cfg_path)
+        M = base(theta)
+        M.train()
 
     def _load_multiverse(self):
         self._multiverse = {}

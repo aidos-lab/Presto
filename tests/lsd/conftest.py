@@ -93,6 +93,8 @@ def test_multiverse2():
           gamma:
             - 0
             - 100
+          hidden_dims:
+            - [8, 16]
         infoVAE:
           alpha:
             - 0.1

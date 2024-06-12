@@ -17,14 +17,14 @@ from typing import Any, Callable, List, Tuple, TypeVar, Union
 
 class BaseVAE(nn.Module):
     def __init__(self, config):
-        super(VAE, self).__init__()
-        self.config = config
+        super(BaseVAE, self).__init__()
 
-        self.latent_dim = self.config.latent_dim
-        self.hidden_dims = self.config.hidden_dims
-        self.in_channels = self.config.in_channels
-        self.img_size = self.config.img_size
-        self.input_dim = self.img_size**2
+        self.latent_dim = config.latent_dim
+        self.img_size = config.img_size
+        self.in_channels = config.in_channels
+        self.hidden_dims = [config.in_channels] + config.hidden_dims
+
+        assert len(self.hidden_dims) > 0, "No hidden layers specified"
 
         # Encoder
         (
@@ -33,14 +33,24 @@ class BaseVAE(nn.Module):
             self.dc_var,  # Linear layer for variance
             self.encoded_shape,  # Pre-latent shape
             self.num_features,  # Pre-latent dimension
-        ) = self.build_encoder()
+        ) = self.build_encoder(
+            latent_dim=self.latent_dim,
+            img_size=self.img_size,
+            hidden_dims=self.hidden_dims,
+            in_channels=self.in_channels,
+        )
 
         # Decoder
         (
             self.decoder,  # Decoder Layers
             self.fc_decoder_input,  # Linear layer latent -> decoder Input
             self.final_layer,  # Final layer
-        ) = self.build_decoder()
+        ) = self.build_decoder(
+            latent_dim=self.latent_dim,
+            num_features=self.num_features,
+            hidden_dims=self.hidden_dims,
+            in_channels=self.in_channels,
+        )
 
     #  ╭──────────────────────────────────────────────────────────╮
     #  │ Model Specific Methods                                   │

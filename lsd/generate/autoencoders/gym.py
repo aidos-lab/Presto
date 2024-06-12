@@ -1,36 +1,40 @@
 "Send your Autoencoder to the Gym for training!"
 
 import time
+import importlib
 
 import numpy as np
 import torch
 from torch.nn.utils import clip_grad_norm_
 
+import lsd.utils as ut
+
 
 class Gym:
-    def __init__(self, model, dataset, optimizer, config):
+    def __init__(self, config):
         """
         Creates the setup and does inits
         - Loads datamodules
         - Loads models
         - Initializes logger
         """
-        DP = torch.nn.DataParallel(model)
+        self.config = config
+        self.device = torch.device(
+            "cuda"
+            if torch.cuda.is_available()
+            else "mps" if torch.backends.mps.is_available() else "cpu"
+        )
+
+        self.model = self._load_generator_module(self.config.model)(self.config)
+        self.dm = self._load_generator_module(self.config.dataset)(self.config)
+        # self.optimizer = self._load_generator_module(
+        #     self.config.optimizer, self.config
+        # )
+
+        DP = torch.nn.DataParallel(self.config.model)
         # Send model to device
         DP.to(self.device)
         self.model = DP.module
-
-        self.dm = dataset
-        self.optimizer = optimizer
-        self.config = config
-
-        self.device = torch.device(
-            "cuda" if torch.backends.mps.is_available() else "cpu"
-        )
-        # Set model input size
-        self.img_size = self.config.data_choices.img_size
-        self.in_channels = self.config.data_choices.in_channels
-        self.epochs = self.config.implementation_choices.num_epochs
 
     def train(self):
         """
@@ -120,6 +124,10 @@ class Gym:
             self.model, id=self.config.meta.id, folder=self.experiment_root
         )
         self.logger.log(msg=f"Model Saved!")
+
+    @staticmethod
+    def _load_generator_module(module):
+        return importlib.import_module(module).initialize()
 
     # def save_model(model, id, folder):
     # path = os.path.join(folder, "models/")
