@@ -19,6 +19,7 @@ class DataModule(ABC):
     def __init__(self, config) -> None:
         super().__init__()
         self.config = config
+        torch.manual_seed(config.seed)
         self.entire_ds = self.setup()
         self.prepare_data()
 
@@ -44,11 +45,10 @@ class DataModule(ABC):
         raise NotImplementedError()
 
     def prepare_data(self):
-        # if self.train_ds and self.test_ds and self.val_ds:
-        #     return
-        print("Random train/val/test split")
         self.train_ds, self.test_ds, self.val_ds = (
-            torch.utils.data.random_split(self.entire_ds, [0.6, 0.3, 0.1])
+            torch.utils.data.random_split(
+                self.entire_ds, self.config.train_test_split
+            )
         )
 
     def train_dataloader(self) -> DataLoader:
@@ -95,23 +95,36 @@ class DataModule(ABC):
         )
 
     def info(self):
-        """Still requires a lot of work."""
-        print("len train_ds", len(self.train_ds))
-        print("len val_ds", len(self.val_ds))
-        print("len test_ds", len(self.test_ds))
-        print("data num_classes", self.entire_ds.num_classes)
-        print(self.train_ds)
-        print(self.val_ds)
-        print(self.train_ds[0])
-        counts = torch.zeros(self.entire_ds.num_classes)
-        for data in self.train_dataloader():
-            counts += torch.bincount(data.y, minlength=10)
-        print("Bincount train", counts)
-        counts = torch.zeros(self.entire_ds.num_classes)
-        for data in self.val_dataloader():
-            counts += torch.bincount(data.y, minlength=10)
-        print("Bincount val", counts)
-        counts = torch.zeros(self.entire_ds.num_classes)
-        for data in self.test_dataloader():
-            counts += torch.bincount(data.y, minlength=10)
-        print("Bincount test", counts)
+        """Prints summary information about the dataset."""
+        print("Length of training dataset:", len(self.train_ds))
+        print("Length of validation dataset:", len(self.val_ds))
+        print("Length of test dataset:", len(self.test_ds))
+        print("Number of classes in the dataset:", self.config.num_classes)
+
+        # Calculate class distribution in the datasets
+        print("Class distribution in the training dataset:")
+        train_counts = torch.zeros(self.config.num_classes)
+        for x, y in self.train_dataloader():
+            train_counts += torch.bincount(y, minlength=self.config.num_classes)
+        self.display_histogram(train_counts)
+
+        print("Class distribution in the validation dataset:")
+        val_counts = torch.zeros(self.config.num_classes)
+        for x, y in self.val_dataloader():
+            val_counts += torch.bincount(y, minlength=self.config.num_classes)
+        self.display_histogram(val_counts)
+
+        print("Class distribution in the test dataset:")
+        test_counts = torch.zeros(self.config.num_classes)
+        for x, y in self.test_dataloader():
+            test_counts += torch.bincount(y, minlength=self.config.num_classes)
+        self.display_histogram(test_counts)
+
+    @staticmethod
+    def display_histogram(counts):
+        max_count = counts.max().item()
+        total_bins = len(counts)
+        for i, count in enumerate(counts):
+            bar_length = int(count.item() * 50 / max_count)
+            bar = "#" * bar_length
+            print(f"{i}: {count.item():<5} |{bar:<50}")
