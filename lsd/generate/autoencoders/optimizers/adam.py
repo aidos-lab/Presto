@@ -1,28 +1,26 @@
 from torch import optim
+import omegaconf
 
 
 class Adam:
     def __init__(
         self,
         model_parameters,
-        learning_rate=0.001,
-        betas=(0.9, 0.999),
-        eps=1e-8,
-        weight_decay=0,
+        config: omegaconf.DictConfig,
     ):
         self.optimizer = optim.Adam(
             model_parameters,
-            lr=learning_rate,
-            betas=betas,
-            eps=eps,
-            weight_decay=weight_decay,
+            lr=config.lr,
+            betas=config.betas,
+            eps=config.eps,
+            weight_decay=config.weight_decay,
         )
 
     def step(self):
         self.optimizer.step()
 
-    def zero_grad(self):
-        self.optimizer.zero_grad()
+    def zero_grad(self, **kwargs):
+        self.optimizer.zero_grad(**kwargs)
 
 
 def initialize():
