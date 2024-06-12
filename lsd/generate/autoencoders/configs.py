@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Protocol
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │ Data Configurations                                      │
@@ -7,7 +8,17 @@ from dataclasses import field
 
 
 @dataclass
-class celebA:
+class DataModule(Protocol):
+    module: str
+    num_workers: int = 4
+    batch_size: int = 64
+    pin_memory: bool = False
+    sample_size: float = 1.0
+    seed: int = 42
+
+
+@dataclass
+class celebA(DataModule):
     name: str = "celebA"
     module: str = "lsd.generate.autoencoders.datasets.celebA"
     batch_size: int = 128
@@ -18,7 +29,7 @@ class celebA:
 
 
 @dataclass
-class MNIST:
+class MNIST(DataModule):
     name: str = "MNIST"
     module: str = "lsd.generate.autoencoders.datasets.mnist"
     batch_size: int = 64
@@ -31,23 +42,30 @@ class MNIST:
 #  ╭──────────────────────────────────────────────────────────╮
 #  │ Model Configurations                                     │
 #  ╰──────────────────────────────────────────────────────────╯
+
+
 @dataclass
-class betaVAE:
+class Architecture(Protocol):
+    module: str
+    hidden_dims: list[int] = field(default_factory=lambda: [8, 16])
+    latent_dim: int = 10
+
+
+@dataclass
+class betaVAE(Architecture):
     name: str = "Beta Variational Autoencoder"
     module: str = "lsd.generate.autoencoders.models.beta"
-    latent_dim: int = 10
-    hidden_dims: list[int] = field(default_factory=list)
     beta: float = 2
     gamma: float = 1
-    loss: str = "B"
+    loss_type: str = "B"
+    max_capacity: int = 25
+    Capacity_max_iter: float = 1e5
 
 
 @dataclass
-class infoVAE:
+class infoVAE(Architecture):
     name: str = "Information Maximizing Variational Autoencoder"
     module: str = "lsd.generate.autoencoders.models.info"
-    latent_dim: int = 10
-    hidden_dims: list[int] = field(default_factory=list)
     alpha: float = 0.01
     beta: float = 100
     kernel: str = "rbf"
@@ -57,8 +75,6 @@ class infoVAE:
 class WAE:
     name: str = "Wasserstein Autoencoder"
     module: str = "lsd.generate.autoencoders.models.info"
-    latent_dim: int = 10
-    hidden_dims: list[int] = field(default_factory=list)
     lambda_: float = 0.01
     kernel: str = "rbf"
     kernel_width: int = 100
@@ -70,11 +86,26 @@ class WAE:
 
 
 @dataclass
-class Adam:
-    name: str = "Adam"
-    module: str = "lsd.generate.autoencoders.optimizers.adam"
+class Trainer(Protocol):
+    module: str
     lr: float = 0.001
     weight_decay: float = 0.0
+    epochs: int = 100
+    clip_max_norm: float = 1.0
+
+
+@dataclass
+class Adam(Trainer):
+    name: str = "Adam"
+    module: str = "lsd.generate.autoencoders.optimizers.adam"
     betas: tuple[float, float] = (0.9, 0.999)
     eps: float = 1e-8
-    epochs: int = 100
+
+
+@dataclass
+class SGD(Trainer):
+    name: str = "SGD"
+    module: str = "lsd.generate.autoencoders.optimizers.sgd"
+    lr: float = 0.01
+    momentum: float = 0.9
+    nesterov: bool = False

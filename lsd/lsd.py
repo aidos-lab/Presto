@@ -3,7 +3,7 @@ import os
 import importlib
 import omegaconf
 from itertools import product
-from typing import Callable, Any, Optional
+from dataclasses import fields
 
 import lsd.config as config
 import lsd.utils as ut
@@ -115,17 +115,21 @@ class LSD:
 
         base = getattr(self.module, self.cfg.base)
 
-        for cfg in os.listdir(self.design_path):
+        # TODO: Look for existing files and ask if user wants to overwrite
+
+        for cfg in sorted(os.listdir(self.design_path), key=ut.file_id_sorter):
             if cfg.startswith("universe_") and cfg.endswith(".yml"):
                 cfg_path = os.path.join(self.design_path, cfg)
-                self._generate(cfg_path, base)  # Save Yaml files
-                break
+                self._generate(self.outDir, cfg_path, base)  # Save Yaml files
 
     @staticmethod
-    def _generate(cfg_path, base):
+    def _generate(outDir, cfg_path, base):
         theta = omegaconf.OmegaConf.load(cfg_path)
+        theta.experiment = outDir
+        theta.file = cfg_path
         M = base(theta)
         M.train()
+        M.generate()
 
     def _load_multiverse(self):
         self._multiverse = {}
@@ -140,7 +144,9 @@ class LSD:
 
     def _design_parameter_space(self, cfg, label, generator):
         user_params = self.multiverse[label][generator].keys()
-        params = self._intersection(cfg.__annotations__, user_params)
+        cfg_params = [f.name for f in fields(cfg)]
+
+        params = self._intersection(cfg_params, user_params)
         vectors = self._cartesian_product(
             label,
             generator,
