@@ -6,63 +6,50 @@ import importlib
 import numpy as np
 import torch
 from torch.nn.utils import clip_grad_norm_
+from torch.nn.functional import mse_loss
 
 import lsd.utils as ut
 
 
 class Gym:
     def __init__(self, config):
-        """
-        Creates the setup and does inits
-        - Loads datamodules
-        - Loads models
-        - Initializes logger
-        """
         self.config = config
         self.device = torch.device(
-            "cuda"
-            if torch.cuda.is_available()
-            else "mps" if torch.backends.mps.is_available() else "cpu"
+            "cuda" if torch.cuda.is_available() else "cpu"
         )
 
-        self.model = self._load_generator_module(self.config.model)(self.config)
+        model = self._load_generator_module(self.config.model)(self.config)
         self.dm = self._load_generator_module(self.config.dataset)(self.config)
-        # self.optimizer = self._load_generator_module(
-        #     self.config.optimizer, self.config
-        # )
+        self.optimizer = self._load_generator_module(self.config.optimizer)(
+            model.parameters(), self.config
+        )
 
-        DP = torch.nn.DataParallel(self.config.model)
+        DP = torch.nn.DataParallel(model)
         # Send model to device
         DP.to(self.device)
         self.model = DP.module
 
-    def train(self):
+    def run(self):
         """
         Runs an experiment given the loaded config files.
         """
         start = time.time()
-        for epoch in range(self.config.trainer_params.num_epochs):
+        for epoch in range(self.config.epochs):
             stats = self.train_epoch()
 
             reported_loss = self.loss.item()
 
-            self.logger.log(
-                msg=f"epoch {epoch} | train loss {reported_loss:.4f}",
-                params={
-                    "train loss": reported_loss,
-                },
-            )
+            print(f"epoch {epoch} | train loss {reported_loss:.4f}")
+
             if "Reconstruction_Loss" in stats.keys():
                 recon_loss = stats["Reconstruction_Loss"]
-                self.logger.log(
-                    msg=f"epoch {epoch} | train recon loss {recon_loss:.4f}"
-                )
+                print(f"epoch {epoch} | train recon loss {recon_loss:.4f}")
 
             if epoch % 10 == 0:
                 end = time.time()
                 self.compute_metrics(epoch)
-                self.logger.log(
-                    msg=f"Training the model 10 epochs took: {end - start:.4f} seconds."
+                print(
+                    f"Training the model {epoch+1} epochs took: {end - start:.4f} seconds."
                 )
 
                 start = time.time()
@@ -92,7 +79,9 @@ class Gym:
             self.loss = stats["loss"]
             self.loss.backward()
 
-            # clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+            clip_grad_norm_(
+                self.model.parameters(), max_norm=self.config.clip_max_norm
+            )
 
             self.optimizer.step()
 
@@ -100,30 +89,43 @@ class Gym:
 
     def finalize_training(self):
         # Test Reconstruction Loss
-        test_loss = compute_recon_loss(self.model, self.dm.test_dataloader())
-        epoch = self.config.trainer_params.num_epochs
-        # Log statements
-        self.logger.log(
-            f"epoch {epoch} | test recon loss {test_loss:.4f}",
-            params={
-                "test_loss": test_loss,
-            },
+        test_loss = Gym.compute_recon_loss(
+            self.model, self.dm.test_dataloader()
         )
+        epoch = self.config.epochs
+        # Log statements
+        print(f"epoch {epoch} | test recon loss {test_loss:.4f}")
 
     def compute_metrics(self, epoch):
-        val_loss = compute_recon_loss(self.model, self.dm.val_dataloader())
+        val_loss = Gym.compute_recon_loss(
+            self.model, self.dm.val_dataloader(), self.device
+        )
 
         # Log statements to console
-        self.logger.log(
-            msg=f"epoch {epoch} | val loss { val_loss.item():.4f}",
-            params={"epoch": epoch, "val_loss": val_loss.item()},
-        )
+        print(f"epoch {epoch} | val loss { val_loss.item():.4f}")
 
-    def save_model(self):
-        save_model(
-            self.model, id=self.config.meta.id, folder=self.experiment_root
-        )
-        self.logger.log(msg=f"Model Saved!")
+    @staticmethod
+    def compute_recon_loss(model, loader, device="cpu"):
+        with torch.no_grad():
+            torch.cuda.empty_cache()
+            y_true = torch.Tensor()
+            y_pred = torch.Tensor()
+
+            model.to(device)
+            for X, _ in loader:
+                batch_gpu = X.to(device)
+                y_true = torch.cat((y_true, X))
+                recon = model.generate(batch_gpu).detach().cpu()
+                y_pred = torch.cat((y_pred, recon))
+
+            y_true = y_true.to(device)
+            y_pred = y_pred.to(device)
+            recon_loss = mse_loss(y_pred, y_true)
+            return recon_loss
+
+    @staticmethod
+    def save_model(model, id, outDir):
+        pass
 
     @staticmethod
     def _load_generator_module(module):
