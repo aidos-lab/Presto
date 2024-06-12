@@ -1,8 +1,8 @@
-import importlib
-from lsd.generate.autoencoders.gym import Gym
 import omegaconf
 
 from lsd import Base
+from lsd.generate.autoencoders.gym import Gym
+from lsd.utils import extract_yaml_id
 
 
 class Autoencoder(Base):
@@ -12,6 +12,8 @@ class Autoencoder(Base):
 
     def setup(self):
         trainer_cfg = omegaconf.OmegaConf.create({})
+        trainer_cfg.experiment = self.params.experiment
+        trainer_cfg.id = extract_yaml_id(self.params.file)
 
         # Extract and format module and name fields
         trainer_cfg.model = self.params.model_choices.get("module", "")
@@ -28,24 +30,25 @@ class Autoencoder(Base):
 
         # Unpack all keys from nested dictionaries
         for _, sub_dict in self.params.items():
-            for key, value in sub_dict.items():
-                if key not in [
-                    "module",
-                    "name",
-                ]:  # Exclude already processed keys
-                    trainer_cfg[key] = value
+            if isinstance(sub_dict, omegaconf.dictconfig.DictConfig):
+                for key, value in sub_dict.items():
+                    if key not in [
+                        "module",
+                        "name",
+                    ]:  # Exclude already processed keys
+                        trainer_cfg[key] = value
 
         return trainer_cfg
 
     def train(self):
         """Train a list of autoencoder configurations."""
-        print(self.trainer_cfg)
         exp = Gym(self.trainer_cfg)
-        # exp.run()
-        # self.model = exp.save_model()
+        exp.run()
         # for each config file
 
-    def generate(self, model):
+    def generate(self):
+
+        print(f"Generate latent space for {self.trainer_cfg.generators}.")
 
         "Use a pretrained model to generate a latent space."
         pass
