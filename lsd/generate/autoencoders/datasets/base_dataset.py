@@ -9,8 +9,6 @@ from torch.utils.data import RandomSampler, SequentialSampler
 from torch_geometric.data import Dataset
 from torch_geometric.loader import DataLoader, ImbalancedSampler
 
-from config import DataModuleConfig
-
 
 class DataModule(ABC):
     entire_ds: Dataset
@@ -18,7 +16,7 @@ class DataModule(ABC):
     test_ds: Dataset | None = None
     val_ds: Dataset | None = None
 
-    def __init__(self, config: DataModuleConfig) -> None:
+    def __init__(self, config) -> None:
         super().__init__()
         self.config = config
         self.entire_ds = self.setup()
@@ -49,8 +47,8 @@ class DataModule(ABC):
         # if self.train_ds and self.test_ds and self.val_ds:
         #     return
         print("Random train/val/test split")
-        self.train_ds, self.test_ds, self.val_ds = torch.utils.data.random_split(
-            self.entire_ds, [0.6, 0.3, 0.1]
+        self.train_ds, self.test_ds, self.val_ds = (
+            torch.utils.data.random_split(self.entire_ds, [0.6, 0.3, 0.1])
         )
 
     def train_dataloader(self) -> DataLoader:

@@ -1,9 +1,8 @@
 import torch
 import torchvision.transforms as transforms
-from config import DataModuleConfig
-from datasets.base_dataset import DataModule
-from loaders.factory import register
 from torchvision.datasets import MNIST
+
+from lsd.generate.autoencoders.datasets.base_dataset import DataModule
 
 
 class MnistDataModule(DataModule):
@@ -11,7 +10,7 @@ class MnistDataModule(DataModule):
     MNIST
     """
 
-    def __init__(self, config: DataModuleConfig):
+    def __init__(self, config):
         super().__init__(config)
         self.config = config
 
@@ -56,4 +55,4 @@ class MnistDataModule(DataModule):
 
 
 def initialize():
-    register("dataset", MnistDataModule)
+    return MnistDataModule

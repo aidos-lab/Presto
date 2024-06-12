@@ -24,7 +24,7 @@ class MNIST:
     batch_size: int = 64
     train_test_split: list[float] = field(default_factory=list)
     in_channels: int = 1
-    image_size: int = 28
+    img_size: int = 28
     num_classes: int = 10
 
 
@@ -72,6 +72,9 @@ class WAE:
 @dataclass
 class Adam:
     name: str = "Adam"
-    module: str = "torch.optim"
+    module: str = "lsd.generate.autoencoders.optimizers.adam"
     lr: float = 0.001
+    weight_decay: float = 0.0
+    betas: tuple[float, float] = (0.9, 0.999)
+    eps: float = 1e-8
     epochs: int = 100
