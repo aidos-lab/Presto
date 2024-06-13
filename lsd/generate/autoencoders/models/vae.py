@@ -1,18 +1,13 @@
-# All common methods between classes should be moved to the base class.
-# E.g. encode, decode, sample, generate, forward,latents
-# Need to verify: Is loss function the fn different between classes?
+"Base Variational Autoencoder Class. Inspired by AntixK's PyTorch-VAE implementations."
 
-
-# TODO: Type method outputs
 import functools
 import operator
 from abc import abstractmethod
 
-import numpy as np
 import torch
 from torch import Tensor, nn
 
-from typing import Any, Callable, List, Tuple, TypeVar, Union
+from typing import Any, List
 
 
 class BaseVAE(nn.Module):
@@ -237,6 +232,126 @@ class BaseVAE(nn.Module):
 
         return decoder, fc_decoder_input, final_layer
 
+    #  ╭──────────────────────────────────────────────────────────╮
+    #  │ MMD & Kernel Methods                                     │
+    #  ╰──────────────────────────────────────────────────────────╯
+
     @staticmethod
-    def tensor_type():
-        return TypeVar("torch.tensor")
+    def compute_mmd(
+        z: torch.tensor,
+        kernel_type: str,
+        reg_weight: float,
+        z_var: float,
+        eps: float,
+    ) -> torch.tensor:
+        # Sample from prior (Gaussian) distribution
+        prior_z = torch.randn_like(z)
+
+        prior_z__kernel = BaseVAE.compute_kernel(
+            prior_z,
+            prior_z,
+            kernel_type,
+            z_var,
+            eps,
+        )
+        z__kernel = BaseVAE.compute_kernel(
+            z,
+            z,
+            kernel_type,
+            z_var,
+            eps,
+        )
+        priorz_z__kernel = BaseVAE.compute_kernel(
+            prior_z,
+            z,
+            kernel_type,
+            z_var,
+            eps,
+        )
+
+        mmd = (
+            reg_weight * prior_z__kernel.mean()
+            + reg_weight * z__kernel.mean()
+            - 2 * reg_weight * priorz_z__kernel.mean()
+        )
+        return mmd
+
+    @staticmethod
+    def compute_kernel(
+        x1: torch.tensor,
+        x2: torch.tensor,
+        kernel_type: str,
+        z_var: float,
+        eps: float,
+    ) -> torch.tensor:
+        # Convert the tensors into row and column vectors
+        D = x1.size(1)
+        N = x1.size(0)
+
+        x1 = x1.unsqueeze(-2)  # Make it into a column tensor
+        x2 = x2.unsqueeze(-3)  # Make it into a row tensor
+
+        x1 = x1.expand(N, N, D)
+        x2 = x2.expand(N, N, D)
+
+        if kernel_type == "rbf":
+            result = BaseVAE._compute_rbf(
+                x1,
+                x2,
+                z_var,
+            )
+        elif kernel_type == "imq":
+            result = BaseVAE._compute_imq(
+                x1,
+                x2,
+                z_var,
+                eps,
+            )
+        else:
+            raise ValueError("Undefined kernel type.")
+
+        return result
+
+    @staticmethod
+    def _compute_rbf(
+        x1: torch.tensor,
+        x2: torch.tensor,
+        z_var: float,
+    ) -> torch.tensor:
+        """
+        Computes the RBF Kernel between x1 and x2.
+        :param x1: (torch.tensor)
+        :param x2: (torch.tensor)
+        :param eps: (Float)
+        :return:
+        """
+        z_dim = x2.size(-1)
+        sigma = 2.0 * z_dim * z_var
+
+        result = torch.exp(-((x1 - x2).pow(2).mean(-1) / sigma))
+        return result
+
+    @staticmethod
+    def _compute_imq(
+        x1: torch.tensor,
+        x2: torch.tensor,
+        z_var: float,
+        eps: float,
+    ) -> torch.tensor:
+        """
+        Computes the Inverse Multi-Quadratics Kernel between x1 and x2,
+        given by
+
+                k(x_1, x_2) = \sum \frac{C}{C + \|x_1 - x_2 \|^2}
+        :param x1: (torch.tensor)
+        :param x2: (torch.tensor)
+        :param eps: (Float)
+        :return:
+        """
+        z_dim = x2.size(-1)
+        C = 2 * z_dim * z_var
+        kernel = C / (eps + C + (x1 - x2).pow(2).sum(dim=-1))
+
+        # Exclude diagonal elements
+        result = kernel.sum() - kernel.diag().sum()
+        return result
