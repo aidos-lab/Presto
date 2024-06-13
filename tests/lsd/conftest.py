@@ -284,14 +284,10 @@ def test_ae_beta_multiverse():
         MNIST:
           batch_size:
             - 64
-            - 128
           train_test_split:
-            - [0.6, 0.3, 0.1]
             - [0.7, 0.2, 0.1]
           sample_size:
-            - 0.1
-            - 0.01
-
+            - 0.001
 
     model_choices:
       Autoencoder:
@@ -300,17 +296,14 @@ def test_ae_beta_multiverse():
             - 0.1
           gamma:
             - 0
+          max_capacity:
+            - 20
+          C_max_iter:
+            - 1e4
           hidden_dims:
             - [4]
     implementation_choices:
       Autoencoder:
-        SGD:
-          lr:
-            - 0.01
-          momentum:
-            - 0.75
-          epochs:
-            - 2
         Adam:
           lr:
             - 0.1
@@ -325,6 +318,106 @@ def test_yaml_ae_beta_file(test_ae_beta_multiverse):
         delete=False, mode="w", suffix=".yaml"
     ) as temp_file:
         temp_file.write(test_ae_beta_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_ae_info_multiverse():
+    return """
+    data_choices:
+      Autoencoder:
+        MNIST:
+          batch_size:
+            - 64
+          train_test_split:
+            - [0.6, 0.3, 0.1]
+          sample_size:
+            - 0.001
+
+    model_choices:
+      Autoencoder:
+        infoVAE:
+          alpha:
+            - 0.5
+          kernel:
+            - imq
+            - rbf
+          hidden_dims:
+            - [4]
+
+    implementation_choices:
+      Autoencoder:
+        SGD:
+          lr:
+            - 0.01
+          momentum:
+            - 0.75
+          epochs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_ae_info_file(test_ae_info_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_ae_info_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_ae_wae_multiverse():
+    return """
+    data_choices:
+      Autoencoder:
+        MNIST:
+          batch_size:
+            - 64
+          train_test_split:
+            - [0.6, 0.3, 0.1]
+          sample_size:
+            - 0.001
+
+    model_choices:
+      Autoencoder:
+        WAE:
+          z_var:
+            - 0.5
+          reg_weight:
+            - 2.0
+          kernel:
+            - imq
+            - rbf
+          hidden_dims:
+            - [4]
+
+    implementation_choices:
+      Autoencoder:
+        SGD:
+          lr:
+            - 0.01
+          momentum:
+            - 0.75
+          epochs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_ae_wae_file(test_ae_wae_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_ae_wae_multiverse)
         temp_file_path = temp_file.name
 
     yield temp_file_path
