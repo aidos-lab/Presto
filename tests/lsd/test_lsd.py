@@ -282,3 +282,14 @@ def test_ae_generation(
         wae_lsd.cfg.implementation_choices = test_yaml_ae_wae_file
 
         wae_lsd.generate()
+
+
+def test_dr_generation(test_yaml_dr_umap_file):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        umap_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
+
+        umap_lsd.cfg.model_choices = test_yaml_dr_umap_file
+        umap_lsd.cfg.data_choices = test_yaml_dr_umap_file
+        umap_lsd.cfg.implementation_choices = test_yaml_dr_umap_file
+
+        umap_lsd.generate()
