@@ -66,18 +66,22 @@ class betaVAE(Architecture):
 class infoVAE(Architecture):
     name: str = "Information Maximizing Variational Autoencoder"
     module: str = "lsd.generate.autoencoders.models.info"
-    alpha: float = 0.01
-    beta: float = 100
-    kernel: str = "rbf"
+    alpha: float = -0.5
+    beta: float = 5.0
+    kernel: str = "imq"
+    reg_weight: float = 1.0
+    z_var: float = 2.0
+    eps: float = 1e-7
 
 
 @dataclass
-class WAE:
+class WAE(Architecture):
     name: str = "Wasserstein Autoencoder"
-    module: str = "lsd.generate.autoencoders.models.info"
-    lambda_: float = 0.01
-    kernel: str = "rbf"
-    kernel_width: int = 100
+    module: str = "lsd.generate.autoencoders.models.wae"
+    kernel: str = "imq"
+    reg_weight: float = 100
+    z_var: float = 2.0
+    eps: float = 1e-7
 
 
 #  ╭──────────────────────────────────────────────────────────╮

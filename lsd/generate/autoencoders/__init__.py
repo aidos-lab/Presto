@@ -1,5 +1,5 @@
 from .ae import Autoencoder
-from .configs import MNIST, celebA, betaVAE, infoVAE, Adam, SGD
+from .configs import MNIST, celebA, betaVAE, infoVAE, WAE, Adam, SGD
 
 
 __all__ = [
@@ -7,6 +7,7 @@ __all__ = [
     "celebA",
     "betaVAE",
     "infoVAE",
+    "WAE",
     "Adam",
     "Autoencoder",
     "SGD",
