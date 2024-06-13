@@ -6,6 +6,7 @@ import omegaconf
 from omegaconf.errors import ConfigKeyError
 from memory_profiler import profile
 
+# Test
 
 from lsd.lsd import LSD
 from lsd.generate.autoencoders.models.beta import BetaVAE
@@ -252,12 +253,32 @@ def test_design(
 
 
 @profile
-def test_generate(test_yaml_ae_beta_file):
+def test_ae_generation(
+    test_yaml_ae_beta_file,
+    test_yaml_ae_info_file,
+    test_yaml_ae_wae_file,
+):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
+        beta_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
 
-        lsd.cfg.model_choices = test_yaml_ae_beta_file
-        lsd.cfg.data_choices = test_yaml_ae_beta_file
-        lsd.cfg.implementation_choices = test_yaml_ae_beta_file
+        beta_lsd.cfg.model_choices = test_yaml_ae_beta_file
+        beta_lsd.cfg.data_choices = test_yaml_ae_beta_file
+        beta_lsd.cfg.implementation_choices = test_yaml_ae_beta_file
 
-        lsd.generate()
+        beta_lsd.generate()
+
+        info_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
+
+        info_lsd.cfg.model_choices = test_yaml_ae_info_file
+        info_lsd.cfg.data_choices = test_yaml_ae_info_file
+        info_lsd.cfg.implementation_choices = test_yaml_ae_info_file
+
+        info_lsd.generate()
+
+        wae_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
+
+        wae_lsd.cfg.model_choices = test_yaml_ae_wae_file
+        wae_lsd.cfg.data_choices = test_yaml_ae_wae_file
+        wae_lsd.cfg.implementation_choices = test_yaml_ae_wae_file
+
+        wae_lsd.generate()
