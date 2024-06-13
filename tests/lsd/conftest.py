@@ -423,3 +423,41 @@ def test_yaml_ae_wae_file(test_ae_wae_multiverse):
     yield temp_file_path
 
     os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_dr_umap_multiverse():
+    return """
+    data_choices:
+      DimReduction:
+        mnist:
+          samples:
+            - 1000
+
+    model_choices:
+      DimReduction:
+        UMAP:
+          nn:
+            - 16
+          min_dist:
+            - 0
+
+    implementation_choices:
+      DimReduction:
+        Thread:
+          n_jobs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_dr_umap_file(test_dr_umap_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_dr_umap_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
