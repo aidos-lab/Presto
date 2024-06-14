@@ -489,10 +489,6 @@ def test_dr_umap_multiverse():
           generator:
             - load_wine
           
-        wine:
-          generator:
-            - load_wine
-          
     model_choices:
       DimReduction:
         UMAP:
@@ -539,7 +535,7 @@ def test_dr_tsne_multiverse():
 
     implementation_choices:
       DimReduction:
-        tSNETrainer:
+        Thread:
           n_jobs:
             - 1
     """
@@ -570,18 +566,18 @@ def test_dr_phate_multiverse():
     model_choices:
       DimReduction:
         Phate:
-          knn:
+          k:
             - 5
           gamma:
             - 1.0
           decay:
-            - 20
+            - 0.5
           t:
             - auto
 
     implementation_choices:
       DimReduction:
-        PhateTrainer:
+        Thread:
           n_jobs:
             - 1
     """
@@ -612,14 +608,14 @@ def test_dr_isomap_multiverse():
     model_choices:
       DimReduction:
         Isomap:
-          n_neighbors:
+          nn:
             - 30
           metric:
             - manhattan
 
     implementation_choices:
       DimReduction:
-        IsomapTrainer:
+        Thread:
           n_jobs:
             - 1
     """
@@ -650,14 +646,14 @@ def test_dr_lle_multiverse():
     model_choices:
       DimReduction:
         LLE:
-          n_neighbors:
+          nn:
             - 5
           reg:
             - 0.001
 
     implementation_choices:
       DimReduction:
-        LLETrainer:
+        Thread:
           n_jobs:
             - 1
     """
@@ -674,236 +670,3 @@ def test_yaml_dr_lle_file(test_dr_lle_multiverse):
     yield temp_file_path
 
     os.remove(temp_file_path)
-
-
-@pytest.fixture
-def test_dr_local_data_multiverse():
-    return """
-    data_choices:
-      DimReduction:
-        MNIST:
-          num_samples:
-            - 1000
-          path:
-            - /Users/jeremy.wayland/Downloads/mnist.npz
-          seed:
-            - 68
-          
-    model_choices:
-      DimReduction:
-        LLE:
-          n_neighbors:
-            - 5
-          reg:
-            - 0.001
-
-    implementation_choices:
-      DimReduction:
-        LLETrainer:
-          n_jobs:
-            - 1
-    """
-
-
-@pytest.fixture
-def test_yaml_dr_local_data_file(test_dr_local_data_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_local_data_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
-def test_dr_manifold_data_multiverse():
-    return """
-    data_choices:
-      DimReduction:
-        swiss_roll:
-          generator:
-            - swiss_roll
-          num_samples:
-            - 1000
-          seed:
-            - 68
-        moons:
-          generator:
-            - moons
-          num_samples:
-            - 1000
-          seed:
-            - 68
-        barbell:
-          generator:
-            - barbell
-          num_samples:
-            - 1000
-          seed:
-            - 68
-          beta:
-            - 0.67
-        noisy_annulus:
-          generator:
-            - noisy_annulus
-          num_samples:
-            - 1000
-          inner_radius:
-            - 68
-          outer_radius:
-            - 100
-          
-    model_choices:
-      DimReduction:
-        LLE:
-          n_neighbors:
-            - 5
-          reg:
-            - 0.001
-
-    implementation_choices:
-      DimReduction:
-        LLETrainer:
-          n_jobs:
-            - 1
-    logging:
-      wandb_logging: False
-      out_file: True
-      dev: False
-    """
-
-
-@pytest.fixture
-def test_yaml_dr_manifold_data_file(test_dr_manifold_data_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_manifold_data_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
-def test_dr_pca_training_multiverse():
-    return """
-    data_choices:
-      DimReduction:
-        MNIST:
-          num_samples:
-            - 100
-          path:
-            - /Users/jeremy.wayland/Downloads/mnist.npz
-          seed:
-            - 68
-          
-    model_choices:
-      DimReduction:
-        LLE:
-          n_neighbors:
-            - 5
-          reg:
-            - 0.001
-          max_ambient_dim:
-            - 20
-            - 
-
-    implementation_choices:
-      DimReduction:
-        LLETrainer:
-          n_jobs:
-            - 1
-    """
-
-
-@pytest.fixture
-def test_yaml_dr_pca_training_file(test_dr_pca_training_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_pca_training_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
-def test_ae_seeded_multiverse():
-    return """
-    data_choices:
-      Autoencoder:
-        MNIST:
-          batch_size:
-            - 64
-          train_test_split:
-            - [0.6, 0.3, 0.1]
-          train_test_seed:
-            - 68
-            - 42
-          sample_size:
-            - 0.001
-
-    model_choices:
-      Autoencoder:
-        WAE:
-          z_var:
-            - 0.5
-          reg_weight:
-            - 2.0
-          kernel:
-            - rbf
-          hidden_dims:
-            - [4]
-
-    implementation_choices:
-      Autoencoder:
-        SGD:
-          seed:
-            - 68
-          lr:
-            - 0.01
-          momentum:
-            - 0.75
-          epochs:
-            - 1
-    """
-
-
-@pytest.fixture
-def test_yaml_ae_seeded_file(test_ae_seeded_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_ae_seeded_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@contextmanager
-def set_env_var(key: str, value: str):
-    """
-    A context manager to temporarily set an environment variable.
-
-    Args:
-        key (str): The name of the environment variable.
-        value (str): The value to set for the environment variable.
-    """
-    old_value = os.getenv(key)
-    os.environ[key] = value
-    try:
-        yield
-    finally:
-        if old_value is not None:
-            os.environ[key] = old_value
-        else:
-            del os.environ[key]
