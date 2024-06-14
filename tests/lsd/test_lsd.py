@@ -284,8 +284,14 @@ def test_ae_generation(
         wae_lsd.generate()
 
 
-def test_dr_generation(test_yaml_dr_umap_file):
+def test_dr_generation(
+    test_yaml_dr_umap_file,
+    test_yaml_dr_tsne_file,
+    test_yaml_dr_isomap_file,
+    test_yaml_dr_lle_file,
+):
     with tempfile.TemporaryDirectory() as tmp_dir:
+        # UMAP
         umap_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
 
         umap_lsd.cfg.model_choices = test_yaml_dr_umap_file
@@ -293,3 +299,28 @@ def test_dr_generation(test_yaml_dr_umap_file):
         umap_lsd.cfg.implementation_choices = test_yaml_dr_umap_file
 
         umap_lsd.generate()
+
+        # t-SNE
+        tsne_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
+
+        tsne_lsd.cfg.model_choices = test_yaml_dr_tsne_file
+        tsne_lsd.cfg.data_choices = test_yaml_dr_tsne_file
+        tsne_lsd.cfg.implementation_choices = test_yaml_dr_tsne_file
+
+        tsne_lsd.generate()
+
+        # Isomap
+        isomap_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
+        isomap_lsd.cfg.model_choices = test_yaml_dr_isomap_file
+        isomap_lsd.cfg.data_choices = test_yaml_dr_isomap_file
+        isomap_lsd.cfg.implementation_choices = test_yaml_dr_isomap_file
+
+        isomap_lsd.generate()
+
+        # LLE
+        lle_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
+        lle_lsd.cfg.model_choices = test_yaml_dr_lle_file
+        lle_lsd.cfg.data_choices = test_yaml_dr_lle_file
+        lle_lsd.cfg.implementation_choices = test_yaml_dr_lle_file
+
+        lle_lsd.generate()

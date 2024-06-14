@@ -430,10 +430,10 @@ def test_dr_umap_multiverse():
     return """
     data_choices:
       DimReduction:
-        mnist:
-          samples:
-            - 1000
-
+        wine:
+          generator:
+            - load_wine
+          
     model_choices:
       DimReduction:
         UMAP:
@@ -456,6 +456,160 @@ def test_yaml_dr_umap_file(test_dr_umap_multiverse):
         delete=False, mode="w", suffix=".yaml"
     ) as temp_file:
         temp_file.write(test_dr_umap_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_dr_tsne_multiverse():
+    return """
+    data_choices:
+      DimReduction:
+        breast_cancer:
+          generator:
+            - load_breast_cancer
+          
+    model_choices:
+      DimReduction:
+        tSNE:
+          perplexity:
+            - 15
+
+    implementation_choices:
+      DimReduction:
+        Thread:
+          n_jobs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_dr_tsne_file(test_dr_tsne_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_dr_tsne_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_dr_phate_multiverse():
+    return """
+    data_choices:
+      DimReduction:
+        iris:
+          generator:
+            - load_iris
+          
+    model_choices:
+      DimReduction:
+        Phate:
+          k:
+            - 5
+          gamma:
+            - 1.0
+          decay:
+            - 0.5
+          t:
+            - auto
+
+    implementation_choices:
+      DimReduction:
+        Thread:
+          n_jobs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_dr_phate_file(test_dr_phate_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_dr_phate_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_dr_isomap_multiverse():
+    return """
+    data_choices:
+      DimReduction:
+        iris:
+          generator:
+            - load_iris
+          
+    model_choices:
+      DimReduction:
+        Isomap:
+          nn:
+            - 30
+          metric:
+            - manhattan
+
+    implementation_choices:
+      DimReduction:
+        Thread:
+          n_jobs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_dr_isomap_file(test_dr_isomap_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_dr_isomap_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_dr_lle_multiverse():
+    return """
+    data_choices:
+      DimReduction:
+        iris:
+          generator:
+            - load_iris
+          
+    model_choices:
+      DimReduction:
+        LLE:
+          nn:
+            - 5
+          reg:
+            - 0.001
+
+    implementation_choices:
+      DimReduction:
+        Thread:
+          n_jobs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_dr_lle_file(test_dr_lle_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_dr_lle_multiverse)
         temp_file_path = temp_file.name
 
     yield temp_file_path
