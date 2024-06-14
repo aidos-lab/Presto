@@ -14,6 +14,7 @@ class WAE(BaseVAE):
         self.kernel_type = config.kernel
         self.reg_weight = config.reg_weight
         self.z_var = config.z_var
+        self.eps = config.eps
 
     def loss_function(self, *args, **kwargs) -> dict:
         recons = args[0]
