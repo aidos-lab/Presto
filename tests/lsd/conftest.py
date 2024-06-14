@@ -489,6 +489,10 @@ def test_dr_umap_multiverse():
           generator:
             - load_wine
           
+        wine:
+          generator:
+            - load_wine
+          
     model_choices:
       DimReduction:
         UMAP:
