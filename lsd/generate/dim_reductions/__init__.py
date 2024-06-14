@@ -1,4 +1,6 @@
-from .configs import UMAP, tSNE, Phate, MNIST, Thread
+from .configs import UMAP, tSNE, Phate, Isomap, LLE
+from .configs import iris, digits, linnerud, wine, breast_cancer
+from .configs import Thread
 from .dr import DimReduction
 
 __all__ = [
@@ -6,6 +8,12 @@ __all__ = [
     "UMAP",
     "tSNE",
     "Phate",
-    "MNIST",
+    "Isomap",
+    "LLE",
+    "iris",
+    "digits",
+    "linnerud",
+    "wine",
+    "breast_cancer",
     "Thread",
 ]

@@ -1,11 +1,12 @@
 from umap import UMAP
 
 from lsd.generate.dim_reductions.configs import Projector
+from lsd.generate.dim_reductions.models.projector import BaseProjector
 
 
-class UMAPProjector:
+class UMAPProjector(BaseProjector):
     def __init__(self, config: Projector):
-        super().__init__(config)
+        super(UMAPProjector, self).__init__(config)
 
     def project(self, data):
         operator = UMAP(
@@ -14,7 +15,6 @@ class UMAPProjector:
             n_components=self.dim,
             metric=self.metric,
             init=self.config.init,
-            random_state=self.config.seed,
         )
 
         return operator.fit_transform(data)
