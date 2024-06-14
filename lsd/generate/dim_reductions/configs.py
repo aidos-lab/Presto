@@ -14,7 +14,7 @@ class GeneratedData(Protocol):
 
 
 @dataclass
-class LoadedData(Protocol):
+class LocalData(Protocol):
     module: str
     seed: int = 42
 
@@ -49,6 +49,13 @@ class wine(GeneratedData):
 class breast_cancer(GeneratedData):
     name: str = "Breast Cancer"
     generator: str = "load_breast_cancer"
+
+
+@dataclass
+class MNIST(LocalData):
+    name: str = "MNIST"
+    module: str = "lsd.generate.autoencoders.datasets.mnist"
+    samples: int = 1000
 
 
 #  ╭──────────────────────────────────────────────────────────╮
