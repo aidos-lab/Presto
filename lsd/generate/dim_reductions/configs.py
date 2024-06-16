@@ -1,62 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-#  ╭──────────────────────────────────────────────────────────╮
-#  │ Data Configurations                                      │
-#  ╰──────────────────────────────────────────────────────────╯
-
-
-@dataclass
-class GeneratedData(Protocol):
-    generator: str
-    num_samples: int = 1000
-    seed: int = 42
-
-
-@dataclass
-class LocalData(Protocol):
-    module: str
-    seed: int = 42
-
-
-@dataclass
-class iris(GeneratedData):
-    name: str = "Iris"
-    generator: str = "load_iris"
-    num_classes: int = 3
-
-
-@dataclass
-class digits(GeneratedData):
-    name: str = "Iris"
-    generator: str = "load_digits"
-    num_classes: int = 3
-
-
-@dataclass
-class linnerud(GeneratedData):
-    name: str = "Linnerud"
-    generator: str = "load_linnerud"
-
-
-@dataclass
-class wine(GeneratedData):
-    name: str = "Wine"
-    generator: str = "load_wine"
-
-
-@dataclass
-class breast_cancer(GeneratedData):
-    name: str = "Breast Cancer"
-    generator: str = "load_breast_cancer"
-
-
-@dataclass
-class MNIST(LocalData):
-    name: str = "MNIST"
-    module: str = "lsd.generate.autoencoders.datasets.mnist"
-    samples: int = 1000
-
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │ DimReduction Configurations                              │
@@ -114,6 +58,114 @@ class LLE(Projector):
     reg: float = 0.001
     eigen_solver: str = "auto"
     tol: float = 1e-6
+
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │ Data Configurations                                      │
+#  ╰──────────────────────────────────────────────────────────╯
+
+
+@dataclass
+class GeneratedData(Protocol):
+    generator: str
+    num_samples: int = 1000
+    seed: int = 42
+    path: Any = None
+
+
+@dataclass
+class LocalData(Protocol):
+    path: str
+    module: str = "lsd.generate.dim_reductions.datasets.local"
+    seed: int = 42
+
+
+@dataclass
+class iris(GeneratedData):
+    name: str = "Iris"
+    generator: str = "load_iris"
+    num_classes: int = 3
+
+
+@dataclass
+class digits(GeneratedData):
+    name: str = "Iris"
+    generator: str = "load_digits"
+    num_classes: int = 3
+
+
+@dataclass
+class linnerud(GeneratedData):
+    name: str = "Linnerud"
+    generator: str = "load_linnerud"
+
+
+@dataclass
+class wine(GeneratedData):
+    name: str = "Wine"
+    generator: str = "load_wine"
+
+
+@dataclass
+class breast_cancer(GeneratedData):
+    name: str = "Breast Cancer"
+    generator: str = "load_breast_cancer"
+
+
+@dataclass
+class swiss_roll(GeneratedData):
+    name: str = "Swiss Roll"
+    module: str = "lsd.generate.dim_reductions.datasets.manifolds"
+    generator: str = "swiss_roll"
+    hole: bool = False
+    noise: float = 0.0
+    num_classes: int = 3
+
+
+@dataclass
+class barbell(GeneratedData):
+    name: str = "Barbell"
+    module: str = "lsd.generate.dim_reductions.datasets.manifolds"
+    generator: str = "barbell"
+    beta: float = 1.0
+    num_classes: int = 3
+
+
+@dataclass
+class noisy_annulus(GeneratedData):
+    name: str = "Noisy Annulus"
+    module: str = "lsd.generate.dim_reductions.datasets.manifolds"
+    generator: str = "noisy_annulus"
+    inner_radius: float = 2.0
+    outer_radius: float = 6.0
+    noise: float = 0.01
+    num_classes: int = 3
+
+
+@dataclass
+class blobs(GeneratedData):
+    name: str = "Blobs"
+    module: str = "lsd.generate.dim_reductions.datasets.manifolds"
+    generator: str = "blobs"
+    num_samples: int = 1000
+    num_classes: int = 3
+
+
+@dataclass
+class moons(GeneratedData):
+    name: str = "Moons"
+    module: str = "lsd.generate.dim_reductions.datasets.manifolds"
+    generator: str = "moons"
+    num_samples: int = 1000
+    num_classes: int = 3
+
+
+@dataclass
+class MNIST(LocalData):
+    name: str = "MNIST"
+    module: str = "lsd.generate.dim_reductions.datasets.local"
+    generator: str = "mnist"
+    num_samples: int = 1000
 
 
 #  ╭──────────────────────────────────────────────────────────╮

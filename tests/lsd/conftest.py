@@ -144,7 +144,7 @@ def test_multiverse3():
     data_choices:
       DimReduction:
         MNIST:
-          samples:
+          num_samples:
             - 1000
             - 10000
 
@@ -195,7 +195,7 @@ def test_multiverse4():
     data_choices:
       Transformer:
         CNN:
-          samples:
+          num_samples:
             - 1000
             - 10000
 
@@ -610,6 +610,115 @@ def test_yaml_dr_lle_file(test_dr_lle_multiverse):
         delete=False, mode="w", suffix=".yaml"
     ) as temp_file:
         temp_file.write(test_dr_lle_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_dr_local_data_multiverse():
+    return """
+    data_choices:
+      DimReduction:
+        MNIST:
+          num_samples:
+            - 1000
+          path:
+            - /Users/jeremy.wayland/Downloads/mnist.npz
+          seed:
+            - 68
+          
+    model_choices:
+      DimReduction:
+        LLE:
+          nn:
+            - 5
+          reg:
+            - 0.001
+
+    implementation_choices:
+      DimReduction:
+        Thread:
+          n_jobs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_dr_local_data_file(test_dr_local_data_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_dr_local_data_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_dr_manifold_data_multiverse():
+    return """
+    data_choices:
+      DimReduction:
+        swiss_roll:
+          generator:
+            - swiss_roll
+          num_samples:
+            - 1000
+          seed:
+            - 68
+        moons:
+          generator:
+            - moons
+          num_samples:
+            - 1000
+          seed:
+            - 68
+        barbell:
+          generator:
+            - barbell
+          num_samples:
+            - 1000
+          seed:
+            - 68
+          beta:
+            - 0.67
+        noisy_annulus:
+          generator:
+            - noisy_annulus
+          num_samples:
+            - 1000
+          inner_radius:
+            - 68
+          outer_radius:
+            - 100
+          
+    model_choices:
+      DimReduction:
+        LLE:
+          nn:
+            - 5
+          reg:
+            - 0.001
+
+    implementation_choices:
+      DimReduction:
+        Thread:
+          n_jobs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_dr_manifold_data_file(test_dr_manifold_data_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_dr_manifold_data_multiverse)
         temp_file_path = temp_file.name
 
     yield temp_file_path

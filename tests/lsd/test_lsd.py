@@ -1,18 +1,18 @@
-import pytest
 import os
+import pickle
 import tempfile
 from itertools import product
+import numpy as np
+
 import omegaconf
-from omegaconf.errors import ConfigKeyError
+import pytest
 from memory_profiler import profile
-
-# Test
-
-from lsd.lsd import LSD
-from lsd.generate.autoencoders.models.beta import BetaVAE
+from omegaconf.errors import ConfigKeyError
 
 from lsd import utils as ut
 from lsd.config import AutoencoderMultiverse
+from lsd.generate.autoencoders.models.beta import BetaVAE
+from lsd.lsd import LSD
 
 
 def test_cfg():
@@ -229,7 +229,7 @@ def test_design(
         cfg0 = omegaconf.OmegaConf.load(U0)
 
         assert cfg0.data_choices.name == "MNIST"
-        assert cfg0.data_choices.samples == 1000
+        assert cfg0.data_choices.num_samples == 1000
         assert (
             cfg0.model_choices.name
             == "Uniform Manifold Approximation and Projection"
@@ -242,7 +242,7 @@ def test_design(
         cfg1 = omegaconf.OmegaConf.load(U1)
 
         assert cfg1.data_choices.name == "MNIST"
-        assert cfg1.data_choices.samples == 1000
+        assert cfg1.data_choices.num_samples == 1000
         assert (
             cfg1.model_choices.name
             == "Uniform Manifold Approximation and Projection"
@@ -324,3 +324,54 @@ def test_dr_generation(
         lle_lsd.cfg.implementation_choices = test_yaml_dr_lle_file
 
         lle_lsd.generate()
+
+
+def test_dr_data(
+    test_yaml_dr_local_data_file,
+    test_yaml_dr_manifold_data_file,
+):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        # Local Data
+        dr_local_data_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
+
+        dr_local_data_lsd.cfg.model_choices = test_yaml_dr_local_data_file
+        dr_local_data_lsd.cfg.data_choices = test_yaml_dr_local_data_file
+        dr_local_data_lsd.cfg.implementation_choices = (
+            test_yaml_dr_local_data_file
+        )
+
+        dr_local_data_lsd.generate()
+
+        dr_manifold_data_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
+
+        dr_manifold_data_lsd.cfg.model_choices = test_yaml_dr_manifold_data_file
+        dr_manifold_data_lsd.cfg.data_choices = test_yaml_dr_manifold_data_file
+        dr_manifold_data_lsd.cfg.implementation_choices = (
+            test_yaml_dr_manifold_data_file
+        )
+
+        dr_manifold_data_lsd.generate()
+
+
+def test_generate_io(
+    test_yaml_dr_lle_file,
+):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        dr_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
+
+        dr_lsd.cfg.model_choices = test_yaml_dr_lle_file
+        dr_lsd.cfg.data_choices = test_yaml_dr_lle_file
+        dr_lsd.cfg.implementation_choices = test_yaml_dr_lle_file
+
+        dr_lsd.generate()
+
+        latents = os.path.join(dr_lsd.outDir, "latent_spaces/")
+        assert os.path.isdir(latents)
+        pkl_file = os.path.join(latents, "universe_0.pkl")
+        assert os.path.isfile(pkl_file)
+
+        with open(pkl_file, "rb") as f:
+            L = pickle.load(f)
+
+        assert isinstance(L, np.ndarray)
+        assert L.shape == (150, 2)
