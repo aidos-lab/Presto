@@ -2,42 +2,6 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Protocol
 
-#  ╭──────────────────────────────────────────────────────────╮
-#  │ Data Configurations                                      │
-#  ╰──────────────────────────────────────────────────────────╯
-
-
-@dataclass
-class DataModule(Protocol):
-    module: str
-    num_workers: int = 4
-    batch_size: int = 64
-    pin_memory: bool = False
-    sample_size: float = 1.0
-    seed: int = 42
-
-
-@dataclass
-class celebA(DataModule):
-    name: str = "celebA"
-    module: str = "lsd.generate.autoencoders.datasets.celebA"
-    batch_size: int = 128
-    train_test_split: list[float] = field(default_factory=list)
-    in_channels: int = 3
-    image_size: int = 64
-    num_classes: int = 40
-
-
-@dataclass
-class MNIST(DataModule):
-    name: str = "MNIST"
-    module: str = "lsd.generate.autoencoders.datasets.mnist"
-    batch_size: int = 64
-    train_test_split: list[float] = field(default_factory=list)
-    in_channels: int = 1
-    img_size: int = 28
-    num_classes: int = 10
-
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │ Model Configurations                                     │
@@ -82,6 +46,43 @@ class WAE(Architecture):
     reg_weight: float = 100
     z_var: float = 2.0
     eps: float = 1e-7
+
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │ Data Configurations                                      │
+#  ╰──────────────────────────────────────────────────────────╯
+
+
+@dataclass
+class DataModule(Protocol):
+    module: str
+    num_workers: int = 4
+    batch_size: int = 64
+    pin_memory: bool = False
+    sample_size: float = 1.0
+    seed: int = 42
+
+
+@dataclass
+class celebA(DataModule):
+    name: str = "celebA"
+    module: str = "lsd.generate.autoencoders.datasets.celebA"
+    batch_size: int = 128
+    train_test_split: list[float] = field(default_factory=list)
+    in_channels: int = 3
+    image_size: int = 64
+    num_classes: int = 40
+
+
+@dataclass
+class MNIST(DataModule):
+    name: str = "MNIST"
+    module: str = "lsd.generate.autoencoders.datasets.mnist"
+    batch_size: int = 64
+    train_test_split: list[float] = field(default_factory=list)
+    in_channels: int = 1
+    img_size: int = 28
+    num_classes: int = 10
 
 
 #  ╭──────────────────────────────────────────────────────────╮
