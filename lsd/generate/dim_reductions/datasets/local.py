@@ -1,16 +1,20 @@
+import numpy as np
+
+
+def generate_sampling_mask(N, num_samples, random_state):
+    np.random.seed(random_state)
+    mask = np.random.choice(range(N), num_samples)
+    return mask
+
+
+# Kaggle MNIST Version
 def mnist(**kwargs):
-    bundle = load_local_data("mnist")
-    data, labels = bundle["data"], bundle["labels"]
+    bundle = np.load(kwargs["path"])
+    data = x_train = bundle["x_train"].reshape(-1, 28 * 28)
+    labels = bundle["y_train"]
     mask = range(len(data))
-    # if kwargs["N"] is not None:
-    #     mask = generate_sampling_mask(len(data), kwargs["N"], kwargs["random_state"])
-    return data[mask], labels[mask]
-
-
-def ipsc(**kwargs):
-    data = load_local_data("ipsc")["data"]
-    labels = np.zeros(len(data))
-    mask = range(len(data))
-    # if kwargs["N"] is not None:
-    #     mask = generate_sampling_mask(len(data), kwargs["N"], kwargs["random_state"])
+    if kwargs["num_samples"]:
+        mask = generate_sampling_mask(
+            len(data), kwargs["num_samples"], kwargs["seed"]
+        )
     return data[mask], labels[mask]
