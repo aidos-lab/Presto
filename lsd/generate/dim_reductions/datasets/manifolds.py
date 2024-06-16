@@ -5,62 +5,60 @@ from sklearn.datasets import (
     make_moons,
     make_circles,
 )
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.neighbors import kneighbors_graph
 
 
 def swiss_roll(
-    N: int = 1500,
-    hole: bool = False,
-    n_clusters: int = 6,
     **kwargs,
 ):
     """Generate Swiss Roll data set."""
-    from sklearn.datasets import make_swiss_roll
 
     data, _ = make_swiss_roll(
-        n_samples=N,
-        random_state=0,
-        hole=hole,
+        n_samples=kwargs["num_samples"],
+        random_state=kwargs["seed"],
+        hole=kwargs["hole"],
     )
-
-    labels = assign_labels(
-        data,
-        n_clusters,
-    )
+    if kwargs["num_classes"]:
+        labels = synthetic_manifold_labels(
+            data,
+            n_clusters=kwargs["num_classes"],
+        )
+    else:
+        labels = np.ones(kwargs["num_samples"])
 
     return data, labels
 
 
-def blobs(N, **kwargs):
+def blobs(**kwargs):
     """Generate set of Gaussian blobs."""
-    from sklearn.datasets import make_blobs
 
-    return make_blobs(N, random_state=kwargs["random_state"])
+    return make_blobs(kwargs["num_samples"], random_state=kwargs["seed"])
 
 
-def moons(N, **kwargs):
+def moons(**kwargs):
     """Generate moons data set with labels."""
-    from sklearn.datasets import make_moons
 
-    return make_moons(N, random_state=kwargs["random_state"])
+    return make_moons(kwargs["num_samples"], random_state=kwargs["seed"])
 
 
-def nested_circles(N, **kwargs):
+def nested_circles(**kwargs):
     """Generate nested circles with labels."""
-    from sklearn.datasets import make_circles
 
-    return make_circles(N, random_state=kwargs["random_state"])
+    return make_circles(kwargs["num_samples"], random_state=kwargs["seed"])
 
 
-def barbell(N, beta=1, **kwargs):
+def barbell(**kwargs):
     """Generate uniformly-sampled 2-D barbelll with colours."""
-    if kwargs.get("random_state"):
-        np.random.seed(kwargs["random_state"])
+    if kwargs.get("seed"):
+        np.random.seed(kwargs["seed"])
+    beta = kwargs["beta"]
 
     X = []
     C = []
     k = 1
 
-    while k <= N:
+    while k <= kwargs["num_samples"]:
         x = (2 + beta / 2) * np.random.uniform()
         y = (2 + beta / 2) * np.random.uniform()
 
@@ -82,90 +80,17 @@ def barbell(N, beta=1, **kwargs):
     return np.asarray(X), np.asarray(C)
 
 
-def double_annulus(N, **kwargs):
-    """Sample N points from a double annulus."""
-    if kwargs.get("random_state"):
-        np.random.seed(kwargs["random_state"])
-
-    X = []
-    C = []
-    for i in range(N):
-        while True:
-            t = [
-                np.random.uniform(-50, 50, 1)[0],
-                np.random.uniform(-50, 140, 1)[0],
-            ]
-
-            d = np.sqrt(np.dot(t, t))
-            if d <= 50 and d >= 20:
-                X.append(t)
-                C.append(0)
-                break
-
-            d = np.sqrt(t[0] ** 2 + (t[1] - 90) ** 2)
-            if d <= 50 and d >= 40:
-                X.append(t)
-                C.append(1)
-                break
-
-    X = (X - np.min(X)) / (np.max(X) - np.min(X))
-    return np.asarray(X), np.asarray(C)
-
-
-def annulus(N, r, R, **kwargs):
-    """Sample points from annulus.
-
-    This function samples `N` points from an annulus with inner radius `r`
-    and outer radius `R`.
-
-    Parameters
-    ----------
-    N : int
-        Number of points to sample
-
-    r : float
-        Inner radius of annulus
-
-    R : float
-        Outer radius of annulus
-
-    **kwargs:
-        Optional keyword arguments, such as a fixed random state for the
-        pseudo-random number generator.
-
-    Returns
-    -------
-    Array of (x, y) coordinates.
-    """
-    if r >= R:
-        raise RuntimeError(
-            "Inner radius must be less than or equal to outer radius"
-        )
-
-    if kwargs.get("random_state"):
-        np.random.seed(kwargs["random_state"])
-
-    thetas = np.random.uniform(0, 2 * np.pi, N)
-
-    # Need to sample based on squared radii to account for density
-    # differences.
-    radii = np.sqrt(np.random.uniform(r**2, R**2, N))
-
-    X = np.column_stack((radii * np.cos(thetas), radii * np.sin(thetas)))
-    return X, np.linspace(0, 1, N)
-
-
-def noisy_annulus(N, r=2, R=6, f=0.01, **kwargs):
+def noisy_annulus(**kwargs):
     """Sample points from noisy annulus,
     with points obstructing a clear H1 feature.
 
-    This function samples `N` points from an annulus with inner radius `r`
-    and outer radius `R`, and then adds f*N noisy points to the interior.
+    This function samples `kwargs["num_samples"]` points from an annulus with inner radius `r`
+    and outer radius `R`, and then adds f*kwargs["num_samples"] noisy points to the interior.
 
     Parameters
     ----------
-    N : int
-        Number of points to sample
+    kwargs["num_samples"] : int
+        kwargs["num_samples"]umber of points to sample
 
     r : float
         Inner radius of annulus
@@ -185,27 +110,40 @@ def noisy_annulus(N, r=2, R=6, f=0.01, **kwargs):
     -------
     Array of (x, y) coordinates.
     """
+    r = kwargs["inner_radius"]
+    R = kwargs["outer_radius"]
+    f = kwargs["noise"]
     if r >= R:
         raise RuntimeError(
             "Inner radius must be less than or equal to outer radius"
         )
 
-    if kwargs.get("random_state"):
-        np.random.seed(kwargs["random_state"])
+    if kwargs.get("seed"):
+        np.random.seed(kwargs["seed"])
 
     # Take ceiling so we get at least one noisy point
-    size = int(np.ceil(N * (1 + f)))
+    size = int(np.ceil(kwargs["num_samples"] * (1 + f)))
     thetas = np.random.uniform(0, 2 * np.pi, size)
 
-    # Need to sample based on squared radii to account for density
-    # differences.
-    radii = np.sqrt(np.random.uniform(r**2, R**2, N))
+    radii = np.sqrt(np.random.uniform(r**2, R**2, kwargs["num_samples"]))
     # Append noisy points
     radii = np.append(
-        radii, np.sqrt(np.random.uniform(0, 0.5 * r**2, size - N))
+        radii,
+        np.sqrt(np.random.uniform(0, 0.5 * r**2, size - kwargs["num_samples"])),
     )
 
     X = np.column_stack((radii * np.cos(thetas), radii * np.sin(thetas)))
 
-    labels = assign_labels(X, n_clusters=kwargs["n_clusters"])
+    labels = synthetic_manifold_labels(X, n_clusters=kwargs["num_classes"])
     return X, labels
+
+
+def synthetic_manifold_labels(data, n_clusters, k=10):
+    """Assign Labels for Sklearn Data Sets based on KNN Graphs"""
+
+    connectivity = kneighbors_graph(data, n_neighbors=k, include_self=False)
+    ward = AgglomerativeClustering(
+        n_clusters=n_clusters, connectivity=connectivity, linkage="ward"
+    ).fit(data)
+    labels = ward.labels_
+    return labels
