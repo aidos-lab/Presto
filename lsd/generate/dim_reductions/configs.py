@@ -166,6 +166,7 @@ class MNIST(LocalData):
     module: str = "lsd.generate.dim_reductions.datasets.local"
     generator: str = "mnist"
     num_samples: int = 1000
+    path: Any = None
 
 
 #  ╭──────────────────────────────────────────────────────────╮
