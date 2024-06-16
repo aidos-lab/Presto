@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+import pickle
+import numpy as np
 
 #  ╭──────────────────────────────────────────────────────────╮
 #  │ Base Multiverse Generator Class                          │
@@ -21,8 +23,17 @@ class Base(ABC):
     def generate(self):
         pass
 
+    @staticmethod
+    def write_pkl(data, path):
+        with open(path, "wb") as f:
+            pickle.dump(data, f)
 
-# base experiment class with empty methods for training/generating =>
-# These then get specified by the particular experiment class e.g. autoencoders that has a specific training method.
-# Generalized setup script that creates cartesian product, and writes config files for each experiment.
-# main should then load a config, from this determine which experiment class to instantiate, and execute the train method.
+    @staticmethod
+    def read(path):
+        if path.endswith(".npz"):
+            return np.load(path)
+        elif path.endswith(".pkl"):
+            with open(path, "rb") as f:
+                return pickle.load(f)
+        else:
+            raise NotImplementedError(f"File type not supported: {path}")
