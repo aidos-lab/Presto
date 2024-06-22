@@ -12,6 +12,7 @@ from omegaconf.errors import ConfigKeyError
 from lsd import utils as ut
 from lsd.config import AutoencoderMultiverse
 from lsd.generate.autoencoders.models.beta import BetaVAE
+from lsd.generate.autoencoders.models.wae import WAE
 from lsd.lsd import LSD
 
 
@@ -355,6 +356,7 @@ def test_dr_data(
 
 def test_generate_io(
     test_yaml_dr_lle_file,
+    test_yaml_ae_no_train_file,
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
         dr_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
@@ -375,3 +377,44 @@ def test_generate_io(
 
         assert isinstance(L, np.ndarray)
         assert L.shape == (150, 2)
+
+        assert len(os.listdir(latents)) == 1
+
+        ae_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
+
+        ae_lsd.cfg.model_choices = test_yaml_ae_no_train_file
+        ae_lsd.cfg.data_choices = test_yaml_ae_no_train_file
+        ae_lsd.cfg.implementation_choices = test_yaml_ae_no_train_file
+
+        ae_lsd.generate()
+
+        latents = os.path.join(ae_lsd.outDir, "latent_spaces/")
+        assert os.path.isdir(latents)
+        pkl_file = os.path.join(latents, "universe_0.pkl")
+        assert os.path.isfile(pkl_file)
+
+        with open(pkl_file, "rb") as f:
+            L = pickle.load(f)
+
+        assert isinstance(L, np.ndarray)
+        assert L.shape == (42, 2)
+
+        models = os.path.join(ae_lsd.outDir, "models/")
+        assert os.path.isdir(models)
+        model_file = os.path.join(models, "model_0.pkl")
+        assert os.path.isfile(model_file)
+
+        with open(model_file, "rb") as f:
+            model = pickle.load(f)
+
+        assert isinstance(model, WAE)
+        assert model.latent_dim == 2
+        assert model.z_var == 0.5
+        assert model.kernel_type == "imq"
+
+        logs = os.path.join(ae_lsd.outDir, "logs/")
+        assert os.path.isdir(logs)
+
+        assert len(os.listdir(models)) == 1
+        assert len(os.listdir(latents)) == 1
+        assert len(os.listdir(logs)) == 1
