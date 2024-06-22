@@ -426,6 +426,58 @@ def test_yaml_ae_wae_file(test_ae_wae_multiverse):
 
 
 @pytest.fixture
+def test_ae_no_train_multiverse():
+    return """
+    data_choices:
+      Autoencoder:
+        MNIST:
+          batch_size:
+            - 64
+          train_test_split:
+            - [0.6, 0.3, 0.1]
+          sample_size:
+            - 0.001
+
+    model_choices:
+      Autoencoder:
+        WAE:
+          z_var:
+            - 0.5
+          reg_weight:
+            - 2.0
+          kernel:
+            - imq
+          hidden_dims:
+            - [4]
+          latent_dim:
+            - 2
+
+    implementation_choices:
+      Autoencoder:
+        SGD:
+          lr:
+            - 0.01
+          momentum:
+            - 0.75
+          epochs:
+            - 0
+"""
+
+
+@pytest.fixture
+def test_yaml_ae_no_train_file(test_ae_no_train_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_ae_no_train_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
 def test_dr_umap_multiverse():
     return """
     data_choices:
@@ -710,6 +762,10 @@ def test_dr_manifold_data_multiverse():
         Thread:
           n_jobs:
             - 1
+    logging:
+      wandb_logging: False
+      out_file: True
+      dev: False
     """
 
 
