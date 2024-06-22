@@ -4,6 +4,7 @@ import importlib
 import omegaconf
 from itertools import product
 from dataclasses import fields
+import shutil
 
 import lsd.config as config
 import lsd.utils as ut
@@ -37,12 +38,13 @@ class LSD:
         self.design_path = None
 
         assert os.path.isdir(outDir), "Output directory must be specified."
-        self.outDir = outDir
 
         if experimentName:
             self.experimentName = experimentName
         else:
             self.experimentName = self.cfg.base + ut.temporal_id()
+
+        self.outDir = os.path.join(outDir, self.experimentName)
 
     def __repr__(self):
         return f"Latent Space Designer: {self.cfg.__name__}"
@@ -80,11 +82,43 @@ class LSD:
             else:
                 self._multiverse[label] = {}
 
+    @property
+    def experiment(self):
+        return self.outDir
+
+    @property
+    def configs(self):
+        path = os.path.join(self.outDir, "configs/")
+        assert os.path.isdir(path), "Configs directory not found."
+        return path
+
+    @property
+    def latent_spaces(self):
+        path = os.path.join(self.outDir, "latent_spaces/")
+        assert os.path.isdir(path), "Latent spaces directory not found."
+        return path
+
+    @property
+    def models(self):
+        path = os.path.join(self.outDir, "models/")
+        assert os.path.isdir(path), "Models directory not found."
+        return path
+
+    @property
+    def logs(self):
+        path = os.path.join(self.outDir, "logs/")
+        assert os.path.isdir(path), "Logs directory not found."
+        return path
+
     def design(self):
         """Read in Multiverse configuration, create a direct product, and write individual config files for each model in the multiverse."""
 
         if self._multiverse is None:
             self._load_multiverse()
+
+        configs_outDir = os.path.join(self.outDir, "configs/")
+        if os.path.isdir(configs_outDir):
+            self.clean()
 
         self.module = importlib.import_module(self.cfg.module)
         universes = []
@@ -100,9 +134,7 @@ class LSD:
                     configs.append(ut.LoadClass.instantiate(gen_cfg, data))
             universes.append(configs)
 
-        self.design_path = os.path.join(
-            self.outDir, f"{self.experimentName}/configs/"
-        )
+        self.design_path = configs_outDir
         self.multiverse_size = 0
         for i, U in enumerate(product(*universes)):
             universe = config.Universe(*U)
@@ -201,3 +233,23 @@ class LSD:
     ):
         content = LSD.read_params(path)
         return content.get(choices).get(base)
+
+    def clean(self):
+        LSD.clean_dir(self.outDir)
+
+    def clean_configs(self):
+        LSD.clean_dir(self.configs)
+
+    def clean_latent_spaces(self):
+        LSD.clean_dir(self.latent_spaces)
+
+    def clean_models(self):
+        LSD.clean_dir(self.models)
+
+    def clean_logs(self):
+        LSD.clean_dir(self.logs)
+
+    @staticmethod
+    def clean_dir(path: str):
+        assert os.path.isdir(path), f"Directory not found at {path}"
+        shutil.rmtree(path)
