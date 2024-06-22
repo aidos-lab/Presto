@@ -367,7 +367,7 @@ def test_generate_io(
 
         dr_lsd.generate()
 
-        latents = os.path.join(dr_lsd.outDir, "latent_spaces/")
+        latents = os.path.join(dr_lsd.outDir, f"latent_spaces/")
         assert os.path.isdir(latents)
         pkl_file = os.path.join(latents, "universe_0.pkl")
         assert os.path.isfile(pkl_file)
@@ -380,6 +380,16 @@ def test_generate_io(
 
         assert len(os.listdir(latents)) == 1
 
+        # Cleaning
+        dr_lsd.clean_latent_spaces()
+        assert not os.path.isdir(latents)
+        assert os.path.isdir(dr_lsd.outDir)
+
+        with pytest.raises(AssertionError):
+            dr_lsd.clean_models()
+        with pytest.raises(AssertionError):
+            dr_lsd.clean_logs()
+
         ae_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
 
         ae_lsd.cfg.model_choices = test_yaml_ae_no_train_file
@@ -390,6 +400,7 @@ def test_generate_io(
 
         latents = os.path.join(ae_lsd.outDir, "latent_spaces/")
         assert os.path.isdir(latents)
+        assert latents == ae_lsd.latent_spaces
         pkl_file = os.path.join(latents, "universe_0.pkl")
         assert os.path.isfile(pkl_file)
 
@@ -401,6 +412,7 @@ def test_generate_io(
 
         models = os.path.join(ae_lsd.outDir, "models/")
         assert os.path.isdir(models)
+        assert models == ae_lsd.models
         model_file = os.path.join(models, "model_0.pkl")
         assert os.path.isfile(model_file)
 
@@ -414,7 +426,25 @@ def test_generate_io(
 
         logs = os.path.join(ae_lsd.outDir, "logs/")
         assert os.path.isdir(logs)
+        assert logs == ae_lsd.logs
 
         assert len(os.listdir(models)) == 1
         assert len(os.listdir(latents)) == 1
         assert len(os.listdir(logs)) == 1
+
+        # Cleaning
+        ae_lsd.clean_models()
+        assert not os.path.isdir(models)
+        assert os.path.isdir(logs)
+        assert os.path.isdir(latents)
+        assert os.path.isdir(ae_lsd.outDir)
+        ae_lsd.clean_latent_spaces()
+        assert not os.path.isdir(latents)
+        assert os.path.isdir(logs)
+        assert os.path.isdir(ae_lsd.outDir)
+        ae_lsd.clean_logs()
+        assert not os.path.isdir(logs)
+        assert os.path.isdir(ae_lsd.outDir)
+
+        ae_lsd.clean()
+        assert not os.path.isdir(ae_lsd.outDir)
