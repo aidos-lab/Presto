@@ -2,6 +2,7 @@ import pytest
 import os
 import tempfile
 from omegaconf import OmegaConf
+from contextlib import contextmanager
 
 
 @pytest.fixture
@@ -780,3 +781,23 @@ def test_yaml_dr_manifold_data_file(test_dr_manifold_data_multiverse):
     yield temp_file_path
 
     os.remove(temp_file_path)
+
+
+@contextmanager
+def set_env_var(key: str, value: str):
+    """
+    A context manager to temporarily set an environment variable.
+
+    Args:
+        key (str): The name of the environment variable.
+        value (str): The value to set for the environment variable.
+    """
+    old_value = os.getenv(key)
+    os.environ[key] = value
+    try:
+        yield
+    finally:
+        if old_value is not None:
+            os.environ[key] = old_value
+        else:
+            del os.environ[key]

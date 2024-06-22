@@ -14,6 +14,7 @@ from lsd.config import AutoencoderMultiverse
 from lsd.generate.autoencoders.models.beta import BetaVAE
 from lsd.generate.autoencoders.models.wae import WAE
 from lsd.lsd import LSD
+from .conftest import set_env_var
 
 
 def test_cfg():
@@ -260,29 +261,30 @@ def test_ae_generation(
     test_yaml_ae_wae_file,
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        beta_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
+        with set_env_var("WANDB", "False"):
+            beta_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
 
-        beta_lsd.cfg.model_choices = test_yaml_ae_beta_file
-        beta_lsd.cfg.data_choices = test_yaml_ae_beta_file
-        beta_lsd.cfg.implementation_choices = test_yaml_ae_beta_file
+            beta_lsd.cfg.model_choices = test_yaml_ae_beta_file
+            beta_lsd.cfg.data_choices = test_yaml_ae_beta_file
+            beta_lsd.cfg.implementation_choices = test_yaml_ae_beta_file
 
-        beta_lsd.generate()
+            beta_lsd.generate()
 
-        info_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
+            info_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
 
-        info_lsd.cfg.model_choices = test_yaml_ae_info_file
-        info_lsd.cfg.data_choices = test_yaml_ae_info_file
-        info_lsd.cfg.implementation_choices = test_yaml_ae_info_file
+            info_lsd.cfg.model_choices = test_yaml_ae_info_file
+            info_lsd.cfg.data_choices = test_yaml_ae_info_file
+            info_lsd.cfg.implementation_choices = test_yaml_ae_info_file
 
-        info_lsd.generate()
+            info_lsd.generate()
 
-        wae_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
+            wae_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
 
-        wae_lsd.cfg.model_choices = test_yaml_ae_wae_file
-        wae_lsd.cfg.data_choices = test_yaml_ae_wae_file
-        wae_lsd.cfg.implementation_choices = test_yaml_ae_wae_file
+            wae_lsd.cfg.model_choices = test_yaml_ae_wae_file
+            wae_lsd.cfg.data_choices = test_yaml_ae_wae_file
+            wae_lsd.cfg.implementation_choices = test_yaml_ae_wae_file
 
-        wae_lsd.generate()
+            wae_lsd.generate()
 
 
 def test_dr_generation(
@@ -359,92 +361,93 @@ def test_generate_io(
     test_yaml_ae_no_train_file,
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        dr_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
+        with set_env_var("WANDB", "False"):
+            dr_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
 
-        dr_lsd.cfg.model_choices = test_yaml_dr_lle_file
-        dr_lsd.cfg.data_choices = test_yaml_dr_lle_file
-        dr_lsd.cfg.implementation_choices = test_yaml_dr_lle_file
+            dr_lsd.cfg.model_choices = test_yaml_dr_lle_file
+            dr_lsd.cfg.data_choices = test_yaml_dr_lle_file
+            dr_lsd.cfg.implementation_choices = test_yaml_dr_lle_file
 
-        dr_lsd.generate()
+            dr_lsd.generate()
 
-        latents = os.path.join(dr_lsd.outDir, f"latent_spaces/")
-        assert os.path.isdir(latents)
-        pkl_file = os.path.join(latents, "universe_0.pkl")
-        assert os.path.isfile(pkl_file)
+            latents = os.path.join(dr_lsd.outDir, f"latent_spaces/")
+            assert os.path.isdir(latents)
+            pkl_file = os.path.join(latents, "universe_0.pkl")
+            assert os.path.isfile(pkl_file)
 
-        with open(pkl_file, "rb") as f:
-            L = pickle.load(f)
+            with open(pkl_file, "rb") as f:
+                L = pickle.load(f)
 
-        assert isinstance(L, np.ndarray)
-        assert L.shape == (150, 2)
+            assert isinstance(L, np.ndarray)
+            assert L.shape == (150, 2)
 
-        assert len(os.listdir(latents)) == 1
+            assert len(os.listdir(latents)) == 1
 
-        # Cleaning
-        dr_lsd.clean_latent_spaces()
-        assert not os.path.isdir(latents)
-        assert os.path.isdir(dr_lsd.outDir)
+            # Cleaning
+            dr_lsd.clean_latent_spaces()
+            assert not os.path.isdir(latents)
+            assert os.path.isdir(dr_lsd.outDir)
 
-        with pytest.raises(AssertionError):
-            dr_lsd.clean_models()
-        with pytest.raises(AssertionError):
-            dr_lsd.clean_logs()
+            with pytest.raises(AssertionError):
+                dr_lsd.clean_models()
+            with pytest.raises(AssertionError):
+                dr_lsd.clean_logs()
 
-        ae_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
+            ae_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
 
-        ae_lsd.cfg.model_choices = test_yaml_ae_no_train_file
-        ae_lsd.cfg.data_choices = test_yaml_ae_no_train_file
-        ae_lsd.cfg.implementation_choices = test_yaml_ae_no_train_file
+            ae_lsd.cfg.model_choices = test_yaml_ae_no_train_file
+            ae_lsd.cfg.data_choices = test_yaml_ae_no_train_file
+            ae_lsd.cfg.implementation_choices = test_yaml_ae_no_train_file
 
-        ae_lsd.generate()
+            ae_lsd.generate()
 
-        latents = os.path.join(ae_lsd.outDir, "latent_spaces/")
-        assert os.path.isdir(latents)
-        assert latents == ae_lsd.latent_spaces
-        pkl_file = os.path.join(latents, "universe_0.pkl")
-        assert os.path.isfile(pkl_file)
+            latents = os.path.join(ae_lsd.outDir, "latent_spaces/")
+            assert os.path.isdir(latents)
+            assert latents == ae_lsd.latent_spaces
+            pkl_file = os.path.join(latents, "universe_0.pkl")
+            assert os.path.isfile(pkl_file)
 
-        with open(pkl_file, "rb") as f:
-            L = pickle.load(f)
+            with open(pkl_file, "rb") as f:
+                L = pickle.load(f)
 
-        assert isinstance(L, np.ndarray)
-        assert L.shape == (42, 2)
+            assert isinstance(L, np.ndarray)
+            assert L.shape == (42, 2)
 
-        models = os.path.join(ae_lsd.outDir, "models/")
-        assert os.path.isdir(models)
-        assert models == ae_lsd.models
-        model_file = os.path.join(models, "model_0.pkl")
-        assert os.path.isfile(model_file)
+            models = os.path.join(ae_lsd.outDir, "models/")
+            assert os.path.isdir(models)
+            assert models == ae_lsd.models
+            model_file = os.path.join(models, "model_0.pkl")
+            assert os.path.isfile(model_file)
 
-        with open(model_file, "rb") as f:
-            model = pickle.load(f)
+            with open(model_file, "rb") as f:
+                model = pickle.load(f)
 
-        assert isinstance(model, WAE)
-        assert model.latent_dim == 2
-        assert model.z_var == 0.5
-        assert model.kernel_type == "imq"
+            assert isinstance(model, WAE)
+            assert model.latent_dim == 2
+            assert model.z_var == 0.5
+            assert model.kernel_type == "imq"
 
-        logs = os.path.join(ae_lsd.outDir, "logs/")
-        assert os.path.isdir(logs)
-        assert logs == ae_lsd.logs
+            logs = os.path.join(ae_lsd.outDir, "logs/")
+            assert os.path.isdir(logs)
+            assert logs == ae_lsd.logs
 
-        assert len(os.listdir(models)) == 1
-        assert len(os.listdir(latents)) == 1
-        assert len(os.listdir(logs)) == 1
+            assert len(os.listdir(models)) == 1
+            assert len(os.listdir(latents)) == 1
+            assert len(os.listdir(logs)) == 1
 
-        # Cleaning
-        ae_lsd.clean_models()
-        assert not os.path.isdir(models)
-        assert os.path.isdir(logs)
-        assert os.path.isdir(latents)
-        assert os.path.isdir(ae_lsd.outDir)
-        ae_lsd.clean_latent_spaces()
-        assert not os.path.isdir(latents)
-        assert os.path.isdir(logs)
-        assert os.path.isdir(ae_lsd.outDir)
-        ae_lsd.clean_logs()
-        assert not os.path.isdir(logs)
-        assert os.path.isdir(ae_lsd.outDir)
+            # Cleaning
+            ae_lsd.clean_models()
+            assert not os.path.isdir(models)
+            assert os.path.isdir(logs)
+            assert os.path.isdir(latents)
+            assert os.path.isdir(ae_lsd.outDir)
+            ae_lsd.clean_latent_spaces()
+            assert not os.path.isdir(latents)
+            assert os.path.isdir(logs)
+            assert os.path.isdir(ae_lsd.outDir)
+            ae_lsd.clean_logs()
+            assert not os.path.isdir(logs)
+            assert os.path.isdir(ae_lsd.outDir)
 
-        ae_lsd.clean()
-        assert not os.path.isdir(ae_lsd.outDir)
+            ae_lsd.clean()
+            assert not os.path.isdir(ae_lsd.outDir)
