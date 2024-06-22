@@ -3,15 +3,18 @@ import os
 from lsd import Base
 from lsd.generate.autoencoders.gym import Gym
 from lsd.generate.autoencoders.logger import Logger
-from lsd.utils import extract_yaml_id, get_wandb_env, write_pkl
+from lsd.utils import (
+    extract_yaml_id,
+    get_wandb_env,
+    test_wandb_connection,
+    write_pkl,
+)
 
 
 class Autoencoder(Base):
     def __init__(self, params: omegaconf.DictConfig):
         super().__init__(params)
         self.trainer_cfg = self.setup()
-
-        print(f"Autoencoder configuration: {self.trainer_cfg}")
 
     def setup(self):
         """
@@ -20,7 +23,7 @@ class Autoencoder(Base):
         trainer_cfg = self.initialize_trainer_config()
         self.configure_trainer(trainer_cfg)
         self.create_output_directories(trainer_cfg)
-        self.wandb = get_wandb_env()["wandb_enabled"]
+        self.wandb = test_wandb_connection(get_wandb_env())
         return trainer_cfg
 
     def generate(self):
@@ -88,7 +91,6 @@ class Autoencoder(Base):
         self.latentsDir = self._create_directory(
             trainer_cfg.experiment, "latent_spaces"
         )
-        print(self.latentsDir)
 
         self.modelsDir = self._create_directory(
             trainer_cfg.experiment, "models"

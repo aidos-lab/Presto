@@ -8,6 +8,7 @@ from typing import Dict
 
 import numpy as np
 from dotenv import load_dotenv
+import wandb
 
 
 class LoadClass:
@@ -60,10 +61,16 @@ def get_wandb_env() -> Dict[str, str]:
     load_dotenv()
 
     # Fetch WANDB configurations with default values
-    wandb_enabled = os.getenv("WANDB", "False").lower() == "true"
+
     wandb_project = os.getenv("WANDB_PROJECT", None)
     wandb_entity = os.getenv("WANDB_ENTITY", None)
-    wandb_tag = os.getenv("WANDB_TAG", None)
+    wandb_tag = os.getenv("WANDB_TAG", "LSD")
+
+    wandb_enabled = (
+        os.getenv("WANDB", "False").lower() == "true"
+        and wandb_project
+        and wandb_entity
+    )
 
     # Return configuration as a dictionary
     return {
@@ -72,6 +79,34 @@ def get_wandb_env() -> Dict[str, str]:
         "wandb_entity": wandb_entity,
         "wandb_tag": wandb_tag,
     }
+
+
+def test_wandb_connection(config: Dict[str, str]) -> bool:
+    """
+    Test the connection to Weights & Biases.
+
+    Args:
+        config (Dict[str, str]): The configuration dictionary for WANDB.
+
+    Returns:
+        bool: True if the connection is successful, False otherwise.
+    """
+    if not config["wandb_enabled"]:
+        print("WANDB is not enabled or missing necessary configurations.")
+        return False
+
+    try:
+        # Initialize WANDB with the provided configuration
+        wandb.init(
+            project=config["wandb_project"],
+            entity=config["wandb_entity"],
+            tags=[config["wandb_tag"]],
+            mode="online",
+        )
+        return True
+    except Exception as e:
+        print(f"Failed to connect to WANDB: {e}")
+        return False
 
 
 def write_pkl(data, path):
