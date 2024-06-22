@@ -24,7 +24,7 @@ class MnistDataModule(DataModule):
         entire_dataset = torch.utils.data.ConcatDataset(
             [
                 MNIST(
-                    root=self.config.experiment,
+                    root=self.data_dir,
                     train=True,
                     transform=transforms.Compose(
                         [
@@ -37,7 +37,7 @@ class MnistDataModule(DataModule):
                     download=True,
                 ),
                 MNIST(
-                    root=self.config.experiment,
+                    root=self.data_dir,
                     train=False,
                     transform=transforms.Compose(
                         [

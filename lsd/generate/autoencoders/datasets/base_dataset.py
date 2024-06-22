@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Protocol
 
+import os
 import torch
 from torch.utils.data import RandomSampler, SequentialSampler
 from torch_geometric.data import Dataset
@@ -20,6 +21,7 @@ class DataModule(ABC):
         super().__init__()
         self.config = config
         torch.manual_seed(config.seed)
+        self.data_dir = self.get_data_directory(default_subdir="downloads")
         self.entire_ds = self.setup()
         self.prepare_data()
 
@@ -128,3 +130,12 @@ class DataModule(ABC):
             bar_length = int(count.item() * 50 / max_count)
             bar = "#" * bar_length
             print(f"{i}: {count.item():<5} |{bar:<50}")
+
+    @staticmethod
+    def get_data_directory(default_subdir):
+        # Determine the default data directory
+        default_data_dir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), default_subdir
+        )
+        os.makedirs(default_data_dir, exist_ok=True)
+        return default_data_dir
