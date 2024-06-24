@@ -20,7 +20,7 @@ from .conftest import set_env_var
 def test_cfg():
     with pytest.raises(TypeError):
         LSD("AutoencoderMultiverse")
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         LSD("AutoencoderMultiverse", outDir="some/path/to/dir")
 
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -65,12 +65,15 @@ def test_filter_params(test_dict1, test_yaml1_file):
 
         assert lsd.cfg.base == "Autoencoder"
 
-        with pytest.raises(AttributeError):
+        # NonExistent Choices returns empty dict
+        assert (
             lsd.filter_params(
                 path=lsd.cfg.data_choices,
                 choices="NonExistent",
                 base="Autoencoder",
             )
+            == {}
+        )
 
         assert (
             lsd.filter_params(
@@ -78,7 +81,7 @@ def test_filter_params(test_dict1, test_yaml1_file):
                 choices="model_choices",
                 base="Autoencoder",
             )
-            is None
+            == {}
         )
 
         D = lsd.filter_params(
@@ -109,7 +112,7 @@ def test_multiverse_getter_setter(
 
         assert lsd._multiverse is not None
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             lsd.multiverse = test_nested_dict
 
         assert lsd.data_choices == test_dict2["data_choices"]
@@ -388,9 +391,9 @@ def test_generate_io(
             assert not os.path.isdir(latents)
             assert os.path.isdir(dr_lsd.outDir)
 
-            with pytest.raises(AssertionError):
+            with pytest.raises(ValueError):
                 dr_lsd.clean_models()
-            with pytest.raises(AssertionError):
+            with pytest.raises(ValueError):
                 dr_lsd.clean_logs()
 
             ae_lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
