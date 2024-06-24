@@ -1,8 +1,11 @@
 import pytest
 from presto import Presto, Atom
+import os
+import pickle
 from sklearn.decomposition import PCA
 from sklearn.random_projection import GaussianRandomProjection as Gauss
 from gudhi.representations import Landscape
+import tempfile
 import numpy as np
 
 
@@ -237,6 +240,25 @@ def MMS1():
             [0, 0.1, 0.2, 0.3],
             [0.1, 0, 0.8, 0.6],
             [0.2, 0.8, 0, 0.1],
-            [0.4, 0.6, 0.1, 0],
+            [0.3, 0.6, 0.1, 0],
         ]
     )
+
+
+@pytest.fixture
+def tmp_data_files(data):
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        for i, X in enumerate(data):
+            pkl_path = os.path.join(tmpdirname, f"X{i}.pkl")
+            with open(pkl_path, "wb") as f:
+                pickle.dump(X, f)
+        yield tmpdirname
+
+
+@pytest.fixture
+def tmp_MMS_file(MMS):
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        pkl_path = os.path.join(tmpdirname, f"mms.pkl")
+        with open(pkl_path, "wb") as f:
+            pickle.dump(MMS, f)
+        yield pkl_path

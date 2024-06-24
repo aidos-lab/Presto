@@ -1,0 +1,40 @@
+generator: AutoEncoder
+
+models: #Set which architectures to use
+  - betaVAE
+  - infoVAE
+  - waeVAE
+
+# Shared params
+latent_dim:
+  - 50
+hidden_dims:
+  - - 3
+    - 32
+    - 64
+    - 128
+    - 256
+    - 512
+
+betaVAE:
+  beta:
+    - 1
+  gamma:
+    - 0.01
+  loss_type:
+    - H
+    -B
+infoVAE:
+  alpha:
+    - 1
+  beta:
+    - 1
+  gamma:
+    - 0.01
+  loss_type:
+    - H
+    - B
+waeVAE:
+
+
+  

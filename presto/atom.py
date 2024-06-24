@@ -1,15 +1,18 @@
-import pickle
-
-import numpy as np
-from sklearn.cluster import AgglomerativeClustering
+import glob
 import itertools
-import networkx as nx
 import os
-from tqdm import tqdm
+import pickle
 from concurrent.futures import ThreadPoolExecutor
-from scipy.sparse import coo_array
+import re
+
+import networkx as nx
+import numpy as np
 from presto.presto import Presto
+from scipy.sparse import coo_array
+from scipy.spatial.distance import is_valid_dm
+from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
+from tqdm import tqdm
 
 
 class Atom:
@@ -74,12 +77,68 @@ class Atom:
         data: list,
         seed: int = 42,
     ) -> None:
-        self.data = data
+        if isinstance(data, list):
+            self.data = data
+        elif isinstance(data, str):
+            self.data = self._load_data_from_folder(data)
+        else:
+            raise TypeError(
+                "Unsupported type for data. Must be a list or a path to a folder containing data files."
+            )
         self.multiverse_size = len(data)
-        self.MMS = None
+        self._MMS = None
         self.seed = seed
 
-    def compute_MMS(
+    @property
+    def MMS(self):
+        """Get the MMS matrix."""
+        return self._MMS
+
+    @MMS.setter
+    def MMS(self, value):
+        """
+        Setter for MMS.
+
+        Load or assign an MMS matrix to an Atom's embeddings.
+        Users can set the MMS matrix directly as a numpy.ndarray, or load it from a pickle file. To compute the MMS matrix based on the embeddings, see `compute_mms`.
+
+        Parameters
+        ----------
+        value : numpy.ndarray or str or None, optional
+            The MMS matrix, or path to load it from, or None to compute.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        TypeError
+            If the provided `value` is of unsupported type.
+
+
+        Examples
+        --------
+        >>> atom.MMS = my_mms  # Set MMS directly
+        >>> atom.MMS = '/path/to/mms.pkl'  # Load MMS from file
+        """
+
+        if isinstance(value, str):
+            M = self._load_data(value)
+
+        elif isinstance(value, np.ndarray):
+            M = value
+
+        else:
+            raise TypeError(
+                "Unsupported type for MMS. Must be a numpy.ndarray, a path to a file."
+            )
+
+        self._MMS = self.validate_distance_matrix(
+            M, shape=(self.multiverse_size, self.multiverse_size)
+        )
+
+    def compute_mms(
         self,
         projector=PCA,
         n_projections: int = 1,
@@ -118,6 +177,10 @@ class Atom:
         Returns:
         -------
         None
+
+        Notes:
+        ------
+        This function sets the MMS matrix for the Atom.
 
         Examples:
         ---------
@@ -182,11 +245,13 @@ class Atom:
         rows = list(map(lambda tup: tup[1], scores))
         cols = list(map(lambda tup: tup[2], scores))
 
-        self.MMS = coo_array(
+        MMS = coo_array(
             (values, (rows, cols)),
             shape=(self.multiverse_size, self.multiverse_size),
         ).todense()
-        self.MMS += self.MMS.T
+        MMS += MMS.T
+        # Set MMS
+        self.MMS = MMS
 
     def save_mms(self, path: str):
         """
@@ -207,46 +272,6 @@ class Atom:
         """
         with open(path, "wb") as f:
             pickle.dump(self.MMS, f)
-
-    def load_mms(self, path: str):
-        """
-        Load the MMS matrix from a file.
-
-        Parameters
-        ----------
-        path : str
-            The path to the file where the MMS matrix is saved.
-
-        Returns
-        -------
-        None
-
-        Examples
-        --------
-        >>> atom.load_mms('/path/to/mms.pkl')
-        """
-        with open(path, "rb") as f:
-            MMS = pickle.load(f)
-        self.set_mms(MMS)
-
-    def set_mms(self, MMS):
-        """
-        Set the MMS matrix.
-
-        Parameters
-        ----------
-        MMS : ndarray
-            The MMS matrix.
-
-        Returns
-        -------
-        None
-
-        Examples
-        --------
-        >>> atom.set_mms(my_mms)
-        """
-        self.MMS = MMS
 
     def cluster(
         self,
@@ -273,7 +298,7 @@ class Atom:
         >>> atom.cluster(0.5)
         """
         if self.MMS is None:
-            self.compute_MMS()
+            self.compute_mms()
 
         # Log Quotient Parameters
         self.epsilon = epsilon
@@ -310,7 +335,7 @@ class Atom:
         """
         # Compute Set Cover
         if self.MMS is None:
-            self.compute_MMS()
+            self.compute_mms()
 
         G = self._set_cover_graph(self.MMS, epsilon)
         set_cover = self._compute_set_cover(G)
@@ -350,7 +375,7 @@ class Atom:
         G = G_original.copy(as_view=False)
         right = {i for i in G.nodes() if i[-1] == 1}
         while right:
-            rep, rep_deg = max(
+            rep, _ = max(
                 {(i, G.out_degree(i)) for i in G.nodes() if i[-1] == 0},
                 key=lambda tup: tup[-1],
             )
@@ -395,3 +420,99 @@ class Atom:
             if edges:
                 G.add_edges_from(edges)
         return G
+
+    @staticmethod
+    def _load_data_from_folder(folder_path):
+        """
+        Load data from a folder containing individual pickle files.
+
+        Parameters
+        ----------
+        folder_path : str
+            Path to the folder containing data files.
+
+        Returns
+        -------
+        list
+            List of loaded data (embeddings).
+        """
+        data = []
+        files = glob.glob(os.path.join(folder_path, "*.pkl"))
+        files.sort(key=Atom.file_id_sorter)
+        for file in files:
+            data.append(Atom._load_data(file))
+        return data
+
+    @staticmethod
+    def _load_data(path: str):
+        """
+        Load the MMS matrix from a file.
+
+        Parameters
+        ----------
+        path : str
+            The path to the file where the MMS matrix is saved.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        >>> atom.load_mms('/path/to/mms.pkl')
+        """
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"File not found at {path}.")
+        with open(path, "rb") as f:
+            data = pickle.load(f)
+        return data
+
+    @staticmethod
+    def validate_distance_matrix(M, shape):
+        """
+        Validate a distance matrix. The matrix must be symmetric, have zeros on the diagonal, and have the correct shape.
+
+        Parameters
+        ----------
+        M : numpy.ndarray
+            The distance matrix to validate.
+
+        Returns
+        -------
+        M : numpy.ndarray
+
+        Raises
+        ------
+        AssertionError
+            If the matrix is not a valid distance matrix.
+
+        """
+        assert is_valid_dm(M), "Not a valid distance matrix."
+        assert M.shape == shape, (
+            f"Matrix must have shape {shape} to be a valid multiverse metric space."
+            f"Got shape {M.shape}."
+        )
+        return M
+
+    @staticmethod
+    def file_id_sorter(file_name):
+        """
+        Extract the integer ID from a file path. Helper function for sorting embedding files.
+
+        Parameters
+        ----------
+        file : str
+            The file path.
+
+        Returns
+        -------
+        int
+            The integer ID extracted from the file path.
+
+        Examples
+        --------
+        >>> file_id_sorter('/path/to/file_1.pkl')
+        1
+        """
+        match = re.search(r"(\d+).pkl", file_name)
+        return int(match.group(1)) if match else float("inf")
