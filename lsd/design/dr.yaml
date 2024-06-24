@@ -1,0 +1,30 @@
+#  ╭──────────────────────────────────────────────────────────╮
+#  │ DimReduction Sample Configuration                        │
+#  ╰──────────────────────────────────────────────────────────╯
+
+data_choices:
+  DimReduction:
+    MNIST:
+      num_samples:
+        - 1000
+        - 10000
+
+model_choices:
+  DimReduction:
+    UMAP:
+      nn:
+        - 16
+        - 20
+      min_dist:
+        - 0
+    tSNE:
+      perplexity:
+        - 15
+        - 30
+
+implementation_choices:
+  DimReduction:
+    Thread:
+      n_jobs:
+        - 1
+        - -1
