@@ -1,10 +1,103 @@
 import pytest
+import tempfile
+import os
 from presto import Atom
 import numpy as np
 import networkx as nx
 
 
-def test_compute_MMS_sequential(
+def test_atom_init(data, tmp_data_files):
+    with pytest.raises(TypeError):
+        Atom(data=True)
+
+    atom = Atom(data=tmp_data_files)
+
+    assert isinstance(atom.data, list)
+    assert len(atom.data) == 3
+
+    for i, X in enumerate(atom.data):
+        assert isinstance(X, np.ndarray)
+        assert np.array_equal(X, data[i])
+
+    atom = Atom(data=data)
+    assert isinstance(atom.data, list)
+    assert len(atom.data) == 3
+
+    assert atom.MMS is None
+    assert atom.seed == 42
+
+
+def test_mms_getter_setter(data, MMS, tmp_MMS_file):
+
+    atom1 = Atom(data=data)
+    # Set MMS to None
+    with pytest.raises(TypeError):
+        atom1.MMS = None
+        atom1.MMS = 10
+
+    # Invalid shape
+    with pytest.raises(AssertionError):
+        atom1.MMS = np.array([1, 2, 3])
+
+    # Not symmetric
+    with pytest.raises(AssertionError):
+        atom1.MMS = np.array([[1, 2, 3], [3, 4, 8]])
+
+    # Set MMS to np.array
+    atom1.MMS = MMS
+    assert np.allclose(atom1.MMS, MMS)
+
+    # Set MMS based on file
+    atom1.MMS = tmp_MMS_file
+    assert np.allclose(atom1.MMS, MMS)
+
+    computer = Atom(data=data)
+
+    assert computer.MMS is None
+    computer.compute_mms()
+    assert computer.MMS is not None
+
+
+def test_mms_save_load(atom, MMS):
+    with tempfile.TemporaryDirectory() as tempdir:
+        temp_path = os.path.join(tempdir, "mms_test.pkl")
+        atom.MMS = MMS
+        atom.save_mms(temp_path)
+        assert os.path.exists(temp_path), "Failed to save MMS."
+        loaded_mms = atom._load_data(temp_path)
+        assert np.array_equal(MMS, loaded_mms), "Loaded MMS does not match."
+        assert np.array_equal(
+            atom.MMS, loaded_mms
+        ), "Loaded MMS does not match."
+
+
+def test_validate_distance_matrix_valid(atom):
+    M = np.zeros((4, 4))
+    validated_matrix = atom.validate_distance_matrix(M, shape=(4, 4))
+    assert np.array_equal(
+        M, validated_matrix
+    ), "Valid distance matrix validation failed."
+
+
+def test_validate_distance_matrix_invalid_shape(atom):
+    M = np.zeros((3, 3))
+    with pytest.raises(AssertionError):
+        atom.validate_distance_matrix(M, shape=4)
+
+
+def test_validate_distance_matrix_invalid_type(atom):
+    M = np.zeros((4, 4), dtype=int)
+    with pytest.raises(AssertionError):
+        atom.validate_distance_matrix(M, shape=4)
+
+
+def test_validate_distance_matrix_non_symmetric(atom):
+    M = np.ones((4, 4))
+    with pytest.raises(AssertionError):
+        atom.validate_distance_matrix(M, shape=4)
+
+
+def test_compute_mms_sequential(
     atom,
     MMS,
     n_components,
@@ -12,7 +105,7 @@ def test_compute_MMS_sequential(
     resolution,
     normalization_approx_iterations,
 ):
-    atom.compute_MMS(
+    atom.compute_mms(
         score_type="aggregate",
         n_components=n_components,
         normalize=False,
@@ -37,7 +130,7 @@ def test_compute_MMS_sequential(
     ), "Matrix atom.MMS is not symmetric"
 
 
-def test_compute_MMS_parallel(
+def test_compute_mms_parallel(
     atom,
     MMS,
     n_components,
@@ -45,7 +138,7 @@ def test_compute_MMS_parallel(
     resolution,
     normalization_approx_iterations,
 ):
-    atom.compute_MMS(
+    atom.compute_mms(
         score_type="aggregate",
         n_components=n_components,
         normalize=False,
@@ -137,7 +230,8 @@ def test_set_cover_graph(
     )
 
 
-def test_compute_set_cover(atom, MMS1):
+def test_compute_set_cover(MMS1):
+    atom = Atom(data=[np.random.rand(10, 10) for _ in range(4)])
     G1 = nx.DiGraph()
     G1.add_edges_from([((0, 0), (1, 1)), ((0, 0), (2, 1)), ((1, 0), (3, 1))])
     expected_result1 = {0: [1, 2], 1: [3]}
@@ -171,7 +265,7 @@ def test_compute_set_cover(atom, MMS1):
     expected_result5 = {0: [1]}
     assert atom._compute_set_cover(G5) == expected_result5
 
-    atom.set_mms(MMS1)
+    atom.MMS = MMS1
     nontrivial_cover = atom.compute_set_cover(epsilon=0.1)
     assert nontrivial_cover == {0: [0, 1], 2: [2, 3]}
     trivial_cover = atom.compute_set_cover(epsilon=0)
