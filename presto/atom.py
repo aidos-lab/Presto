@@ -91,6 +91,7 @@ class Atom:
 
     @property
     def MMS(self):
+        """Get the MMS matrix."""
         return self._MMS
 
     @MMS.setter
@@ -98,30 +99,13 @@ class Atom:
         """
         Setter for MMS.
 
-        Load, compute, or assign an MMS matrix to an Atom's embeddings.
+        Load or assign an MMS matrix to an Atom's embeddings.
+        Users can set the MMS matrix directly as a numpy.ndarray, or load it from a pickle file. To compute the MMS matrix based on the embeddings, see `compute_mms`.
 
         Parameters
         ----------
         value : numpy.ndarray or str or None, optional
             The MMS matrix, or path to load it from, or None to compute.
-        projector : class, optional
-            The class of the projection method to use. Default is PCA.
-        n_projections : int, optional
-            The number of projections to use for computing the Presto score. Default is 1.
-        score_type : str, optional
-            The type of score to compute. Must be either "aggregate" or "average". Default is "aggregate".
-        n_components : int, optional
-            The number of components to keep in the projected space. Default is 2.
-        normalize : bool, optional
-            Whether to normalize the data before computing the Presto score. Default is False.
-        max_homology_dim : int, optional
-            The maximum homology dimension to consider when computing the Presto score. Default is 1.
-        resolution : int, optional
-            The resolution parameter for computing the Presto score. Default is 100.
-        normalization_approx_iterations : int, optional
-            The number of iterations to use for the normalization approximation. Default is 1000.
-        parallelize : bool, optional
-            Whether to parallelize the computation. Default is True.
 
         Returns
         -------
@@ -132,16 +116,11 @@ class Atom:
         TypeError
             If the provided `value` is of unsupported type.
 
-        Notes
-        -----
-        This setter allows setting the MMS matrix either directly as a numpy.ndarray,
-        loading it from a file, or computing it from the Atom's data.
 
         Examples
         --------
         >>> atom.MMS = my_mms  # Set MMS directly
         >>> atom.MMS = '/path/to/mms.pkl'  # Load MMS from file
-        >>> atom.MMS = None  # Compute MMS
         """
 
         if isinstance(value, str):
@@ -198,6 +177,10 @@ class Atom:
         Returns:
         -------
         None
+
+        Notes:
+        ------
+        This function sets the MMS matrix for the Atom.
 
         Examples:
         ---------
@@ -487,7 +470,7 @@ class Atom:
     @staticmethod
     def validate_distance_matrix(M, shape):
         """
-        Validate a distance matrix.
+        Validate a distance matrix. The matrix must be symmetric, have zeros on the diagonal, and have the correct shape.
 
         Parameters
         ----------
@@ -496,11 +479,13 @@ class Atom:
 
         Returns
         -------
-        None
+        M : numpy.ndarray
 
-        Notes
-        -----
-        The distance matrix must be symmetric and have zeros on the diagonal.
+        Raises
+        ------
+        AssertionError
+            If the matrix is not a valid distance matrix.
+
         """
         assert is_valid_dm(M), "Not a valid distance matrix."
         assert M.shape == shape, (
@@ -512,7 +497,7 @@ class Atom:
     @staticmethod
     def file_id_sorter(file_name):
         """
-        Extract the integer ID from a file path.
+        Extract the integer ID from a file path. Helper function for sorting embedding files.
 
         Parameters
         ----------
