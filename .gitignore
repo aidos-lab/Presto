@@ -2,10 +2,12 @@
 *.DS_Store
 .venv
 notebooks
+experiments
 .vscode
 .venv
 __pycache__
 *.md
+wandb
 
 
 # Byte-compiled / optimized / DLL files
