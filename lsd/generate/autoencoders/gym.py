@@ -77,7 +77,10 @@ class Gym:
             self.optimizer.zero_grad(set_to_none=True)
             results = self.model(x)
             stats = self.model.module.loss_function(
-                *results, batch_idx=batch_idx, M_N=0.00025, optimizer_idx=0
+                *results,
+                batch_idx=batch_idx,
+                M_N=self.config.kld,
+                optimizer_idx=self.config.optimizer_idx,
             )
             self.loss = stats["loss"]
             self.loss.backward()

@@ -96,6 +96,8 @@ class Trainer(Protocol):
     lr: float = 0.001
     weight_decay: float = 0.0
     epochs: int = 100
+    kld: float = 0.0002
+    optimizer_idx: int = 0
     clip_max_norm: float = 1.0
 
 
