@@ -478,7 +478,7 @@ class LSD:
 
         """
         self.multiverse_size = 0
-        for i, U in enumerate(product(*universes)):
+        for i, U in enumerate(itertools.product(*universes)):
             universe = config.Universe(*U)
             outPath = os.path.join(self.design_path, f"universe_{i}.yml")
             self.write_cfg(outPath, universe)
