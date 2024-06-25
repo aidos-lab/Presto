@@ -80,9 +80,9 @@ class AutoencoderMultiverse(Multiverse):
 
     base: str = "Autoencoder"
     module: str = "lsd.generate.autoencoders"
-    data_choices: str = "lsd/design/data/ae.yaml"
-    model_choices: str = "lsd/design/model/ae.yaml"
-    implementation_choices: str = "/design/implementation/ae.yaml"
+    data_choices: str = "lsd/design/ae.yaml"
+    model_choices: str = "lsd/design/ae.yaml"
+    implementation_choices: str = "/design/ae.yaml"
 
 
 @dataclass
@@ -94,9 +94,9 @@ class DimReductionMultiverse(Multiverse):
 
     base: str = "DimReduction"
     module: str = "lsd.generate.dim_reductions"
-    model_choices: str = "lsd/design/model/dr.yaml"
-    data_choices: str = "lsd/design/data/dr.yaml"
-    implementation_choices: str = "/design/implementation/dr.yaml"
+    model_choices: str = "lsd/design/dr.yaml"
+    data_choices: str = "lsd/design/dr.yaml"
+    implementation_choices: str = "/design/dr.yaml"
 
 
 @dataclass
@@ -111,6 +111,6 @@ class TransformerMultiverse(Multiverse):
 
     base: str = "Transformer"
     module: str = "lsd.generate.transformers"
-    model_choices: str = "lsd/design/model/tf.yaml"
-    data_choices: str = "lsd/design/data/tf.yaml"
-    implementation_choices: str = "/design/implementation/tf.yaml"
+    model_choices: str = "lsd/design/tf.yaml"
+    data_choices: str = "lsd/design/tf.yaml"
+    implementation_choices: str = "/design/tf.yaml"
