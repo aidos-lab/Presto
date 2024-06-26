@@ -152,7 +152,7 @@ def test_cartesian_product(test_yaml2_file, test_dict4):
 
         label = "model_choices"
         generator = "Mistral"
-        parameters = ["nn", "min_dist"]
+        parameters = ["n_neighbors", "min_dist"]
 
         output = tf_lsd._cartesian_product(label, generator, parameters)
 
