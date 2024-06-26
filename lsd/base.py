@@ -50,7 +50,7 @@ class Base(ABC):
         self.params = params
 
     @abstractmethod
-    def setup(self):
+    def setup(self) -> omegaconf.DictConfig:
         """
         Set up the generator.
 
@@ -58,6 +58,10 @@ class Base(ABC):
         the necessary setup tasks for the generator, such as loading
         configurations, preparing data, and initializing models.
 
+        Returns
+        -------
+        omegaconf.DictConfig
+            A configuration object that can be passed directly to the model that trains and generates the final latent space.
         Raises
         ------
         NotImplementedError

@@ -30,7 +30,7 @@ class LSD:
 
     Attributes
     ----------
-    cfg : omegaconf.dictconfig.DictConfig
+    cfg : omegaconf.DictConfig
         Configuration object for the multiverse.
     multiverse_labels : list
         List of labels for multiverse components.
@@ -193,9 +193,7 @@ class LSD:
         }
 
     @multiverse.setter
-    def multiverse(
-        self, multiverse: Union[dict, omegaconf.dictconfig.DictConfig]
-    ) -> None:
+    def multiverse(self, multiverse: Union[dict, omegaconf.DictConfig]) -> None:
         """
         Setter method for multiverse property. Use this method to set a new multiverse configuration to an `LSD` object.
 
@@ -587,7 +585,7 @@ class LSD:
         return sorted(list(set(x).intersection(y)))
 
     @staticmethod
-    def read_params(path: str) -> omegaconf.dictconfig.DictConfig:
+    def read_params(path: str) -> omegaconf.DictConfig:
         """
         Read parameters from a YAML file.
 
@@ -598,7 +596,7 @@ class LSD:
 
         Returns
         -------
-        omegaconf.dictconfig.DictConfig
+        omegaconf.DictConfig
             Loaded parameters as a DictConfig object.
 
         Raises
@@ -622,7 +620,7 @@ class LSD:
         ----------
         config_file_path : str
             Path to the output YAML file.
-        cfg : dict or omegaconf.dictconfig.DictConfig
+        cfg : dict or omegaconf.DictConfig
             Configuration data to be written to the file.
 
         Raises
@@ -644,7 +642,7 @@ class LSD:
         path: str,
         choices: str,
         base: str,
-    ) -> Union[dict, omegaconf.dictconfig.DictConfig]:
+    ) -> Union[dict, omegaconf.DictConfig]:
         """
         Filter parameters from a YAML file.
 
@@ -738,7 +736,7 @@ class LSD:
 
         Parameters
         ----------
-        multiverse : dict or omegaconf.dictconfig.DictConfig
+        multiverse : dict or omegaconf.DictConfig
             Multiverse configuration.
 
         Raises
@@ -748,7 +746,7 @@ class LSD:
         ValueError
             If the multiverse does not contain required labels.
         """
-        if not isinstance(multiverse, (dict, omegaconf.dictconfig.DictConfig)):
+        if not isinstance(multiverse, (dict, omegaconf.DictConfig)):
             raise TypeError("Multiverse must be a dictionary.")
         for label in self.multiverse_labels:
             if label not in multiverse:
