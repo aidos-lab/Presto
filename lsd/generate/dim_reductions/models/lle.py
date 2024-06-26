@@ -48,7 +48,7 @@ class LLEProjector(BaseProjector):
         np.ndarray
             Locally Linear Embedding of shape (n_samples,self.config.n_components).
         """
-        params = self._get_parameters(LLE, self.config)
+        params = self.get_parameters(LLE, self.config)
         operator = LLE(**params)
         return operator.fit_transform(data)
 

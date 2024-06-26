@@ -47,7 +47,7 @@ class UMAPProjector(BaseProjector):
         np.ndarray
             UMAP embedding of shape (n_samples,self.config.n_components).
         """
-        params = self._get_parameters(UMAP, self.config)
+        params = self.get_parameters(UMAP, self.config)
         operator = UMAP(**params)
         return operator.fit_transform(data)
 

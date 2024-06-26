@@ -49,7 +49,7 @@ class TSNEProjector(BaseProjector):
             tSNE embedding of shape (n_samples,self.config.n_components).
 
         """
-        params = self._get_parameters(TSNE, self.config)
+        params = self.get_parameters(TSNE, self.config)
         operator = TSNE(**params)
 
         return operator.fit_transform(data)
