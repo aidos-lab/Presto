@@ -569,7 +569,7 @@ def test_dr_phate_multiverse():
           gamma:
             - 1.0
           decay:
-            - 0.5
+            - 20
           t:
             - auto
 
