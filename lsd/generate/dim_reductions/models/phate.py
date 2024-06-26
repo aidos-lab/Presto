@@ -1,24 +1,63 @@
 from phate import PHATE
+
 from lsd.generate.dim_reductions.models.projector import BaseProjector
+from lsd.generate.dim_reductions.configs import Phate as PHATEConfig
 
 
 class PhateProjector(BaseProjector):
-    def __init__(self, config):
-        super(
-            PhateProjector,
-            self,
-        ).__init__(config)
+    """
+    Class for performing dimensionality reduction using Potential of Heat-diffusion for Affinity-based Trajectory Embedding (PHATE).
+
+    Inherits from BaseProjector, which provides common functionality for projectors.
+
+    Parameters
+    ----------
+    config : PHATEConfig
+        Configuration object containing parameters for PHATE projection.
+
+    Methods
+    -------
+    project(data)
+        Perform dimensionality reduction on input data using PHATE.
+
+    """
+
+    def __init__(self, config: PHATEConfig):
+        """
+        Constructor method for PHATEProjector class.
+
+        Parameters
+        ----------
+        config : PHATEConfig
+            Configuration object containing parameters for PHATE projection.
+        """
+        super().__init__(config)
 
     def project(self, data):
-        operator = PHATE(
-            knn=self.config.k,
-            gamma=self.config.gamma,
-            knn_dist=self.metric,
-            n_components=self.dim,
-            verbose=0,
-        )
+        """
+        Perform dimensionality reduction on input data using Potential of Heat-diffusion for Affinity-based Trajectory Embedding (PHATE).
+
+        Parameters
+        ----------
+        data : array-like of shape (n_samples, n_features)
+            Input data to be transformed.
+
+        Returns
+        -------
+        np.ndarray
+            PHATE embedding of shape (n_samples,self.config.n_components).
+        """
+        params = self._get_parameters(PHATE, self.config)
+        operator = PHATE(**params)
         return operator.fit_transform(data)
 
 
-def initialize():
+def initialize() -> PhateProjector:
+    """
+    Function to initialize an instance of PHATEProjector.
+
+    Returns
+    -------
+    PhateProjector
+    """
     return PhateProjector
