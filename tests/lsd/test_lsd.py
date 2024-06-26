@@ -3,6 +3,7 @@ import pickle
 import tempfile
 from itertools import product
 import numpy as np
+import platform
 
 import omegaconf
 import pytest
@@ -292,6 +293,7 @@ def test_dr_generation(
     test_yaml_dr_tsne_file,
     test_yaml_dr_isomap_file,
     test_yaml_dr_lle_file,
+    test_yaml_dr_phate_file,
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
         # UMAP
@@ -327,6 +329,16 @@ def test_dr_generation(
         lle_lsd.cfg.implementation_choices = test_yaml_dr_lle_file
 
         lle_lsd.generate()
+
+        # PHATE
+        architecture = platform.machine()
+        if architecture not in ["arm64e", "arm64"]:
+            phate_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
+            phate_lsd.cfg.model_choices = test_yaml_dr_phate_file
+            phate_lsd.cfg.data_choices = test_yaml_dr_phate_file
+            phate_lsd.cfg.implementation_choices = test_yaml_dr_phate_file
+
+            phate_lsd.generate()
 
 
 def test_dr_data(
