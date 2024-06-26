@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Protocol, Optional, Union
 
 
 #  ╭──────────────────────────────────────────────────────────╮
@@ -10,6 +10,8 @@ class Projector(Protocol):
     module: str = "lsd.generate.dim_reductions.models.projector"
     dim: int = 2
     metric: str = "euclidean"
+    seed: int = 42
+    max_ambient_dim: Optional[int] = 50
 
 
 @dataclass
@@ -19,7 +21,6 @@ class UMAP(Projector):
     nn: int = 15
     min_dist: float = 0.1
     init: str = "spectral"
-    seed: int = 42
 
 
 @dataclass
@@ -28,7 +29,6 @@ class tSNE(Projector):
     module: str = "lsd.generate.dim_reductions.models.tsne"
     perplexity: int = 30
     ee: float = 12.0
-    seed: int = 42
 
 
 @dataclass
@@ -40,7 +40,7 @@ class Phate(Projector):
     k: int = 5
     gamma: float = 1.0
     decay: float = 0.5
-    t: Any = "auto"
+    t: Union[float, str] = "auto"
 
 
 @dataclass
@@ -70,7 +70,7 @@ class GeneratedData(Protocol):
     generator: str
     num_samples: int = 1000
     seed: int = 42
-    path: Any = None
+    path: Optional[str] = None
 
 
 @dataclass
@@ -166,7 +166,7 @@ class MNIST(LocalData):
     module: str = "lsd.generate.dim_reductions.datasets.local"
     generator: str = "mnist"
     num_samples: int = 1000
-    path: Any = None
+    path: Optional[str] = None
 
 
 #  ╭──────────────────────────────────────────────────────────╮
