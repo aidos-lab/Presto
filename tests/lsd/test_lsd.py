@@ -237,7 +237,7 @@ def test_design(
             cfg0.model_choices.name
             == "Uniform Manifold Approximation and Projection"
         )
-        assert cfg0.model_choices.nn == 16
+        assert cfg0.model_choices.n_neighbors == 16
         assert cfg0.model_choices.min_dist == 0
         assert cfg0.implementation_choices.n_jobs == 1
 
@@ -250,7 +250,7 @@ def test_design(
             cfg1.model_choices.name
             == "Uniform Manifold Approximation and Projection"
         )
-        assert cfg1.model_choices.nn == 16
+        assert cfg1.model_choices.n_neighbors == 16
         assert cfg1.model_choices.min_dist == 0
         assert cfg1.implementation_choices.n_jobs == -1
 
