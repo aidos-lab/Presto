@@ -4,11 +4,18 @@ import pickle
 import re
 from dataclasses import fields
 from datetime import datetime
-from typing import Dict
+from typing import Union, Dict, Any
 
 import numpy as np
 from dotenv import load_dotenv
 import wandb
+from omegaconf import DictConfig
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │  Custom Type for Configuration objects                   │
+#  ╰──────────────────────────────────────────────────────────╯
+DictType = Dict[str, Any]
+ConfigType = Union[DictType, DictConfig]
 
 
 class LoadClass:

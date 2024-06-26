@@ -1,8 +1,7 @@
 " Base class for Multiverse Generators."
 
 from abc import ABC, abstractmethod
-from typing import Union
-import omegaconf
+from lsd.utils import ConfigType
 
 
 class Base(ABC):
@@ -19,13 +18,13 @@ class Base(ABC):
 
     Parameters
     ----------
-    params : Union[dict, omegaconf.DictConfig]
+    params : ConfigType
         Configuration parameters for setting up the multiverse generator. This
-        can be a dictionary or an `omegaconf.DictConfig` object.
+        can be a dictionary or an `ConfigType` object.
 
     Attributes
     ----------
-    params : Union[dict, omegaconf.DictConfig]
+    params : ConfigType
         Stores the configuration parameters provided during instantiation.
 
     Methods
@@ -46,11 +45,11 @@ class Base(ABC):
     classes must implement all abstract methods.
     """
 
-    def __init__(self, params: Union[dict, omegaconf.DictConfig]):
+    def __init__(self, params: ConfigType):
         self.params = params
 
     @abstractmethod
-    def setup(self) -> omegaconf.DictConfig:
+    def setup(self) -> ConfigType:
         """
         Set up the generator.
 
@@ -60,8 +59,8 @@ class Base(ABC):
 
         Returns
         -------
-        omegaconf.DictConfig
-            A configuration object that can be passed directly to the model that trains and generates the final latent space.
+        ConfigType
+            A configuration object that can be passed directly to the model that trains and generates the final latent space. Either a dictionary or omegaconf.DictConfig object.
         Raises
         ------
         NotImplementedError

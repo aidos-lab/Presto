@@ -9,6 +9,7 @@ from typing import Union, Tuple, Callable
 
 import lsd.config as config
 import lsd.utils as ut
+from lsd.utils import ConfigType
 
 
 class LSD:
@@ -30,7 +31,7 @@ class LSD:
 
     Attributes
     ----------
-    cfg : omegaconf.DictConfig
+    cfg : ConfigType
         Configuration object for the multiverse.
     multiverse_labels : list
         List of labels for multiverse components.
@@ -40,14 +41,14 @@ class LSD:
         Full output directory path including experiment name.
     experimentName : str
         Name of the experiment.
-    _multiverse : dict
+    _multiverse : ConfigType
         Internal storage for the multiverse components.
 
     Properties
     ----------
-    multiverse : dict
+    multiverse : ConfigType
         The multiverse components loaded from the configuration.
-    generators : dict
+    generators : ConfigType
         A dictionary of generators for each label in the multiverse.
     experiment : str
         The output directory for the experiment.
@@ -164,7 +165,7 @@ class LSD:
     #  │ Getters & Setters                                        │
     #  ╰──────────────────────────────────────────────────────────╯
     @property
-    def multiverse(self) -> dict:
+    def multiverse(self) -> ConfigType:
         """
         Getter property for accessing the multiverse configuration.
 
@@ -178,7 +179,7 @@ class LSD:
         return self._multiverse
 
     @property
-    def generators(self) -> dict:
+    def generators(self) -> ConfigType:
         """
         Getter property for generators. Gets a sorted list of generators for label in the multiverse (defaults are data_choices, model_choices, implementation_choices).
 
@@ -193,13 +194,13 @@ class LSD:
         }
 
     @multiverse.setter
-    def multiverse(self, multiverse: Union[dict, omegaconf.DictConfig]) -> None:
+    def multiverse(self, multiverse: ConfigType) -> None:
         """
         Setter method for multiverse property. Use this method to set a new multiverse configuration to an `LSD` object.
 
         Parameters:
         -------
-        multiverse : dict
+        multiverse : ConfigType
             The new multiverse configuration to set.
 
         Raises:
@@ -585,7 +586,7 @@ class LSD:
         return sorted(list(set(x).intersection(y)))
 
     @staticmethod
-    def read_params(path: str) -> omegaconf.DictConfig:
+    def read_params(path: str) -> ConfigType:
         """
         Read parameters from a YAML file.
 
@@ -596,7 +597,7 @@ class LSD:
 
         Returns
         -------
-        omegaconf.DictConfig
+        ConfigType
             Loaded parameters as a DictConfig object.
 
         Raises
@@ -620,7 +621,7 @@ class LSD:
         ----------
         config_file_path : str
             Path to the output YAML file.
-        cfg : dict or omegaconf.DictConfig
+        cfg : ConfigType
             Configuration data to be written to the file.
 
         Raises
@@ -642,7 +643,7 @@ class LSD:
         path: str,
         choices: str,
         base: str,
-    ) -> Union[dict, omegaconf.DictConfig]:
+    ) -> ConfigType:
         """
         Filter parameters from a YAML file.
 
@@ -736,7 +737,7 @@ class LSD:
 
         Parameters
         ----------
-        multiverse : dict or omegaconf.DictConfig
+        multiverse : ConfigType
             Multiverse configuration.
 
         Raises
@@ -747,7 +748,9 @@ class LSD:
             If the multiverse does not contain required labels.
         """
         if not isinstance(multiverse, (dict, omegaconf.DictConfig)):
-            raise TypeError("Multiverse must be a dictionary.")
+            raise TypeError(
+                "Multiverse must be a dictionary or omegaconf.DictConfig."
+            )
         for label in self.multiverse_labels:
             if label not in multiverse:
                 raise ValueError(f"Multiverse must have {label} key.")
