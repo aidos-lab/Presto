@@ -783,6 +783,51 @@ def test_yaml_dr_manifold_data_file(test_dr_manifold_data_multiverse):
     os.remove(temp_file_path)
 
 
+@pytest.fixture
+def test_dr_pca_training_multiverse():
+    return """
+    data_choices:
+      DimReduction:
+        MNIST:
+          num_samples:
+            - 100
+          path:
+            - /Users/jeremy.wayland/Downloads/mnist.npz
+          seed:
+            - 68
+          
+    model_choices:
+      DimReduction:
+        LLE:
+          nn:
+            - 5
+          reg:
+            - 0.001
+          max_ambient_dim:
+            - 20
+            - 
+
+    implementation_choices:
+      DimReduction:
+        Thread:
+          n_jobs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_dr_pca_training_file(test_dr_pca_training_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_dr_pca_training_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
 @contextmanager
 def set_env_var(key: str, value: str):
     """
