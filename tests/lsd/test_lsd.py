@@ -7,11 +7,8 @@ import numpy as np
 import omegaconf
 import pytest
 from memory_profiler import profile
-from omegaconf.errors import ConfigKeyError
 
-from lsd import utils as ut
 from lsd.config import AutoencoderMultiverse
-from lsd.generate.autoencoders.models.beta import BetaVAE
 from lsd.generate.autoencoders.models.wae import WAE
 from lsd.lsd import LSD
 from .conftest import set_env_var
@@ -359,6 +356,38 @@ def test_dr_data(
         dr_manifold_data_lsd.generate()
 
 
+def test_dr_pca_training(test_yaml_dr_pca_training_file):
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        # MNIST
+        dr_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
+        dr_lsd.cfg.model_choices = test_yaml_dr_pca_training_file
+        dr_lsd.cfg.data_choices = test_yaml_dr_pca_training_file
+        dr_lsd.cfg.implementation_choices = test_yaml_dr_pca_training_file
+
+        dr_lsd.generate()
+
+        assert os.path.isdir(dr_lsd.latent_spaces)
+        assert len(os.listdir(dr_lsd.latent_spaces)) == 2
+
+        assert os.path.isdir(dr_lsd.models)
+        assert len(os.listdir(dr_lsd.models)) == 2
+
+        pca_projected = os.path.join(dr_lsd.models, "universe_0.pkl")
+        null_model = os.path.join(dr_lsd.models, "universe_1.pkl")
+
+        with open(pca_projected, "rb") as f:
+            L = pickle.load(f)
+
+        assert isinstance(L, np.ndarray)
+        assert L.shape == (100, 20)
+
+        with open(null_model, "rb") as f:
+            L = pickle.load(f)
+
+        assert L is None
+
+
 def test_generate_io(
     test_yaml_dr_lle_file,
     test_yaml_ae_no_train_file,
@@ -378,6 +407,9 @@ def test_generate_io(
             pkl_file = os.path.join(latents, "universe_0.pkl")
             assert os.path.isfile(pkl_file)
 
+            models = os.path.join(dr_lsd.outDir, f"models/")
+            assert os.path.isdir(models)
+
             with open(pkl_file, "rb") as f:
                 L = pickle.load(f)
 
@@ -385,14 +417,18 @@ def test_generate_io(
             assert L.shape == (150, 2)
 
             assert len(os.listdir(latents)) == 1
+            assert len(os.listdir(models)) == 1
 
             # Cleaning
             dr_lsd.clean_latent_spaces()
             assert not os.path.isdir(latents)
             assert os.path.isdir(dr_lsd.outDir)
 
-            with pytest.raises(ValueError):
-                dr_lsd.clean_models()
+            assert os.path.isdir(models)
+            dr_lsd.clean_models()
+            assert not os.path.isdir(models)
+            assert os.path.isdir(dr_lsd.outDir)
+
             with pytest.raises(ValueError):
                 dr_lsd.clean_logs()
 
