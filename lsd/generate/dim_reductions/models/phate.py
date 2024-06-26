@@ -47,7 +47,7 @@ class PhateProjector(BaseProjector):
         np.ndarray
             PHATE embedding of shape (n_samples,self.config.n_components).
         """
-        params = self._get_parameters(PHATE, self.config)
+        params = self.get_parameters(PHATE, self.config)
         operator = PHATE(**params)
         return operator.fit_transform(data)
 

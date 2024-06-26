@@ -21,7 +21,7 @@ class BaseProjector(ABC):
     project(data)
         Abstract method to perform the projection on the provided data. Must be implemented by subclasses.
 
-    _get_parameters(Operator, config) -> dict
+    get_parameters(Operator, config) -> dict
         Static method to extract relevant parameters from the configuration for the given operator.
     """
 
@@ -57,7 +57,7 @@ class BaseProjector(ABC):
         raise NotImplementedError()
 
     @staticmethod
-    def _get_parameters(Operator, config) -> dict:
+    def get_parameters(Operator, config) -> dict:
         """
         Extracts the relevant parameters from the configuration for the given operator.
 

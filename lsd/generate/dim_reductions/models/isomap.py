@@ -49,7 +49,7 @@ class IsomapProjector(BaseProjector):
             ISOMAP embedding of shape (n_samples,self.config.n_components).
 
         """
-        params = self._get_parameters(Isomap, self.config)
+        params = self.get_parameters(Isomap, self.config)
         operator = Isomap(**params)
         return operator.fit_transform(data)
 
