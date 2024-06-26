@@ -282,7 +282,7 @@ class Phate(Projector):
 
     Key Attributes
     -----------------
-    k : int
+    knn : int
         Number of nearest neighbors on which to build kernel.
     decay : Optional[int]
         Decay rate of kernel tails used in alpha decay.
@@ -321,7 +321,7 @@ class Phate(Projector):
         "Potential of Heat-diffusion for Affinity-based Transition Embedding"
     )
     module: str = "lsd.generate.dim_reductions.models.phate"
-    k: int = 5
+    knn: int = 5
     decay: Optional[int] = 40
     gamma: float = 1.0
     t: Union[int, str] = "auto"

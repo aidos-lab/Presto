@@ -26,7 +26,7 @@ def test_multiverse1():
     model_choices:
       DimReduction:
         UMAP:
-          nn:
+          n_neighbors:
             - 16
             - 20
           min_dist:
@@ -152,7 +152,7 @@ def test_multiverse3():
     model_choices:
       DimReduction:
         UMAP:
-          nn:
+          n_neighbors:
             - 16
             - 20
           min_dist:
@@ -203,7 +203,7 @@ def test_multiverse4():
     model_choices:
       Transformer:
         Mistral:
-          nn:
+          n_neighbors:
             - 16
             - 20
           min_dist:
@@ -490,7 +490,7 @@ def test_dr_umap_multiverse():
     model_choices:
       DimReduction:
         UMAP:
-          nn:
+          n_neighbors:
             - 16
           min_dist:
             - 0
@@ -564,7 +564,7 @@ def test_dr_phate_multiverse():
     model_choices:
       DimReduction:
         Phate:
-          k:
+          knn:
             - 5
           gamma:
             - 1.0
@@ -606,7 +606,7 @@ def test_dr_isomap_multiverse():
     model_choices:
       DimReduction:
         Isomap:
-          nn:
+          n_neighbors:
             - 30
           metric:
             - manhattan
@@ -644,7 +644,7 @@ def test_dr_lle_multiverse():
     model_choices:
       DimReduction:
         LLE:
-          nn:
+          n_neighbors:
             - 5
           reg:
             - 0.001
@@ -686,7 +686,7 @@ def test_dr_local_data_multiverse():
     model_choices:
       DimReduction:
         LLE:
-          nn:
+          n_neighbors:
             - 5
           reg:
             - 0.001
@@ -753,7 +753,7 @@ def test_dr_manifold_data_multiverse():
     model_choices:
       DimReduction:
         LLE:
-          nn:
+          n_neighbors:
             - 5
           reg:
             - 0.001
@@ -799,7 +799,7 @@ def test_dr_pca_training_multiverse():
     model_choices:
       DimReduction:
         LLE:
-          nn:
+          n_neighbors:
             - 5
           reg:
             - 0.001
