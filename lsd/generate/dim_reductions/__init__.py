@@ -11,7 +11,14 @@ from .configs import (
     moons,
     noisy_annulus,
 )
-from .configs import Thread
+from .configs import (
+    Trainer,
+    UMAPTrainer,
+    tSNETrainer,
+    PhateTrainer,
+    IsomapTrainer,
+    LLETrainer,
+)
 from .dr import DimReduction
 
 __all__ = [
@@ -31,5 +38,10 @@ __all__ = [
     "barbell",
     "moons",
     "noisy_annulus",
-    "Thread",
+    "Trainer",
+    "UMAPTrainer",
+    "tSNETrainer",
+    "PhateTrainer",
+    "IsomapTrainer",
+    "LLETrainer",
 ]
