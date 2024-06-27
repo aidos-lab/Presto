@@ -164,7 +164,7 @@ def test_multiverse3():
 
     implementation_choices:
       DimReduction:
-        Thread:
+        UMAPTrainer:
           n_jobs:
             - 1
             - -1
@@ -497,7 +497,7 @@ def test_dr_umap_multiverse():
 
     implementation_choices:
       DimReduction:
-        Thread:
+        UMAPTrainer:
           n_jobs:
             - 1
     """
@@ -533,7 +533,7 @@ def test_dr_tsne_multiverse():
 
     implementation_choices:
       DimReduction:
-        Thread:
+        tSNETrainer:
           n_jobs:
             - 1
     """
@@ -575,7 +575,7 @@ def test_dr_phate_multiverse():
 
     implementation_choices:
       DimReduction:
-        Thread:
+        PhateTrainer:
           n_jobs:
             - 1
     """
@@ -613,7 +613,7 @@ def test_dr_isomap_multiverse():
 
     implementation_choices:
       DimReduction:
-        Thread:
+        IsomapTrainer:
           n_jobs:
             - 1
     """
@@ -651,7 +651,7 @@ def test_dr_lle_multiverse():
 
     implementation_choices:
       DimReduction:
-        Thread:
+        LLETrainer:
           n_jobs:
             - 1
     """
@@ -693,7 +693,7 @@ def test_dr_local_data_multiverse():
 
     implementation_choices:
       DimReduction:
-        Thread:
+        LLETrainer:
           n_jobs:
             - 1
     """
@@ -760,7 +760,7 @@ def test_dr_manifold_data_multiverse():
 
     implementation_choices:
       DimReduction:
-        Thread:
+        LLETrainer:
           n_jobs:
             - 1
     logging:
@@ -809,7 +809,7 @@ def test_dr_pca_training_multiverse():
 
     implementation_choices:
       DimReduction:
-        Thread:
+        LLETrainer:
           n_jobs:
             - 1
     """
