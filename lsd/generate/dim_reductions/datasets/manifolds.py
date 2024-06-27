@@ -12,7 +12,29 @@ from sklearn.neighbors import kneighbors_graph
 def swiss_roll(
     **kwargs,
 ):
-    """Generate Swiss Roll data set."""
+    """
+    Swiss Roll Generator.
+
+    Parameters
+    ----------
+    **kwargs : dict
+        Dictionary of keyword arguments.
+        - num_samples : int
+            Number of samples to generate.
+        - seed : int
+            Random seed for reproducibility.
+        - hole : bool
+            If True, creates a hole in the Swiss Roll.
+        - num_classes : int, optional
+            Number of clusters to create. If not provided, all points are given the same label.
+
+    Returns
+    -------
+    data : ndarray
+        The Swiss Roll Embedding of shape (num_samples, 3).
+    labels : ndarray
+        KNN-generated cluster labels for the data points. Shape (num_samples,).
+    """
 
     data, _ = make_swiss_roll(
         n_samples=kwargs["num_samples"],
@@ -31,25 +53,105 @@ def swiss_roll(
 
 
 def blobs(**kwargs):
-    """Generate set of Gaussian blobs."""
+    """
+    Gaussian Blob Generator.
+
+    Parameters
+    ----------
+    **kwargs : dict
+        Dictionary of keyword arguments.
+        - num_samples : int
+            Number of samples to generate.
+        - seed : int
+            Random seed for reproducibility.
+
+    Returns
+    -------
+    data : ndarray
+        The Gaussian blob embedding. Shape (num_samples, 2).
+    labels : ndarray
+        Labels for the blobs data points. Shape (num_samples,).
+    """
 
     return make_blobs(kwargs["num_samples"], random_state=kwargs["seed"])
 
 
 def moons(**kwargs):
-    """Generate moons data set with labels."""
+    """
+    Moons Generator.
+
+    Parameters
+    ----------
+    **kwargs : dict
+        Dictionary of keyword arguments.
+        - num_samples : int
+            Number of samples to generate.
+        - seed : int
+            Random seed for reproducibility.
+
+    Returns
+    -------
+    data : ndarray
+        The Moons embedding. Shape (num_samples, 2).
+    labels : ndarray
+        Labels for the Moons data points. Shape (num_samples,).
+    """
 
     return make_moons(kwargs["num_samples"], random_state=kwargs["seed"])
 
 
 def nested_circles(**kwargs):
-    """Generate nested circles with labels."""
+    """
+    Nested Circles Generator.
+
+    Parameters
+    ----------
+    **kwargs : dict
+        Dictionary of keyword arguments.
+        - num_samples : int
+            Number of samples to generate.
+        - seed : int
+            Random seed for reproducibility.
+
+    Returns
+    -------
+    data : ndarray
+        The Nested Circles embedding. Shape (num_samples, 2).
+    labels : ndarray
+        Labels for the Nested Circles data points. Shape (num_samples,).
+    """
 
     return make_circles(kwargs["num_samples"], random_state=kwargs["seed"])
 
 
 def barbell(**kwargs):
-    """Generate uniformly-sampled 2-D barbelll with colours."""
+    """
+    Barbell Generator.
+
+    This function generates a uniformly-sampled 2-D barbelll with colours.
+
+
+    Parameters
+    ----------
+    **kwargs : dict
+        Dictionary of keyword arguments.
+        - num_samples : int
+            Number of samples to generate.
+        - seed : int
+            Random seed for reproducibility.
+        - beta : float
+            Width of the barbell.
+        - num_classes : int, optional
+            Number of clusters to create. If not provided, all points are given the same label.
+
+    Returns
+    -------
+    data : ndarray
+        The Barbell embedding. Shape (num_samples, 2).
+    labels : ndarray
+        Labels for the Barbell data points. Shape (num_samples,).
+
+    """
     if kwargs.get("seed"):
         np.random.seed(kwargs["seed"])
     beta = kwargs["beta"]
@@ -81,34 +183,36 @@ def barbell(**kwargs):
 
 
 def noisy_annulus(**kwargs):
-    """Sample points from noisy annulus,
-    with points obstructing a clear H1 feature.
+    """
+    Noisy Annulus Generator.
 
-    This function samples `kwargs["num_samples"]` points from an annulus with inner radius `r`
-    and outer radius `R`, and then adds f*kwargs["num_samples"] noisy points to the interior.
+    Sample points from noisy annulus, with points obstructing a clear H1 feature.
+
+    This function samples `kwargs["num_samples"]` points from an annulus with inner radius `r`and outer radius `R`, and then adds f*kwargs["num_samples"] noisy points to the interior.
 
     Parameters
     ----------
-    kwargs["num_samples"] : int
-        kwargs["num_samples"]umber of points to sample
-
-    r : float
-        Inner radius of annulus
-
-    R : float
-        Outer radius of annulus
-
-    f : float
-        Fraction of noisy points to include.
-
-
-    **kwargs:
-        Optional keyword arguments, such as a fixed random state for the
-        pseudo-random number generator.
+    **kwargs : dict
+        Dictionary of keyword arguments.
+        - num_samples : int
+            Number of samples to generate.
+        - seed : int
+            Random seed for reproducibility.
+        - inner_radius : float
+            Inner radius of the annulus.
+        - outer_radius : float
+            Outer radius of the annulus.
+        - noise : float
+            Fraction of noisy points to add to the interior.
+        - num_classes : int, optional
+            Number of clusters to create. If not provided, all points are given the same label.
 
     Returns
     -------
-    Array of (x, y) coordinates.
+    data : ndarray
+        The Noisy Annulus embedding. Shape (num_samples, 2).
+    labels : ndarray
+        Labels for the Noisy Annulus data points. Shape (num_samples,).
     """
     r = kwargs["inner_radius"]
     R = kwargs["outer_radius"]
@@ -138,8 +242,30 @@ def noisy_annulus(**kwargs):
     return X, labels
 
 
-def synthetic_manifold_labels(data, n_clusters, k=10):
-    """Assign Labels for Sklearn Data Sets based on KNN Graphs"""
+def synthetic_manifold_labels(data: np.ndarray, n_clusters: int, k: int = 10):
+    """
+    Assign cluster labels to a dataset using K-Nearest Neighbors (KNN) graphs and agglomerative clustering.
+
+    Parameters
+    ----------
+    data : array-like of shape (n_samples, n_features)
+        The input data for which to assign labels. Each row represents a data point, and each column represents a feature.
+
+    n_clusters : int
+        The number of clusters to form.
+
+    k : int, optional, default=10
+        The number of nearest neighbors to use for constructing the KNN graph.
+
+    Returns
+    -------
+    labels : ndarray of shape (n_samples,)
+        The cluster labels assigned to each data point.
+
+    Notes
+    -----
+    This function uses the KNN graph to represent the data structure and performs agglomerative clustering using the Ward linkage method to group the data into clusters.
+    """
 
     connectivity = kneighbors_graph(data, n_neighbors=k, include_self=False)
     ward = AgglomerativeClustering(
