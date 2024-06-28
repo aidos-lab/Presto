@@ -92,7 +92,7 @@ class MNIST(DataModule):
 
 @dataclass
 class Trainer(Protocol):
-    module: str
+    module: str = "lsd.generate.autoencoders.optimizers.base"
     lr: float = 0.001
     weight_decay: float = 0.0
     epochs: int = 100
@@ -104,7 +104,6 @@ class Trainer(Protocol):
 @dataclass
 class Adam(Trainer):
     name: str = "Adam"
-    module: str = "lsd.generate.autoencoders.optimizers.adam"
     betas: tuple[float, float] = (0.9, 0.999)
     eps: float = 1e-8
 
@@ -112,7 +111,6 @@ class Adam(Trainer):
 @dataclass
 class SGD(Trainer):
     name: str = "SGD"
-    module: str = "lsd.generate.autoencoders.optimizers.sgd"
     lr: float = 0.01
     momentum: float = 0.9
     nesterov: bool = False
