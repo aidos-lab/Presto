@@ -57,7 +57,7 @@ def mnist(**kwargs):
     The function assumes that the Kaggle MNIST dataset is stored in a .npz file with 'x_train' and 'y_train' keys. The 'x_train' data is reshaped into a 2D array where each row is a flattened 28x28 image.
     """
     bundle = np.load(kwargs["path"])
-    data = x_train = bundle["x_train"].reshape(-1, 28 * 28)
+    data = bundle["x_train"].reshape(-1, 28 * 28)
     labels = bundle["y_train"]
     mask = range(len(data))
     if kwargs["num_samples"]:
