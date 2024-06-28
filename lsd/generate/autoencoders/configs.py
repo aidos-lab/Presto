@@ -229,7 +229,7 @@ class celebA(DataModule):
     name: str = "celebA"
     module: str = "lsd.generate.autoencoders.datasets.celebA"
     in_channels: int = 3
-    image_size: int = 64
+    img_size: int = 64
     num_classes: int = 40
 
 
