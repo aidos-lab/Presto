@@ -1,23 +1,56 @@
 from __future__ import annotations
-
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Protocol
-
 import os
+from abc import ABC, abstractmethod
+
 import torch
-from torch.utils.data import RandomSampler, SequentialSampler
+from torch.utils.data import RandomSampler
 from torch_geometric.data import Dataset
-from torch_geometric.loader import DataLoader, ImbalancedSampler
+from torch_geometric.loader import DataLoader
+
+from lsd.generate.autoencoders.configs import DataModule as DataModuleConfig
 
 
 class DataModule(ABC):
+    """
+    Abstract base class for data modules in a PyTorch-based framework.
+
+    The `DataModule` class is designed to provide a consistent interface for handling datasets
+    in machine learning workflows. It encompasses methods for setting up the dataset,
+    preparing data splits, and creating data loaders for training, validation, and testing.
+
+    Attributes
+    ----------
+    entire_ds : Dataset
+        The complete dataset containing all data, which will be split into training, validation, and test sets.
+    train_ds : Dataset, optional
+        The dataset used for training. Initialized as `None`.
+    test_ds : Dataset, optional
+        The dataset used for testing. Initialized as `None`.
+    val_ds : Dataset, optional
+        The dataset used for validation. Initialized as `None`.
+    config : DataModuleConfig
+        Configuration object containing parameters for dataset processing and training.
+    data_dir : str
+        Directory path where the dataset is stored or downloaded.
+    random_sampler : RandomSampler, optional
+        Sampler used for randomly sampling a subset of the training dataset based on `sample_size`.
+    """
+
     entire_ds: Dataset
     train_ds: Dataset | None = None
     test_ds: Dataset | None = None
     val_ds: Dataset | None = None
 
-    def __init__(self, config) -> None:
+    def __init__(self, config: DataModuleConfig) -> None:
+        """
+        Initializes the DataModule with the provided configuration.
+
+        Parameters
+        ----------
+        config : DataModuleConfig
+            Configuration object that contains various parameters such as `seed`, `batch_size`, `num_workers`,
+            `pin_memory`, and others required for dataset handling and training setup.
+        """
         super().__init__()
         self.config = config
         torch.manual_seed(config.seed)
@@ -37,16 +70,30 @@ class DataModule(ABC):
     @abstractmethod
     def setup(self) -> Dataset:
         """
-        This method should be implemented by the user.
-        Please provide a concatenation of the entire dataset,
-        train, test and validation. The prepare_data will create
-        the appropriate splits.
+        Abstract method to be implemented by subclasses to provide dataset setup.
 
-        returns: Dataset
+        This method should return the complete dataset which includes all samples that
+        will be later split into training, validation, and test sets.
+
+        Returns
+        -------
+        Dataset
+            The complete dataset to be used for training, validation, and testing.
+
+        Raises
+        ------
+        NotImplementedError
+            This method must be implemented in subclasses.
         """
         raise NotImplementedError()
 
     def prepare_data(self):
+        """
+        Splits the entire dataset into training, validation, and test sets.
+
+        This method uses the `random_split` function to divide the dataset according to
+        the ratios specified in `config.train_test_split`.
+        """
         self.train_ds, self.test_ds, self.val_ds = (
             torch.utils.data.random_split(
                 self.entire_ds, self.config.train_test_split
@@ -54,11 +101,18 @@ class DataModule(ABC):
         )
 
     def train_dataloader(self) -> DataLoader:
+        """
+        Creates a DataLoader for the training dataset.
+
+        Returns
+        -------
+        DataLoader
+            A DataLoader object for the training dataset.
+        """
         return DataLoader(
             self.train_ds,
             batch_size=self.config.batch_size,
             num_workers=self.config.num_workers,
-            # sampler = ImbalancedSampler(self.train_ds),
             shuffle=False,
             pin_memory=self.config.pin_memory,
             multiprocessing_context="fork",
@@ -66,6 +120,14 @@ class DataModule(ABC):
         )
 
     def val_dataloader(self) -> DataLoader:
+        """
+        Creates a DataLoader for the validation dataset.
+
+        Returns
+        -------
+        DataLoader
+            A DataLoader object for the validation dataset.
+        """
         return DataLoader(
             self.val_ds,
             batch_size=self.config.batch_size,
@@ -76,6 +138,14 @@ class DataModule(ABC):
         )
 
     def test_dataloader(self) -> DataLoader:
+        """
+        Creates a DataLoader for the test dataset.
+
+        Returns
+        -------
+        DataLoader
+            A DataLoader object for the test dataset.
+        """
         return DataLoader(
             self.test_ds,
             batch_size=self.config.batch_size,
@@ -86,6 +156,14 @@ class DataModule(ABC):
         )
 
     def full_dataloader(self) -> DataLoader:
+        """
+        Creates a DataLoader for the entire dataset.
+
+        Returns
+        -------
+        DataLoader
+            A DataLoader object for the entire dataset.
+        """
         return DataLoader(
             self.entire_ds,
             batch_size=self.config.batch_size,
@@ -97,13 +175,17 @@ class DataModule(ABC):
         )
 
     def info(self):
-        """Prints summary information about the dataset."""
+        """
+        Prints summary information about the dataset.
+
+        The summary includes the length of the training, validation, and test datasets,
+        as well as the class distribution in each split.
+        """
         print("Length of training dataset:", len(self.train_ds))
         print("Length of validation dataset:", len(self.val_ds))
         print("Length of test dataset:", len(self.test_ds))
         print("Number of classes in the dataset:", self.config.num_classes)
 
-        # Calculate class distribution in the datasets
         print("Class distribution in the training dataset:")
         train_counts = torch.zeros(self.config.num_classes)
         for x, y in self.train_dataloader():
@@ -124,6 +206,16 @@ class DataModule(ABC):
 
     @staticmethod
     def display_histogram(counts):
+        """
+        Displays a histogram for the given class distribution counts.
+
+        Parameters
+        ----------
+        counts : torch.Tensor
+            A tensor containing counts for each class.
+
+        The histogram is printed to the console.
+        """
         max_count = counts.max().item()
         for i, count in enumerate(counts):
             bar_length = int(count.item() * 50 / max_count)
@@ -132,7 +224,19 @@ class DataModule(ABC):
 
     @staticmethod
     def get_data_directory(default_subdir):
-        # Determine the default data directory
+        """
+        Determines and creates the default data directory.
+
+        Parameters
+        ----------
+        default_subdir : str
+            Subdirectory name to be used for storing data.
+
+        Returns
+        -------
+        str
+            The path to the data directory.
+        """
         default_data_dir = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), default_subdir
         )
