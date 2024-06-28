@@ -3,6 +3,7 @@ from sklearn.manifold import TSNE
 
 from lsd.generate.dim_reductions.models.projector import BaseProjector
 from lsd.generate.dim_reductions.configs import tSNE as tSNEConfig
+import lsd.utils as ut
 
 
 class TSNEProjector(BaseProjector):
@@ -49,7 +50,7 @@ class TSNEProjector(BaseProjector):
             tSNE embedding of shape (n_samples,self.config.n_components).
 
         """
-        params = self.get_parameters(TSNE, self.config)
+        params = ut.get_parameters(TSNE, self.config)
         operator = TSNE(**params)
 
         return operator.fit_transform(data)

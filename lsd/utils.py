@@ -2,6 +2,7 @@ import hashlib
 import os
 import pickle
 import re
+from inspect import signature
 from dataclasses import fields
 from datetime import datetime
 from typing import Union, Dict, Any
@@ -16,6 +17,21 @@ from omegaconf import DictConfig
 #  ╰──────────────────────────────────────────────────────────╯
 DictType = Dict[str, Any]
 ConfigType = Union[DictType, DictConfig]
+
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │  Utility Functions & Classes                             │
+#  ╰──────────────────────────────────────────────────────────╯
+
+# LoadClass: load a class from a dictionary
+# get_parameters: extract relevant parameters from a configuration for an operator
+# temporal_id: generate a unique temporal identifier
+# extract_yaml_id: extract an integer identifier from a YAML file path
+# file_id_sorter: sort files by their numeric identifiers
+# get_wandb_env: load WANDB configuration from environment variables
+# test_wandb_connection: test the connection to WANDB
+# write_pkl: write data to a pickle file
+# read: read data from a file
 
 
 class LoadClass:
@@ -76,6 +92,36 @@ class LoadClass:
         fieldSet = cls.classFieldCache[classToInstantiate]
         filteredArgDict = {k: v for k, v in argDict.items() if k in fieldSet}
         return classToInstantiate(**filteredArgDict)
+
+
+def get_parameters(Operator, config) -> dict:
+    """
+    Extracts the relevant parameters from the configuration for the given operator.
+
+    This utility function  uses introspection to retrieve the parameters of the operator's
+    `__init__` method and matches them with the corresponding values in the configuration.
+
+    This is used for various classes in the LSD library to extract parameters from the configuration.
+
+    Parameters
+    ----------
+    Operator : class
+        The projection operator class whose parameters are to be retrieved.
+    config : Projector
+        The configuration object containing parameters for the projection.
+
+    Returns
+    -------
+    dict
+        A dictionary of parameters for the operator, populated with values from the configuration.
+    """
+    params = signature(Operator.__init__).parameters
+    args = {
+        name: config.get(name, param.default)
+        for name, param in params.items()
+        if param.default != param.empty
+    }
+    return args
 
 
 def temporal_id():

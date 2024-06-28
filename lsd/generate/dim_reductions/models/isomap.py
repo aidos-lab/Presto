@@ -3,6 +3,7 @@ from sklearn.manifold import Isomap
 
 from lsd.generate.dim_reductions.models.projector import BaseProjector
 from lsd.generate.dim_reductions.configs import Isomap as IsomapConfig
+import lsd.utils as ut
 
 
 class IsomapProjector(BaseProjector):
@@ -49,7 +50,7 @@ class IsomapProjector(BaseProjector):
             ISOMAP embedding of shape (n_samples,self.config.n_components).
 
         """
-        params = self.get_parameters(Isomap, self.config)
+        params = ut.get_parameters(Isomap, self.config)
         operator = Isomap(**params)
         return operator.fit_transform(data)
 

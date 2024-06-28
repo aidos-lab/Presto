@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from inspect import signature
 import numpy as np
 
 from lsd.generate.dim_reductions.configs import Projector as ProjectorConfig
@@ -20,9 +19,6 @@ class BaseProjector(ABC):
     -------
     project(data)
         Abstract method to perform the projection on the provided data. Must be implemented by subclasses.
-
-    get_parameters(Operator, config) -> dict
-        Static method to extract relevant parameters from the configuration for the given operator.
     """
 
     def __init__(self, config: ProjectorConfig):
@@ -55,34 +51,6 @@ class BaseProjector(ABC):
             The projected data.
         """
         raise NotImplementedError()
-
-    @staticmethod
-    def get_parameters(Operator, config) -> dict:
-        """
-        Extracts the relevant parameters from the configuration for the given operator.
-
-        This static method uses introspection to retrieve the parameters of the operator's
-        `__init__` method and matches them with the corresponding values in the configuration.
-
-        Parameters
-        ----------
-        Operator : class
-            The projection operator class whose parameters are to be retrieved.
-        config : Projector
-            The configuration object containing parameters for the projection.
-
-        Returns
-        -------
-        dict
-            A dictionary of parameters for the operator, populated with values from the configuration.
-        """
-        params = signature(Operator.__init__).parameters
-        args = {
-            name: config.get(name, param.default)
-            for name, param in params.items()
-            if param.default != param.empty
-        }
-        return args
 
 
 def initialize() -> BaseProjector:
