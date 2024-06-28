@@ -228,7 +228,6 @@ class Autoencoder(Base):
         This method uses the trained model to generate a latent space
         representation of the data and saves it to a specified output file.
         """
-        print(f"Generate latent space for {self.trainer_cfg.generators}.")
         latent_space = self.gym.latent_space()
         self._save_latent_space(latent_space)
         del self.gym, latent_space
