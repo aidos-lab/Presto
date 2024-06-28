@@ -87,7 +87,7 @@ class DataModule(ABC):
 
     def full_dataloader(self) -> DataLoader:
         return DataLoader(
-            self.train_ds,
+            self.entire_ds,
             batch_size=self.config.batch_size,
             num_workers=self.config.num_workers,
             shuffle=False,
@@ -125,7 +125,6 @@ class DataModule(ABC):
     @staticmethod
     def display_histogram(counts):
         max_count = counts.max().item()
-        total_bins = len(counts)
         for i, count in enumerate(counts):
             bar_length = int(count.item() * 50 / max_count)
             bar = "#" * bar_length
