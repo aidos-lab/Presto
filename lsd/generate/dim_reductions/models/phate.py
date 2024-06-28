@@ -2,6 +2,7 @@ from phate import PHATE
 
 from lsd.generate.dim_reductions.models.projector import BaseProjector
 from lsd.generate.dim_reductions.configs import Phate as PHATEConfig
+import lsd.utils as ut
 
 
 class PhateProjector(BaseProjector):
@@ -47,7 +48,7 @@ class PhateProjector(BaseProjector):
         np.ndarray
             PHATE embedding of shape (n_samples,self.config.n_components).
         """
-        params = self.get_parameters(PHATE, self.config)
+        params = ut.get_parameters(PHATE, self.config)
         operator = PHATE(**params)
         return operator.fit_transform(data)
 

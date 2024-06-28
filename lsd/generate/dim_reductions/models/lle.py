@@ -3,6 +3,7 @@ from sklearn.manifold import LocallyLinearEmbedding as LLE
 
 from lsd.generate.dim_reductions.models.projector import BaseProjector
 from lsd.generate.dim_reductions.configs import LLE as LLEConfig
+import lsd.utils as ut
 
 
 class LLEProjector(BaseProjector):
@@ -48,7 +49,7 @@ class LLEProjector(BaseProjector):
         np.ndarray
             Locally Linear Embedding of shape (n_samples,self.config.n_components).
         """
-        params = self.get_parameters(LLE, self.config)
+        params = ut.get_parameters(LLE, self.config)
         operator = LLE(**params)
         return operator.fit_transform(data)
 

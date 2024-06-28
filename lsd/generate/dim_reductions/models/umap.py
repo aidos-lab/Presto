@@ -1,7 +1,8 @@
 from umap import UMAP
 
-from lsd.generate.dim_reductions.configs import UMAP as UMAPConfig
 from lsd.generate.dim_reductions.models.projector import BaseProjector
+from lsd.generate.dim_reductions.configs import UMAP as UMAPConfig
+import lsd.utils as ut
 
 
 class UMAPProjector(BaseProjector):
@@ -47,7 +48,7 @@ class UMAPProjector(BaseProjector):
         np.ndarray
             UMAP embedding of shape (n_samples,self.config.n_components).
         """
-        params = self.get_parameters(UMAP, self.config)
+        params = ut.get_parameters(UMAP, self.config)
         operator = UMAP(**params)
         return operator.fit_transform(data)
 
