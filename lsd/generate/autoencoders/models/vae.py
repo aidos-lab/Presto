@@ -34,10 +34,6 @@ class BaseVAE(nn.Module):
 
     Methods
     -------
-    build_encoder(in_channels: int, img_size: int, hidden_dims: List[int], latent_dim: int)
-        Builds the encoder network.
-    build_decoder(latent_dim: int, num_features: int, hidden_dims: List[int], in_channels: int)
-        Builds the decoder network.
     encode(input: Tensor) -> List[Tensor]
         Encodes the input and returns the latent mean and log variance.
     decode(input: Tensor) -> Tensor
@@ -50,6 +46,13 @@ class BaseVAE(nn.Module):
         Encodes the input to the latent space.
     forward(input: Tensor, **kwargs) -> List[Tensor]
         Full forward pass through the VAE, from input to reconstruction.
+
+    Static Methods
+    --------------
+    build_encoder(in_channels: int, img_size: int, hidden_dims: List[int], latent_dim: int)
+        Builds the encoder network.
+    build_decoder(latent_dim: int, num_features: int, hidden_dims: List[int], in_channels: int)
+        Builds the decoder network.
     reparameterize(mu: Tensor, logvar: Tensor) -> Tensor
         Performs the reparameterization trick to sample from the latent space.
     compute_mmd(z: Tensor, kernel_type: str, reg_weight: float, z_var: float, eps: float) -> Tensor
@@ -57,7 +60,7 @@ class BaseVAE(nn.Module):
     compute_kernel(x1: Tensor, x2: Tensor, kernel_type: str, z_var: float, eps: float) -> Tensor
         Computes the specified kernel between two sets of latent codes.
 
-    Helper Methods
+    Helper Functions
     --------------
     _compute_rbf(x1: Tensor, x2: Tensor, z_var: float) -> Tensor
         Computes the Radial Basis Function (RBF) kernel.
