@@ -23,16 +23,6 @@ ConfigType = Union[DictType, DictConfig]
 #  │  Utility Functions & Classes                             │
 #  ╰──────────────────────────────────────────────────────────╯
 
-# LoadClass: load a class from a dictionary
-# get_parameters: extract relevant parameters from a configuration for an operator
-# temporal_id: generate a unique temporal identifier
-# extract_yaml_id: extract an integer identifier from a YAML file path
-# file_id_sorter: sort files by their numeric identifiers
-# get_wandb_env: load WANDB configuration from environment variables
-# test_wandb_connection: test the connection to WANDB
-# write_pkl: write data to a pickle file
-# read: read data from a file
-
 
 class LoadClass:
     """Unpack an input dictionary to load a class.
