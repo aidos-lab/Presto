@@ -1,17 +1,80 @@
-"Base Variational Autoencoder Class. Inspired by AntixK's PyTorch-VAE implementations."
-
 import functools
 import operator
 from abc import abstractmethod
 
 import torch
 from torch import Tensor, nn
-
 from typing import Any, List
+
+from lsd.utils import ConfigType
 
 
 class BaseVAE(nn.Module):
-    def __init__(self, config):
+    """
+    Base Variational Autoencoder (VAE) Class, inspired by AntixK's
+    PyTorch-VAE implementations.
+
+    This class implements the fundamental structure of a variational autoencoder (VAE), including both encoder and decoder networks, as well as essential VAE operations like reparameterization and loss function calculation.
+
+    Attributes
+    ----------
+    latent_dim : int
+        Dimensionality of the latent space.
+    img_size : int
+        Size of the input image (assumed to be square).
+    in_channels : int
+        Number of input image channels (e.g., 1 for grayscale, 3 for RGB).
+    hidden_dims : List[int]
+        List containing the dimensions of hidden layers in the encoder and decoder.
+
+    Abstract Methods
+    ----------------
+    loss_function(*inputs: Any, **kwargs) -> Tensor
+        Abstract method for calculating the VAE loss. Must be implemented in a subclass.
+
+    Methods
+    -------
+    build_encoder(in_channels: int, img_size: int, hidden_dims: List[int], latent_dim: int)
+        Builds the encoder network.
+    build_decoder(latent_dim: int, num_features: int, hidden_dims: List[int], in_channels: int)
+        Builds the decoder network.
+    encode(input: Tensor) -> List[Tensor]
+        Encodes the input and returns the latent mean and log variance.
+    decode(input: Tensor) -> Tensor
+        Decodes the latent codes to the image space.
+    sample(num_samples: int, current_device: int, **kwargs) -> Tensor
+        Samples from the latent space and returns the corresponding images.
+    generate(x: Tensor, **kwargs) -> Tensor
+        Reconstructs the input image from the latent space.
+    latent(input: Tensor, **kwargs) -> Tensor
+        Encodes the input to the latent space.
+    forward(input: Tensor, **kwargs) -> List[Tensor]
+        Full forward pass through the VAE, from input to reconstruction.
+    reparameterize(mu: Tensor, logvar: Tensor) -> Tensor
+        Performs the reparameterization trick to sample from the latent space.
+    compute_mmd(z: Tensor, kernel_type: str, reg_weight: float, z_var: float, eps: float) -> Tensor
+        Computes the Maximum Mean Discrepancy (MMD) between the latent codes and the prior.
+    compute_kernel(x1: Tensor, x2: Tensor, kernel_type: str, z_var: float, eps: float) -> Tensor
+        Computes the specified kernel between two sets of latent codes.
+
+    Helper Methods
+    --------------
+    _compute_rbf(x1: Tensor, x2: Tensor, z_var: float) -> Tensor
+        Computes the Radial Basis Function (RBF) kernel.
+    _compute_imq(x1: Tensor, x2: Tensor, z_var: float, eps: float) -> Tensor
+        Computes the Inverse Multi-Quadratic (IMQ) kernel.
+    """
+
+    def __init__(self, config: ConfigType):
+        """
+        Initializes the BaseVAE class with the given configuration.
+
+        Parameters
+        ----------
+        config : ConfigType
+            Configuration object containing attributes such as `latent_dim`, `img_size`,
+            `in_channels`, and `hidden_dims`.
+        """
         super(BaseVAE, self).__init__()
 
         self.latent_dim = config.latent_dim
@@ -52,17 +115,42 @@ class BaseVAE(nn.Module):
     #  ╰──────────────────────────────────────────────────────────╯
     @abstractmethod
     def loss_function(self, *inputs: Any, **kwargs) -> Tensor:
-        pass
+        """
+        Abstract method for computing the VAE loss.
+
+        Must be implemented in a subclass.
+
+        Parameters
+        ----------
+        *inputs : Any
+            Variable length argument list containing the necessary inputs for the loss computation.
+        **kwargs : Any
+            Additional keyword arguments for the loss computation.
+
+        Returns
+        -------
+        Tensor
+            Computed loss value.
+        """
+        raise NotImplementedError("Subclass must implement abstract method")
 
     #  ╭──────────────────────────────────────────────────────────╮
     #  │ General VAE Methods                                      │
     #  ╰──────────────────────────────────────────────────────────╯
     def encode(self, input: Tensor) -> List[Tensor]:
         """
-        Encodes the input by passing through the encoder network
-        and returns the latent codes.
-        :param input: (Tensor) Input tensor to encoder [N x C x H x W]
-        :return: (Tensor) List of latent codes
+        Encodes the input by passing it through the encoder network
+        and returns the latent mean and log variance.
+
+        Parameters
+        ----------
+        input : Tensor
+            Input tensor to the encoder with shape [BatchSize, Channels, Height, Width].
+
+        Returns
+        -------
+        List[Tensor]
+            A list containing the mean (mu) and log variance (log_var) of the latent Gaussian distribution.
         """
         result = self.encoder(input)
         result = torch.flatten(result, start_dim=1)
@@ -75,10 +163,17 @@ class BaseVAE(nn.Module):
 
     def decode(self, input: Tensor) -> Any:
         """
-        Maps the given latent codes
-        onto the image space.
-        :param z: (Tensor) [B x D]
-        :return: (Tensor) [B x C x H x W]
+        Decodes the latent codes to the image space.
+
+        Parameters
+        ----------
+        input : Tensor
+            Latent codes with shape [BatchSize, LatentDim].
+
+        Returns
+        -------
+        Tensor
+            Decoded image with shape [BatchSize, Channels, Height, Width].
         """
         result = self.fc_decoder_input(input)
         result = result.view(-1, *self.encoded_shape)
@@ -89,11 +184,20 @@ class BaseVAE(nn.Module):
 
     def sample(self, num_samples: int, current_device: int, **kwargs) -> Tensor:
         """
-        Samples from the latent space and return the corresponding
-        image space map.
-        :param num_samples: (Int) Number of samples
-        :param current_device: (Int) Device to run the model
-        :return: (Tensor)
+        Samples from the latent space and returns the corresponding
+        image space maps.
+
+        Parameters
+        ----------
+        num_samples : int
+            Number of samples to generate.
+        current_device : int
+            Device on which to perform the sampling.
+
+        Returns
+        -------
+        Tensor
+            Sampled images with shape [num_samples, Channels, Height, Width].
         """
         z = torch.randn(num_samples, self.latent_dim)
 
@@ -104,19 +208,53 @@ class BaseVAE(nn.Module):
 
     def generate(self, x: Tensor, **kwargs) -> Tensor:
         """
-        Given an input image x, returns the reconstructed image
-        :param x: (Tensor) [B x C x H x W]
-        :return: (Tensor) [B x C x H x W]
+        Given an input image x, returns the reconstructed image.
+
+        Parameters
+        ----------
+        x : Tensor
+            Input image tensor with shape [BatchSize, Channels, Height, Width].
+
+        Returns
+        -------
+        Tensor
+            Reconstructed image with shape [BatchSize, Channels, Height, Width].
         """
 
         return self.forward(x)[0]
 
     def latent(self, input: Tensor, **kwargs) -> Tensor:
+        """
+        Encodes the input to the latent space.
+
+        Parameters
+        ----------
+        input : Tensor
+            Input tensor with shape [BatchSize, Channels, Height, Width].
+
+        Returns
+        -------
+        Tensor
+            Latent space representation with shape [BatchSize, LatentDim].
+        """
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
         return z
 
     def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+        """
+        Full forward pass through the VAE, from input to reconstruction.
+
+        Parameters
+        ----------
+        input : Tensor
+            Input tensor with shape [BatchSize, Channels, Height, Width].
+
+        Returns
+        -------
+        List[Tensor]
+            A list containing the reconstructed image, input, latent vector, mean, and log variance.
+        """
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
         return [self.decode(z), input, z, mu, log_var]
@@ -127,11 +265,19 @@ class BaseVAE(nn.Module):
     @staticmethod
     def reparameterize(mu: Tensor, logvar: Tensor) -> Tensor:
         """
-        Reparameterization trick to sample from N(mu, var) from
-        N(0,1).
-        :param mu: (Tensor) Mean of the latent Gaussian [B x D]
-        :param logvar: (Tensor) Standard deviation of the latent Gaussian [B x D]
-        :return: (Tensor) [B x D]
+        Reparameterization trick to sample from N(mu, var) from N(0,1).
+
+        Parameters
+        ----------
+        mu : Tensor
+            Mean of the latent Gaussian with shape [B, D].
+        logvar : Tensor
+            Log variance of the latent Gaussian with shape [B, D].
+
+        Returns
+        -------
+        Tensor
+            Sampled latent vector with shape [B, D].
         """
         std = torch.exp(0.5 * logvar)
         eps = torch.randn_like(std)
@@ -144,8 +290,35 @@ class BaseVAE(nn.Module):
         hidden_dims,
         latent_dim,
     ):
+        """
+        Flexibly builds an encoder network given different data & modeling choices!
+
+        Parameters
+        ----------
+        in_channels : int
+            Number of input image channels.
+        img_size : int
+            Size of the input image.
+        hidden_dims : List[int]
+            List of dimensions for hidden layers.
+        latent_dim : int
+            Dimensionality of the latent space.
+
+        Returns
+        -------
+        encoder : nn.Sequential
+            Encoder network.
+        fc_mu : nn.Linear
+            Linear layer for calculating the mean.
+        fc_var : nn.Linear
+            Linear layer for calculating the log variance.
+
+        encoded_shape : torch.Size
+            Shape of the encoded tensor.
+        num_features : int
+            Number of features in the encoded tensor.
+        """
         modules = []
-        # Build Encoder Architechture
         for idx in range(len(hidden_dims) - 1):
             modules.append(
                 nn.Sequential(
@@ -185,6 +358,30 @@ class BaseVAE(nn.Module):
         hidden_dims,
         in_channels,
     ):
+        """
+        Flexibly builds a decoder network given different data & modeling choices!
+
+
+        Parameters
+        ----------
+        latent_dim : int
+            Dimensionality of the latent space.
+        num_features : int
+            Number of features in the flattened encoder output.
+        hidden_dims : List[int]
+            List of dimensions for hidden layers.
+        in_channels : int
+            Number of input image channels.
+
+        Returns
+        -------
+        decoder : nn.Sequential
+            Decoder network as a sequential model.
+        fc_decoder_input : nn.Linear
+            Linear layer for mapping latent space to the decoder input.
+        final_layer : nn.Sequential
+            Final layer for output reconstruction.
+        """
         # Build Decoder
         modules = []
 
@@ -238,12 +435,33 @@ class BaseVAE(nn.Module):
 
     @staticmethod
     def compute_mmd(
-        z: torch.tensor,
+        z: Tensor,
         kernel_type: str,
         reg_weight: float,
         z_var: float,
         eps: float,
-    ) -> torch.tensor:
+    ) -> Tensor:
+        """
+        Computes the Maximum Mean Discrepancy (MMD) between the latent codes and the prior.
+
+        Parameters
+        ----------
+        z : Tensor
+            Latent codes with shape [NumSamples, LatentDim].
+        kernel_type : str
+            Type of kernel to use ('rbf' or 'imq').
+        reg_weight : float
+            Regularization weight for MMD.
+        z_var : float
+            Variance of the latent space.
+        eps : float
+            Small constant to avoid division by zero in kernel computation.
+
+        Returns
+        -------
+        Tensor
+            Computed MMD value.
+        """
         # Sample from prior (Gaussian) distribution
         prior_z = torch.randn_like(z)
 
@@ -278,12 +496,33 @@ class BaseVAE(nn.Module):
 
     @staticmethod
     def compute_kernel(
-        x1: torch.tensor,
-        x2: torch.tensor,
+        x1: Tensor,
+        x2: Tensor,
         kernel_type: str,
         z_var: float,
         eps: float,
-    ) -> torch.tensor:
+    ) -> Tensor:
+        """
+        Computes the specified kernel between two sets of latent codes.
+
+        Parameters
+        ----------
+        x1 : Tensor
+            First set of latent codes with shape [NumSamples, LatentDim].
+        x2 : Tensor
+            Second set of latent codes with shape [NumSamples, LatentDim].
+        kernel_type : str
+            Type of kernel to use ('rbf' or 'imq').
+        z_var : float
+            Variance of the latent space.
+        eps : float
+            Small constant to avoid division by zero in kernel computation.
+
+        Returns
+        -------
+        result : Tensor
+            Computed kernel matrix.
+        """
         # Convert the tensors into row and column vectors
         D = x1.size(1)
         N = x1.size(0)
@@ -314,16 +553,26 @@ class BaseVAE(nn.Module):
 
     @staticmethod
     def _compute_rbf(
-        x1: torch.tensor,
-        x2: torch.tensor,
+        x1: Tensor,
+        x2: Tensor,
         z_var: float,
-    ) -> torch.tensor:
+    ) -> Tensor:
         """
-        Computes the RBF Kernel between x1 and x2.
-        :param x1: (torch.tensor)
-        :param x2: (torch.tensor)
-        :param eps: (Float)
-        :return:
+        Computes the Radial Basis Function (RBF) kernel between x1 and x2.
+
+        Parameters
+        ----------
+        x1 : Tensor
+            First set of latent codes with shape [N, N, D].
+        x2 : Tensor
+            Second set of latent codes with shape [N, N, D].
+        z_var : float
+            Variance of the latent space.
+
+        Returns
+        -------
+        Tensor
+            Computed RBF kernel matrix.
         """
         z_dim = x2.size(-1)
         sigma = 2.0 * z_dim * z_var
@@ -333,20 +582,31 @@ class BaseVAE(nn.Module):
 
     @staticmethod
     def _compute_imq(
-        x1: torch.tensor,
-        x2: torch.tensor,
+        x1: Tensor,
+        x2: Tensor,
         z_var: float,
         eps: float,
-    ) -> torch.tensor:
+    ) -> Tensor:
         """
-        Computes the Inverse Multi-Quadratics Kernel between x1 and x2,
-        given by
+        Computes the Inverse Multi-Quadratic (IMQ) kernel between x1 and x2.
 
-                k(x_1, x_2) = \sum \frac{C}{C + \|x_1 - x_2 \|^2}
-        :param x1: (torch.tensor)
-        :param x2: (torch.tensor)
-        :param eps: (Float)
-        :return:
+        Given by k(x_1, x_2) = sum [C / (C + ||x_1 - x_2||^2)].
+
+        Parameters
+        ----------
+        x1 : Tensor
+            First set of latent codes with shape [N, N, D].
+        x2 : Tensor
+            Second set of latent codes with shape [N, N, D].
+        z_var : float
+            Variance of the latent space.
+        eps : float
+            Small constant to avoid division by zero.
+
+        Returns
+        -------
+        Tensor
+            Computed IMQ kernel matrix.
         """
         z_dim = x2.size(-1)
         C = 2 * z_dim * z_var
