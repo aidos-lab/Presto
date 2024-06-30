@@ -6,11 +6,55 @@ from lsd.generate.autoencoders.models.vae import BaseVAE
 
 
 class BetaVAE(BaseVAE):
+    """
+    Beta Variational Autoencoder (BetaVAE).
+
+    This class implements the β-VAE as described in
+    the papers:
+    - "β-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework"
+      (https://openreview.net/forum?id=Sy2fzU9gl)
+    - "Understanding disentangling in β-VAE" (https://arxiv.org/pdf/1804.03599.pdf)
+
+    This class extends the `BaseVAE` class with a loss function that compute's the β-VAE loss as described in https://openreview.net/forum?id=Sy2fzU9gl & https://arxiv.org/pdf/1804.03599.
+
+    Parameters
+    ----------
+    config : Config
+        Configuration object containing hyperparameters and model settings.
+
+    Attributes
+    ----------
+    beta : float
+        The weight of the KLD term in the loss function. Used in 'H' loss type.
+    gamma : float
+        The weight of the KLD term in the loss function. Used in 'B' loss type.
+    loss_type : str
+        Type of loss to use ('H' for heuristic, 'B' for β-VAE loss).
+    C_max : torch.Tensor
+        The maximum capacity for the latent space.
+    C_stop_iter : int
+        The iteration number at which capacity `C_max` is reached.
+    num_iter : int
+        The number of iterations for training.
+
+    Methods
+    -------
+    loss_function(*args, **kwargs) -> dict
+        Computes the loss for BetaVAE.
+    """
+
     def __init__(
         self,
         config,
-        **kwargs,
     ) -> None:
+        """
+        Constuctor for the BetaVAE class.
+
+        Parameters
+        ----------
+        config : Config
+            Configuration object containing hyperparameters and model settings.
+        """
         self.num_iter = 0
         super(BetaVAE, self).__init__(config)
 
@@ -22,6 +66,41 @@ class BetaVAE(BaseVAE):
         self.C_stop_iter = config.Capacity_max_iter
 
     def loss_function(self, *args, **kwargs) -> dict:
+        """
+        Computes the loss for BetaVAE.
+
+        The loss function is a combination of the reconstruction loss and
+        a regularization term that encourages the latent space to follow
+        a Gaussian distribution.
+
+        Parameters
+        ----------
+        *args : tuple
+            Variable length argument list, containing:
+            - recons : torch.Tensor
+                The reconstructed input from the decoder.
+            - input : torch.Tensor
+                The original input.
+            - mu : torch.Tensor
+                The mean of the latent Gaussian distribution.
+            - log_var : torch.Tensor
+                The log variance of the latent Gaussian distribution.
+        **kwargs : dict
+            Arbitrary keyword arguments, containing:
+            - M_N : float
+                Scaling factor for the KLD loss based on minibatch size.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the computed losses:
+            - 'loss' : torch.Tensor
+                The total loss, combining reconstruction and KLD loss.
+            - 'Reconstruction_Loss' : torch.Tensor
+                The mean squared error between the input and the reconstruction.
+            - 'KLD' : torch.Tensor
+                The Kullback-Leibler divergence loss.
+        """
         self.num_iter += 1
         recons = args[0]
         input = args[1]
@@ -57,5 +136,13 @@ class BetaVAE(BaseVAE):
         }
 
 
-def initialize():
+def initialize() -> BetaVAE:
+    """
+    Initializes the BetaVAE model.
+
+    Returns
+    -------
+    BetaVAE
+        The BetaVAE model instance.
+    """
     return BetaVAE
