@@ -4,19 +4,11 @@
 
 data_choices:
   DimReduction:
-    MNIST:
-      num_samples:
-        - 1000
-        - 10000
-
+    breast_cancer:
+      generator:
+        - load_breast_cancer
 model_choices:
   DimReduction:
-    UMAP:
-      nn:
-        - 16
-        - 20
-      min_dist:
-        - 0
     tSNE:
       perplexity:
         - 15
@@ -24,7 +16,7 @@ model_choices:
 
 implementation_choices:
   DimReduction:
-    Thread:
-      n_jobs:
-        - 1
-        - -1
+    DimReduction:
+      tSNETrainer:
+        n_jobs:
+          - 1
