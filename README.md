@@ -64,6 +64,54 @@ atom.compute_MMS(parallelize=True)
 print(atom.MMS)
 ```
 
+### LSD
+
+In order to generate a **latent-space multiverse** we provide a subpacakge called `LSD`: Latent Space Designer. Using the `LSD` class you can catalog embeddings that are generated from Variational Autoencoders, Dimensionality Reduction, and Transformer models and analyze them using `Presto`. Explore your own custom multiverses or recreate our results from our paper!
+
+This is a simple example of how to use the `LSD` class to generate a multiverse of embeddings for `scikit-learn`'s [Breast Cancer Wisconsin](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_breast_cancer.html) dataset using t-SNE as the dimensionality reduction technique.
+
+```python
+import omegaconf
+from lsd import LSD
+
+# Define a multiverse config consisting of data, model, and implementation choices
+sample_content = """data_choices:
+  DimReduction:
+    breast_cancer:
+      generator:
+        - load_breast_cancer
+model_choices:
+  DimReduction:
+    tSNE:
+      perplexity:
+        - 15
+        - 30
+
+implementation_choices:
+  DimReduction:
+    DimReduction:
+      tSNETrainer:
+        n_jobs:
+          - 1
+   """
+
+my_cfg = omegaconf.OmegaConf.create(sample_content)
+
+# Create an instance of the Latent Space Designer
+lsd = LSD(multiverseConfig="DimReduction",output_dir="./",experimentName="sample_dr_multiverse")
+
+# Set the multiverse configuration
+lsd.multiverse = my_cfg
+
+# Desgin the model configurations based on the multiverse config
+lsd.design()
+
+# Generate embeddings from the multiverse
+lsd.generate()
+```
+
+See our documentation for more examples and detailed usage instructions on using `LSD` and designing multuverse configurations!
+
 ## Features
 
 ### Normalization & Projection
@@ -84,7 +132,16 @@ Using the `Atom` class, you can compute Multiverse Metric Spaces (MMS) that enco
 
 ### Generating Embeddings
 
-Coming soon! We will also support a framework for generating various embeddings from models like VAEs, Transformers, and Dimensionality reduction algorithms.
+Using the `LSD` class, you can generate embeddings from a variety of models and data choices. This class is designed to help you catalog embeddings that arise from different data, implementation, and modeling choices for a variety of generative modeling tasks. At the moment, we provide support for generating embeddings that arise from Variational Autoencoders, Dimensionality Reduction, and Transformer models– we provide example configuration files in the `lsd.design` module:
+
+```bash
+├── design
+│   ├── ae.yaml
+│   ├── dr.yaml
+│   └── tf.yaml
+```
+
+See our full documentation for more information on how to design and generate embeddings from your own multiverse!
 
 ## License
 
@@ -114,6 +171,8 @@ If you're unfamiliar with contributing to open source repositories, here is a ba
    git clone https://github.com/your-username/presto.git
    ```
 
+````
+
 3. **Create a Branch**: Create a new branch for your feature or bug fix.
 
    ```sh
@@ -139,3 +198,4 @@ If you're unfamiliar with contributing to open source repositories, here is a ba
 ### Need Help?
 
 If you need any help or have questions, feel free to reach out to the authors or submit a pull request. We appreciate your contributions and are happy to assist!
+````
