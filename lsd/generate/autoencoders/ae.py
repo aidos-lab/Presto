@@ -147,6 +147,7 @@ class Autoencoder(Base):
             self.params.get("model_choices", {}).get("name", ""),
             self.params.get("implementation_choices", {}).get("name", ""),
         ]
+
         return trainer_cfg
 
     def configure_trainer(self, trainer_cfg) -> None:

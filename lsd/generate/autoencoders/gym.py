@@ -4,7 +4,9 @@ import numpy as np
 import torch
 from torch.nn.utils import clip_grad_norm_
 from torch.nn.functional import mse_loss
-from typing import Any, Dict, Callable
+from typing import Dict, Callable
+
+from lsd.utils import ConfigType
 from lsd.generate.autoencoders.logger import Logger
 
 
@@ -16,7 +18,7 @@ class Gym:
 
     Attributes
     ----------
-    config : Any
+    config : ConfigType
         Configuration settings for the model, dataset, and optimizer.
     logger : Logger
         Logger instance for recording training progress and metrics.
@@ -71,13 +73,13 @@ class Gym:
 
     LOG_INTERVAL = 10  # Log every 10 epochs
 
-    def __init__(self, config: Any, logger: Logger):
+    def __init__(self, config: ConfigType, logger: Logger):
         """
         Initializes the Gym class with the given configuration and logger.
 
         Parameters
         ----------
-        config : Any
+        config : ConfigType
             Configuration settings for the model, dataset, and optimizer.
         logger : Logger
             Logger instance for recording training progress and metrics.
@@ -87,6 +89,7 @@ class Gym:
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
+        self._set_seed()
 
         self.model = self._init_model()
         self.dm = self._init_data_manager()
@@ -215,7 +218,7 @@ class Gym:
         model = model_class(self.config)
         return torch.nn.DataParallel(model).to(self.device)
 
-    def _init_data_manager(self) -> Any:
+    def _init_data_manager(self) -> ConfigType:
         """Initializes and returns the data manager."""
         data_manager_class = self._load_module(self.config.dataset)
         return data_manager_class(self.config)
@@ -244,6 +247,23 @@ class Gym:
             )
             embedding = torch.cat((embedding, batch_embedding))
         return embedding
+
+    def _set_seed(self) -> None:
+        """
+        Set the manual seed for reproducibility.
+        """
+        seed = self.config.get("seed", 42)
+        print(f"Using seed {seed} for reproducibility.")
+        np.random.seed(seed)  # NumPy random seed
+        torch.manual_seed(seed)  # PyTorch CPU random seed
+
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)  # PyTorch CUDA random seed
+            torch.cuda.manual_seed_all(seed)  # PyTorch all GPUs random seed
+
+        # Ensure that cuDNN is deterministic
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
     @staticmethod
     def _compute_recon_loss(

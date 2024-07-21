@@ -164,8 +164,8 @@ class DataModule(Protocol):
         Fraction of the dataset to use. The default is 1.0, indicating the entire dataset.
     train_test_split : list of float, optional
         A list defining the proportions for training and testing split. Default is an empty list, which uses a default split configuration.
-    seed : int, optional
-        Seed for random number generation to ensure reproducibility. The default is 42.
+    train_test_seed : int, optional
+        Seed for determining train-test split. The default is 42.
     """
 
     module: str
@@ -174,7 +174,7 @@ class DataModule(Protocol):
     pin_memory: bool = False
     sample_size: float = 1.0
     train_test_split: list[float] = field(default_factory=list)
-    seed: int = 42
+    train_test_seed: int = 42
 
 
 @dataclass
@@ -262,6 +262,8 @@ class Trainer(Protocol):
         Index to identify the optimizer being used. The default is 0.
     clip_max_norm : float, optional
         Maximum norm for gradient clipping to prevent exploding gradients. The default is 1.0.
+    seed : int, optional
+        Seed for random number generation to ensure reproducibility. The default is 42.
     """
 
     module: str = "lsd.generate.autoencoders.optimizers.base"
@@ -271,6 +273,7 @@ class Trainer(Protocol):
     kld: float = 0.0002
     optimizer_idx: int = 0
     clip_max_norm: float = 1.0
+    seed: int = 42
 
 
 @dataclass
