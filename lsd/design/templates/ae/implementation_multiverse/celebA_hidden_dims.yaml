@@ -1,0 +1,42 @@
+#CelebA Beta Implementation Multiverse
+data_choices:
+  celebA:
+    batch_size:
+      - 128
+    sample_size:
+      - 1
+
+model_choices:
+  BetaVAE:
+    latent_dim:
+      - 50
+    hidden_dims:
+      - [256, 512]
+      - [128, 256]
+      - [64, 128]
+      - [32, 64]
+      - [16, 32]
+      - [32, 64, 128, 256, 512]
+    beta:
+      - 2
+      - 16
+      - 64
+    gamma:
+      - 1000.0
+    loss_type:
+      - "H"
+
+implementation_choices:
+  ADAM:
+    lr:
+      - 0.001
+    epochs:
+      - 30
+    weight_decay:
+      - 0.0
+    scheduler_gamma:
+      - 0.95
+    kld_weight:
+      - 0.00025
+    seed:
+      - 1265

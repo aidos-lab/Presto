@@ -1,0 +1,42 @@
+#FashionMNIST Beta Implementation Multiverse
+data_choices:
+  FashionMNIST:
+    batch_size:
+      - 128
+    sample_size:
+      - 1
+
+model_choices:
+  BetaVAE:
+    latent_dim:
+      - 5
+    hidden_dims:
+      - [8, 16]
+      - [16, 32]
+      - [32, 64]
+      - [64, 128]
+      - [16, 32, 64]
+      - [16, 32, 64, 128]
+    beta:
+      - 2
+      - 16
+      - 64
+    gamma:
+      - 1000.0
+    loss_type:
+      - "H"
+
+implementation_choices:
+  ADAM:
+    lr:
+      - 0.001
+    epochs:
+      - 30
+    weight_decay:
+      - 0.0
+    scheduler_gamma:
+      - 0.95
+    kld_weight:
+      - 0.00025
+    seed:
+      - 1265
