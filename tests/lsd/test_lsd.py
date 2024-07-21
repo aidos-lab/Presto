@@ -288,6 +288,18 @@ def test_ae_generation(
             wae_lsd.generate()
 
 
+def test_ae_seeds(test_yaml_ae_seeded_file):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        with set_env_var("WANDB", "False"):
+            lsd = LSD("AutoencoderMultiverse", outDir=tmp_dir)
+
+            lsd.cfg.model_choices = test_yaml_ae_seeded_file
+            lsd.cfg.data_choices = test_yaml_ae_seeded_file
+            lsd.cfg.implementation_choices = test_yaml_ae_seeded_file
+
+            lsd.generate()
+
+
 def test_dr_generation(
     test_yaml_dr_umap_file,
     test_yaml_dr_tsne_file,
