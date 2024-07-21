@@ -385,6 +385,8 @@ def test_ae_wae_multiverse():
             - 64
           train_test_split:
             - [0.6, 0.3, 0.1]
+          train_test_seed:
+            - 68
           sample_size:
             - 0.001
 
@@ -821,6 +823,61 @@ def test_yaml_dr_pca_training_file(test_dr_pca_training_multiverse):
         delete=False, mode="w", suffix=".yaml"
     ) as temp_file:
         temp_file.write(test_dr_pca_training_multiverse)
+        temp_file_path = temp_file.name
+
+    yield temp_file_path
+
+    os.remove(temp_file_path)
+
+
+@pytest.fixture
+def test_ae_seeded_multiverse():
+    return """
+    data_choices:
+      Autoencoder:
+        MNIST:
+          batch_size:
+            - 64
+          train_test_split:
+            - [0.6, 0.3, 0.1]
+          train_test_seed:
+            - 68
+            - 42
+          sample_size:
+            - 0.001
+
+    model_choices:
+      Autoencoder:
+        WAE:
+          z_var:
+            - 0.5
+          reg_weight:
+            - 2.0
+          kernel:
+            - rbf
+          hidden_dims:
+            - [4]
+
+    implementation_choices:
+      Autoencoder:
+        SGD:
+          seed:
+            - 68
+          lr:
+            - 0.01
+          momentum:
+            - 0.75
+          epochs:
+            - 1
+    """
+
+
+@pytest.fixture
+def test_yaml_ae_seeded_file(test_ae_seeded_multiverse):
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(test_ae_seeded_multiverse)
         temp_file_path = temp_file.name
 
     yield temp_file_path
