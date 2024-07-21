@@ -1,9 +1,0 @@
-trainer_params:
-  lr:
-    - 0.001
-  epochs:
-    - 100
-  weight_decay: 0.0
-  scheduler_gamma: 0.95
-  kld_weight: 0.00025
-  manual_seed: 1265
