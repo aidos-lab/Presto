@@ -87,6 +87,7 @@ class Atom:
             )
         self.multiverse_size = len(data)
         self._MMS = None
+        self._MMS = None
         self.seed = seed
 
     @property

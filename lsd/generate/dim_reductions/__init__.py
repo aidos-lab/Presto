@@ -1,5 +1,47 @@
-import sys
+from .configs import UMAP, tSNE, Phate, Isomap, LLE
+from .configs import (
+    iris,
+    digits,
+    linnerud,
+    wine,
+    breast_cancer,
+    MNIST,
+    swiss_roll,
+    barbell,
+    moons,
+    noisy_annulus,
+)
+from .configs import (
+    Trainer,
+    UMAPTrainer,
+    tSNETrainer,
+    PhateTrainer,
+    IsomapTrainer,
+    LLETrainer,
+)
+from .dr import DimReduction
 
-sys.path.append("..")  # Add the parent directory to the import path
-
-from config import config  # Import objects from config.py
+__all__ = [
+    "DimReduction",
+    "UMAP",
+    "tSNE",
+    "Phate",
+    "Isomap",
+    "LLE",
+    "iris",
+    "digits",
+    "linnerud",
+    "wine",
+    "breast_cancer",
+    "MNIST",
+    "swiss_roll",
+    "barbell",
+    "moons",
+    "noisy_annulus",
+    "Trainer",
+    "UMAPTrainer",
+    "tSNETrainer",
+    "PhateTrainer",
+    "IsomapTrainer",
+    "LLETrainer",
+]

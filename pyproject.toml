@@ -20,7 +20,16 @@ networkx = "^3.2.1"
 omegaconf = "^2.3.0"
 wandb = "^0.16.4"
 python-dotenv = "^1.0.1"
+phate = "^1.0.11"
+torch = "^2.3.1"
+umap-learn = "^0.5.6"
+torchvision = "^0.18.1"
+torch-geometric = "^2.5.3"
 
+
+[tool.poetry.group.dev.dependencies]
+memory-profiler = "^0.61.0"
+pytest = "^8.2.2"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,0 +1,91 @@
+#dsprites Hyperparameter Multiverse
+data_choices:
+  dsprites:
+    batch_size:
+      - 128
+    sample_size:
+      - 0.5
+      - 1
+
+model_choices:
+  BetaVAE:
+    latent_dim:
+      - 25
+    hidden_dims:
+      - [3, 32, 64, 128]
+    beta:
+      - 1
+      - 4
+      - 16
+      - 64
+    gamma:
+      - 500.0
+      - 750.0
+      - 1000.0
+    loss_type:
+      - "H"
+      - "B"
+  infoVAE:
+    latent_dim:
+      - 25
+    hidden_dims:
+      - - 3
+      - 32
+      - 64
+      - 128
+    beta:
+      - 1
+      - 5
+      - 10
+    alpha:
+      - -5.0
+      - -2.0
+      - -0.5
+      - 0.0
+    kernel_type:
+      - "imq"
+      - "rbf"
+
+  WAE:
+    latent_dim:
+      - 25
+    hidden_dims:
+      - - 3
+      - 32
+      - 64
+      - 128
+    beta:
+      - 0
+    gamma:
+      - 0
+    loss_type:
+      - 0
+    alpha:
+      - 0
+    latent_var:
+      - 1
+      - 2
+      - 3
+    kernel_type:
+      - "imq"
+      - "rbf"
+    lambda_:
+      - 10
+      - 20
+      - 50
+      - 100
+
+implementation_choices:
+  ADAM:
+    lr:
+      - 0.001
+    epochs:
+      - 30
+    weight_decay:
+      - 0.0
+    scheduler_gamma:
+      - 0.95
+    kld_weight:
+      - 0.00025
+    seed:
+      - 1265

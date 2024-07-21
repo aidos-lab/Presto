@@ -1,0 +1,36 @@
+#  ╭──────────────────────────────────────────────────────────╮
+#  │ Autoencoder Sample Configuration                         │
+#  ╰──────────────────────────────────────────────────────────╯
+
+data_choices:
+  Autoencoder:
+    MNIST:
+      batch_size:
+        - 64
+      train_test_split:
+        - [0.6, 0.3, 0.1]
+      sample_size:
+        - 0.001
+
+model_choices:
+  Autoencoder:
+    WAE:
+      z_var:
+        - 0.5
+      reg_weight:
+        - 2.0
+      kernel:
+        - imq
+        - rbf
+      hidden_dims:
+        - [4]
+
+implementation_choices:
+  Autoencoder:
+    SGD:
+      lr:
+        - 0.01
+      momentum:
+        - 0.75
+      epochs:
+        - 1
