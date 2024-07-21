@@ -21,7 +21,7 @@ def test_train_epoch(gym_fixture):
         mock_optimizer_instance = MagicMock()
         mock_optimizer.return_value = mock_optimizer_instance
 
-        stats = gym_fixture.train_epoch()
+        stats = gym_fixture._train_epoch()
         assert isinstance(stats, dict)
 
 
@@ -32,7 +32,7 @@ def test_compute_recon_loss(gym_fixture):
         ]
         gym_fixture.dm.test_dataloader.return_value = mock_dataloader
 
-        loss = gym_fixture.compute_recon_loss(
+        loss = gym_fixture._compute_recon_loss(
             gym_fixture.model, mock_dataloader
         )
         assert isinstance(loss, torch.Tensor)
