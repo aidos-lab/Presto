@@ -53,7 +53,6 @@ class DataModule(ABC):
         """
         super().__init__()
         self.config = config
-        torch.manual_seed(config.seed)
         self.data_dir = self.get_data_directory(default_subdir="downloads")
         self.entire_ds = self.setup()
         self.prepare_data()
@@ -92,11 +91,15 @@ class DataModule(ABC):
         Splits the entire dataset into training, validation, and test sets.
 
         This method uses the `random_split` function to divide the dataset according to
-        the ratios specified in `config.train_test_split`.
+        the ratios specified in `config.train_test_split` and seed specified by `config.train_test_seed`.
         """
+        seed = self.config.get("train_test_seed", 42)
+        generator = torch.Generator().manual_seed(seed)
         self.train_ds, self.test_ds, self.val_ds = (
             torch.utils.data.random_split(
-                self.entire_ds, self.config.train_test_split
+                self.entire_ds,
+                self.config.train_test_split,
+                generator=generator,
             )
         )
 
