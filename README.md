@@ -168,7 +168,7 @@ If you're unfamiliar with contributing to open source repositories, here is a ba
 2. **Clone the Repository**: Clone the forked repository to your local machine.
 
    ```sh
-   git clone https://github.com/your-username/presto.git
+   git clone https://github.com/aidos-lab/Presto.git
    ```
 
 
