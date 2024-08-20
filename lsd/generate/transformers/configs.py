@@ -1,4 +1,4 @@
-from typing import Any, Protocol
+from typing import Protocol
 from dataclasses import dataclass
 
 
