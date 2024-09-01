@@ -1,5 +1,7 @@
 # Presto 🎶
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11355446.svg)](https://doi.org/10.5281/zenodo.11355446)
+
 ## Confidently and efficiently navigate the multiverse 🧭🚀
 
 The world of machine learning research is riddled with small decisions, from data collection, cleaning, into model selection and parameter tuning. Each combination of data, implementation, and modeling decisions leads to a potential universe where we can analyze and interpret results. Together, these form a multiverse! 🌌
