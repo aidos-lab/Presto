@@ -1,5 +1,5 @@
-from .configs import Mistral, Ada, MiniLM, arXiv, CNN
-from .tf import Transformer, Custom
+from .configs import Mistral, Ada, MiniLM, arXiv, CNN, Tokenizer
+from .tf import Transformer
 
 __all__ = [
     "Mistral",
@@ -8,5 +8,5 @@ __all__ = [
     "arXiv",
     "CNN",
     "Transformer",
-    "Custom",
+    "Tokenizer",
 ]

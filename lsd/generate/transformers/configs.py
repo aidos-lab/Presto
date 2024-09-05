@@ -8,32 +8,29 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Transformer(Protocol):
+class PretrainedLanguageModel(Protocol):
+    module: str = "lsd.generate.transformers.models.pretrained"
+
+
+@dataclass
+class Ada(PretrainedLanguageModel):
     pass
 
 
 @dataclass
-class PretrainedLanguageModel(Transformer):
+class Mistral(PretrainedLanguageModel):
+    module: str = "lsd.generate.transformers.models.huggingface"
+    name: str = "Mistral"
+    version: str = "v1"
+
+
+@dataclass
+class DistilRoberta(PretrainedLanguageModel):
     pass
 
 
 @dataclass
-class ADA(PretrainedLanguageModel):
-    pass
-
-
-@dataclass
-class MISTRAL(PretrainedLanguageModel):
-    pass
-
-
-@dataclass
-class DISTILROBERTA(PretrainedLanguageModel):
-    pass
-
-
-@dataclass
-class MINILM(PretrainedLanguageModel):
+class MiniLM(PretrainedLanguageModel):
     pass
 
 
@@ -43,7 +40,7 @@ class MPNET(PretrainedLanguageModel):
 
 
 @dataclass
-class QA_DISTILBERT(PretrainedLanguageModel):
+class QA_DistilBert(PretrainedLanguageModel):
     pass
 
 
@@ -53,28 +50,39 @@ class QA_DISTILBERT(PretrainedLanguageModel):
 
 
 @dataclass
-class Embedding(Protocol):
+class HuggingFaceData(Protocol):
+    name: str
+    version: str
+    split: str = "train"
+    host: str = "huggingface"
+
+
+@dataclass
+class arXiv(HuggingFaceData):
     pass
 
 
 @dataclass
-class arXiv(Embedding):
+class BBC(HuggingFaceData):
     pass
 
 
 @dataclass
-class BBC(Embedding):
+class CNN(HuggingFaceData):
+    name: str = "cnn_daily_mail"
+    version: str = "3.0.0"
+
+
+@dataclass
+class Patents(HuggingFaceData):
     pass
 
 
 @dataclass
-class CNN(Embedding):
-    pass
-
-
-@dataclass
-class Patents(Embedding):
-    pass
+class LocalData(Protocol):
+    name: str
+    path: str
+    host: str = "local"
 
 
 #  ╭──────────────────────────────────────────────────────────╮
@@ -84,4 +92,16 @@ class Patents(Embedding):
 
 @dataclass
 class Implementation(Protocol):
+    version: str
+
+
+@dataclass
+class Sampler(Implementation):
     pass
+
+
+@dataclass
+class Tokenizer(Implementation):
+    name: str = "Tokenizer"
+    version: str = "v1"
+    aggregation: str = "mean"

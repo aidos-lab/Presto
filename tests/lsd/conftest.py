@@ -3,7 +3,7 @@ import os
 import tempfile
 from omegaconf import OmegaConf
 from contextlib import contextmanager
-from lsd.utils import DictType
+from lsd.utils import ConfigType
 
 
 #  ╭──────────────────────────────────────────────────────────╮
@@ -11,7 +11,7 @@ from lsd.utils import DictType
 #  ╰──────────────────────────────────────────────────────────╯
 
 
-def create_dictionary(input: str) -> DictType:
+def create_dictionary(input: str) -> ConfigType:
     """Take in a yaml formatted string and return a dictionary.
 
     Args:
@@ -23,7 +23,7 @@ def create_dictionary(input: str) -> DictType:
     return OmegaConf.create(input)
 
 
-def create_tmp_yaml(input: str):
+def create_tmp_yaml(input: str) -> str:
     """Create a temporary yaml file.
 
     Args:
@@ -41,7 +41,7 @@ def create_tmp_yaml(input: str):
 
 
 @contextmanager
-def set_env_var(key: str, value: str):
+def set_env_var(key: str, value: str) -> None:
     """
     A context manager to temporarily set an environment variable.
 
@@ -699,15 +699,26 @@ def test_ae_seeded_multiverse():
 @pytest.fixture
 def test_tf_multiverse():
     return """
-    data_choices:
-      Transformer:
+  data_choices:
+    Transformer:
+      CNN:
+        num_samples:
+          - 1000
+        version:
+          - '1.0'
 
-    model_choices:
-      Transformer:
+  model_choices:
+    Transformer:
+      Mistral:
+        version: 
+          - '1.2'
 
-    implementation_choices:
-      Transformer:
-    """
+  implementation_choices:
+    Transformer:
+      Tokenizer:
+        aggregation: 
+          - mean
+"""
 
 
 #  ╭──────────────────────────────────────────────────────────╮
@@ -723,26 +734,22 @@ def test_dict1(test_multiverse1):
 
 @pytest.fixture
 def test_dict2(test_multiverse2):
-    config = OmegaConf.create(test_multiverse2)
-    return config
+    return create_dictionary(test_multiverse2)
 
 
 @pytest.fixture
 def test_dict3(test_multiverse3):
-    config = OmegaConf.create(test_multiverse3)
-    return config
+    return create_dictionary(test_multiverse3)
 
 
 @pytest.fixture
 def test_dict4(test_multiverse4):
-    config = OmegaConf.create(test_multiverse4)
-    return config
+    return create_dictionary(test_multiverse4)
 
 
 @pytest.fixture
 def test_dict5(test_multiverse5):
-    config = OmegaConf.create(test_multiverse5)
-    return config
+    return create_dictionary(test_multiverse5)
 
 
 # Files
@@ -757,7 +764,6 @@ def test_yaml1_file(test_multiverse1):
 def test_yaml2_file(test_multiverse2):
     tmp_file_path = create_tmp_yaml(test_multiverse2)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -765,7 +771,6 @@ def test_yaml2_file(test_multiverse2):
 def test_yaml3_file(test_multiverse3):
     tmp_file_path = create_tmp_yaml(test_multiverse3)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -773,15 +778,13 @@ def test_yaml3_file(test_multiverse3):
 def test_yaml4_file(test_multiverse4):
     tmp_file_path = create_tmp_yaml(test_multiverse4)
     yield tmp_file_path
-
-    os.remove(tmp_file_path)
+    os.remove(tmp_filepath)
 
 
 @pytest.fixture
 def test_yaml5_file(test_multiverse5):
     tmp_file_path = create_tmp_yaml(test_multiverse5)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -789,7 +792,6 @@ def test_yaml5_file(test_multiverse5):
 def test_yaml_ae_no_train_file(test_ae_no_train_multiverse):
     tmp_file_path = create_tmp_yaml(test_ae_no_train_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -797,7 +799,6 @@ def test_yaml_ae_no_train_file(test_ae_no_train_multiverse):
 def test_yaml_ae_info_file(test_ae_info_multiverse):
     tmp_file_path = create_tmp_yaml(test_ae_info_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -805,7 +806,6 @@ def test_yaml_ae_info_file(test_ae_info_multiverse):
 def test_yaml_ae_wae_file(test_ae_wae_multiverse):
     tmp_file_path = create_tmp_yaml(test_ae_wae_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -813,7 +813,6 @@ def test_yaml_ae_wae_file(test_ae_wae_multiverse):
 def test_yaml_ae_beta_file(test_ae_beta_multiverse):
     tmp_file_path = create_tmp_yaml(test_ae_beta_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -821,7 +820,6 @@ def test_yaml_ae_beta_file(test_ae_beta_multiverse):
 def test_yaml_dr_umap_file(test_dr_umap_multiverse):
     tmp_file_path = create_tmp_yaml(test_dr_umap_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -829,7 +827,6 @@ def test_yaml_dr_umap_file(test_dr_umap_multiverse):
 def test_yaml_dr_tsne_file(test_dr_tsne_multiverse):
     tmp_file_path = create_tmp_yaml(test_dr_tsne_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -837,7 +834,6 @@ def test_yaml_dr_tsne_file(test_dr_tsne_multiverse):
 def test_yaml_dr_phate_file(test_dr_phate_multiverse):
     tmp_file_path = create_tmp_yaml(test_dr_phate_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -845,7 +841,6 @@ def test_yaml_dr_phate_file(test_dr_phate_multiverse):
 def test_yaml_dr_isomap_file(test_dr_isomap_multiverse):
     tmp_file_path = create_tmp_yaml(test_dr_isomap_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -853,7 +848,6 @@ def test_yaml_dr_isomap_file(test_dr_isomap_multiverse):
 def test_yaml_dr_lle_file(test_dr_lle_multiverse):
     tmp_file_path = create_tmp_yaml(test_dr_lle_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -861,7 +855,6 @@ def test_yaml_dr_lle_file(test_dr_lle_multiverse):
 def test_yaml_dr_local_data_file(test_dr_local_data_multiverse):
     tmp_file_path = create_tmp_yaml(test_dr_local_data_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -869,7 +862,6 @@ def test_yaml_dr_local_data_file(test_dr_local_data_multiverse):
 def test_yaml_dr_manifold_data_file(test_dr_manifold_data_multiverse):
     tmp_file_path = create_tmp_yaml(test_dr_manifold_data_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -877,7 +869,6 @@ def test_yaml_dr_manifold_data_file(test_dr_manifold_data_multiverse):
 def test_yaml_dr_pca_training_file(test_dr_pca_training_multiverse):
     tmp_file_path = create_tmp_yaml(test_dr_pca_training_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -885,7 +876,6 @@ def test_yaml_dr_pca_training_file(test_dr_pca_training_multiverse):
 def test_yaml_ae_seeded_file(test_ae_seeded_multiverse):
     tmp_file_path = create_tmp_yaml(test_ae_seeded_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
 
 
@@ -893,5 +883,4 @@ def test_yaml_ae_seeded_file(test_ae_seeded_multiverse):
 def test_yaml_tf_file(test_tf_multiverse):
     tmp_file_path = create_tmp_yaml(test_tf_multiverse)
     yield tmp_file_path
-
     os.remove(tmp_file_path)
