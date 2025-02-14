@@ -1,9 +1,9 @@
 # Presto 🎶
+
 [![arXiv](https://img.shields.io/badge/arXiv-2301.12906-b31b1b.svg)](https://arxiv.org/abs/2402.01514)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11355446.svg)](https://doi.org/10.5281/zenodo.11355446)
-![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/Presto) 
-
-
+![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/Presto)
+![GitHub](https://img.shields.io/github/license/aidos-lab/Presto)
 
 ## Confidently and efficiently navigate the multiverse 🧭🚀
 
@@ -12,6 +12,8 @@ The world of machine learning research is riddled with small decisions, from dat
 In this project, we focus on mapping out the multiverse of latent representations, specifically targeting machine learning tasks that produce embeddings. In our [ICML 2024 paper](https://arxiv.org/abs/2402.01514), we develop topological tools to efficiently measure the structural variation between representations that arise from different choices in a machine learning workflow. Our main contribution is a custom score developed specifically for multiverse analysis:
 
 `Presto`, our *Pr*ojected *E*mbedding *S*imilarity based on *T*opological *O*verlays. 🔍✨
+
+<img src="./assets/logo.svg" width="500">
 
 If you happen to find `Presto` useful, please cite:
 
@@ -176,7 +178,6 @@ If you're unfamiliar with contributing to open source repositories, here is a ba
    git clone https://github.com/aidos-lab/Presto.git
    ```
 
-
 3. **Create a Branch**: Create a new branch for your feature or bug fix.
 
    ```sh
@@ -202,4 +203,3 @@ If you're unfamiliar with contributing to open source repositories, here is a ba
 ### Need Help?
 
 If you need any help or have questions, feel free to reach out to the authors or submit a pull request. We appreciate your contributions and are happy to assist!
-
