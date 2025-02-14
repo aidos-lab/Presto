@@ -1,6 +1,9 @@
 # Presto 🎶
-
+[![arXiv](https://img.shields.io/badge/arXiv-2301.12906-b31b1b.svg)](https://arxiv.org/abs/2402.01514)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11355446.svg)](https://doi.org/10.5281/zenodo.11355446)
+![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/Presto) 
+
+
 
 ## Confidently and efficiently navigate the multiverse 🧭🚀
 
