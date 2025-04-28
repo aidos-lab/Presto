@@ -1,37 +1,29 @@
-[tool.poetry]
-name = "presto-multiverse"
-version = "0.1.4"
-description = "Presto: Projected Embedding Similarty based on Topological Overlays"
-authors = ["jeremy.wayland <jeremy.don.wayland@gmail.com>","corrina.coupette <coupette@mpi-inf.mpg.de>","Bastian Rieck <bastian@rieck.me>"]
+[project]
+name = "presto"
+version = "0.1.0"
+description = "Add your description here"
 readme = "README.md"
-license = "BSD-3"
-packages = [
-    { include = "presto", from = "." },
-    { include = "lsd", from = "." },
+requires-python = ">=3.11"
+dependencies = [
+    "gudhi>=3.11.0",
+    "networkx>=3.4.2",
+    "numpy>=2.2.5",
+    "omegaconf>=2.3.0",
+    "python-dotenv>=1.1.0",
+    "scikit-learn>=1.6.1",
+    "torch>=2.7.0",
+    "torch-geometric>=2.6.1",
+    "torch-vision>=0.1.6.dev0",
+    "tqdm>=4.67.1",
+    "umap-learn>=0.5.7",
+    "wandb>=0.19.10",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-numpy = "^1.26.4"
-scikit-learn = "^1.4.1.post1"
-pytest = "^8.0.2"
-gudhi = "^3.9.0"
-tqdm = "^4.66.2"
-networkx = "^3.2.1"
-omegaconf = "^2.3.0"
-wandb = "^0.16.4"
-python-dotenv = "^1.0.1"
-phate = "^1.0.11"
-torch = "^2.2.0"
-umap-learn = "^0.5.6"
-torchvision = "^0.18.1"
-torch-geometric = "^2.5.3"
-
-
-[tool.poetry.group.dev.dependencies]
-memory-profiler = "^0.61.0"
-pytest = "^8.2.2"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "memory-profiler>=0.61.0",
+    "pdoc>=15.0.3",
+    "pillow>=11.2.1",
+    "pytest>=8.3.5",
+    "pytest-cov>=6.1.1",
+]
