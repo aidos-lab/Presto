@@ -458,7 +458,7 @@ class Presto:
 
     @staticmethod
     def compute_local_presto_sensitivity(
-        landscape_equivalence_classes: List[List[Dict[int, np.array]]]
+        landscape_equivalence_classes: List[List[Dict[int, np.array]]],
     ) -> float:
         """
         PS^2_k(MM | i) := sqrt( 1/q_i * sum_{Q \in QQ_i} PV^2_k(LL[Q]) ),
@@ -478,7 +478,7 @@ class Presto:
     def compute_global_presto_sensitivity(
         landscape_equivalence_classes_per_dim: List[
             List[List[Dict[int, np.array]]]
-        ]
+        ],
     ) -> float:
         """
         PS^2_k(MM) := sqrt( 1/c * sum_{i \in [c]} 1/q_i * sum_{Q \in QQ_i} PV^2_k(LL[Q]) ),
@@ -499,13 +499,13 @@ class Presto:
 
     @staticmethod
     def compute_individual_presto_sensitivity(
-        landscapes: List[Dict[int, np.array]]
+        landscapes: List[Dict[int, np.array]],
     ) -> float:
         return Presto.compute_presto_coordinate_sensitivity(landscapes)
 
     @staticmethod
     def compute_presto_coordinate_sensitivity(
-        landscapes: List[Dict[int, np.array]]
+        landscapes: List[Dict[int, np.array]],
     ) -> float:
         """
         PCS^2_k(theta | MM) := sqrt( PV^2_k(LL[theta^{\pm 1}]) )
@@ -541,7 +541,7 @@ class Presto:
 
     @staticmethod
     def _add_landscapes_abs(
-        landscapes: List[Dict[int, np.array]]
+        landscapes: List[Dict[int, np.array]],
     ) -> Dict[int, np.array]:
         res = dict()
         for i in landscapes[0].keys():
@@ -559,7 +559,7 @@ class Presto:
 
     @staticmethod
     def _pivot_landscapes(
-        landscapes: Dict[int, List[np.array]]
+        landscapes: Dict[int, List[np.array]],
     ) -> List[Dict[int, np.array]]:
         dimensions = sorted(landscapes.keys())
         n_landscapes = len(landscapes[0])
