@@ -32,3 +32,49 @@ def gym_fixture():
         mock_module = MagicMock()
         mock_import_module.return_value.initialize.return_value = mock_module
         return Gym(config=config, logger=mock_logger)
+
+
+# Transformer-specific fixtures
+@pytest.fixture
+def mock_huggingface_model():
+    """Mock HuggingFace model for testing."""
+    mock_model = MagicMock()
+    mock_model.eval = MagicMock()
+    
+    # Mock output structure
+    mock_output = MagicMock()
+    mock_output.last_hidden_state = torch.randn(1, 10, 768)  # batch=1, seq_len=10, hidden=768
+    mock_model.return_value = mock_output
+    
+    return mock_model
+
+
+@pytest.fixture
+def mock_huggingface_tokenizer():
+    """Mock HuggingFace tokenizer for testing."""
+    mock_tokenizer = MagicMock()
+    mock_tokenizer.return_value = {
+        'input_ids': torch.tensor([[101, 2023, 2003, 2019, 2742, 102]]),
+        'attention_mask': torch.tensor([[1, 1, 1, 1, 1, 1]])
+    }
+    return mock_tokenizer
+
+
+@pytest.fixture
+def mock_sentence_transformer():
+    """Mock SentenceTransformer model for testing."""
+    mock_st = MagicMock()
+    mock_st.encode.return_value = torch.randn(384)  # Standard embedding size
+    mock_st.tokenize.return_value = [101, 2023, 2003, 102]
+    return mock_st
+
+
+@pytest.fixture
+def sample_text_dataset():
+    """Sample text dataset for testing."""
+    return [
+        {"article": "This is the first article about machine learning."},
+        {"article": "This is the second article about deep learning."},
+        {"text": "This is a text sample for testing purposes."},
+        {"sentence": "This is a sentence for testing."}
+    ]
