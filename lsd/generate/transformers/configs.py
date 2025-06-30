@@ -14,7 +14,9 @@ class PretrainedLanguageModel(Protocol):
 
 @dataclass
 class Ada(PretrainedLanguageModel):
-    pass
+    module: str = "lsd.generate.transformers.models.huggingface"
+    name: str = "Ada"
+    version: str = "v1"
 
 
 @dataclass
@@ -26,22 +28,30 @@ class Mistral(PretrainedLanguageModel):
 
 @dataclass
 class DistilRoberta(PretrainedLanguageModel):
-    pass
+    module: str = "lsd.generate.transformers.models.huggingface"
+    name: str = "distilroberta-base"
+    version: str = "v1"
 
 
 @dataclass
 class MiniLM(PretrainedLanguageModel):
-    pass
+    module: str = "lsd.generate.transformers.models.sbert"
+    name: str = "sentence-transformers/all-MiniLM-L6-v2"
+    version: str = "v1"
 
 
 @dataclass
 class MPNET(PretrainedLanguageModel):
-    pass
+    module: str = "lsd.generate.transformers.models.sbert"
+    name: str = "sentence-transformers/all-mpnet-base-v2"
+    version: str = "v1"
 
 
 @dataclass
 class QA_DistilBert(PretrainedLanguageModel):
-    pass
+    module: str = "lsd.generate.transformers.models.huggingface"
+    name: str = "distilbert-base-cased-distilled-squad"
+    version: str = "v1"
 
 
 #  ╭──────────────────────────────────────────────────────────╮
@@ -59,12 +69,14 @@ class HuggingFaceData(Protocol):
 
 @dataclass
 class arXiv(HuggingFaceData):
-    pass
+    name: str = "arxiv"
+    version: str = "1.0.0"
 
 
 @dataclass
 class BBC(HuggingFaceData):
-    pass
+    name: str = "bbc"
+    version: str = "1.0.0"
 
 
 @dataclass
@@ -75,7 +87,8 @@ class CNN(HuggingFaceData):
 
 @dataclass
 class Patents(HuggingFaceData):
-    pass
+    name: str = "patents"
+    version: str = "1.0.0"
 
 
 @dataclass

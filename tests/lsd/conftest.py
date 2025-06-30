@@ -702,22 +702,36 @@ def test_tf_multiverse():
   data_choices:
     Transformer:
       CNN:
+        name:
+          - cnn_dailymail
         num_samples:
-          - 1000
+          - 100
         version:
-          - '1.0'
+          - '3.0.0'
+        split:
+          - train
+        host:
+          - huggingface
 
   model_choices:
     Transformer:
       Mistral:
+        name:
+          - distilbert-base-uncased
+        module:
+          - lsd.generate.transformers.models.huggingface
         version: 
-          - '1.2'
+          - '1.0'
 
   implementation_choices:
     Transformer:
       Tokenizer:
+        name:
+          - standard_tokenizer
         aggregation: 
           - mean
+        version:
+          - v1
 """
 
 

@@ -25,7 +25,92 @@ class Transformer(Base):
         pass
 
     def generate(self):
-        pass
+        """
+        Generate latent representations using the loaded transformer model.
+        
+        This method processes the loaded dataset through the transformer model
+        to generate latent embeddings that are saved for further analysis.
+        """
+        if not hasattr(self, 'dataset') or self.dataset is None:
+            raise ValueError("Dataset not loaded. Call load_data() first.")
+        
+        if not hasattr(self, 'model') or self.model is None:
+            raise ValueError("Model not initialized. Call initialize_model() first.")
+        
+        # Extract text from dataset based on dataset type
+        texts = self._extract_texts_from_dataset()
+        
+        print(f"Generating embeddings for {len(texts)} text samples...")
+        
+        # Generate embeddings using the model
+        model_instance = self.model(self.tf_cfg)
+        embeddings = model_instance.embed(texts)
+        
+        # Convert to numpy array if it's a tensor
+        if hasattr(embeddings, 'numpy'):
+            embeddings = embeddings.numpy()
+        elif hasattr(embeddings, 'detach'):
+            embeddings = embeddings.detach().numpy()
+        
+        return embeddings
+    
+    def _extract_texts_from_dataset(self):
+        """
+        Extract text content from the loaded dataset.
+        
+        Returns
+        -------
+        List[str]
+            List of text strings extracted from the dataset.
+        """
+        texts = []
+        
+        # Handle different dataset structures
+        if hasattr(self.dataset, 'to_iterable_dataset'):
+            # HuggingFace dataset object
+            for item in self.dataset:
+                if 'article' in item:
+                    texts.append(item['article'])
+                elif 'text' in item:
+                    texts.append(item['text'])
+                elif 'sentence' in item:
+                    texts.append(item['sentence'])
+                else:
+                    # Try to find any string field
+                    for key, value in item.items():
+                        if isinstance(value, str) and len(value) > 10:  # Reasonable text length
+                            texts.append(value)
+                            break
+        elif isinstance(self.dataset, list):
+            # Check if it's a list of dictionaries or a list of strings
+            if self.dataset and isinstance(self.dataset[0], dict):
+                # List of dictionaries (like HuggingFace format)
+                for item in self.dataset:
+                    if 'article' in item:
+                        texts.append(item['article'])
+                    elif 'text' in item:
+                        texts.append(item['text'])
+                    elif 'sentence' in item:
+                        texts.append(item['sentence'])
+                    else:
+                        # Try to find any string field
+                        for key, value in item.items():
+                            if isinstance(value, str) and len(value) > 10:  # Reasonable text length
+                                texts.append(value)
+                                break
+            else:
+                # List of text strings
+                texts = self.dataset
+        elif hasattr(self.dataset, '__iter__'):
+            # Any iterable
+            texts = list(self.dataset)
+        else:
+            raise ValueError(f"Unsupported dataset type: {type(self.dataset)}")
+            
+        if not texts:
+            raise ValueError("No text content found in dataset")
+            
+        return texts
 
     def initialize_model(self, tf_cfg: ConfigType) -> None:
         module = tf_cfg.get("model")
@@ -37,28 +122,42 @@ class Transformer(Base):
             )
 
     def load_data(self, tf_cfg: ConfigType):
-
+        """
+        Load dataset based on configuration.
+        """
         if tf_cfg.data_host.lower() == "local":
-            self._load_local_data(tf_cfg)
+            self.dataset = self._load_local_data(tf_cfg)
         else:
-            self._load_remote(tf_cfg)
+            self.dataset = self._load_remote(tf_cfg)
 
-    @staticmethod
-    def _load_remote(tf_cfg: ConfigType):
-
+    def _load_remote(self, tf_cfg: ConfigType):
+        """
+        Load dataset from HuggingFace Hub.
+        """
         dataset_name = tf_cfg.get("dataset", None)
         version = tf_cfg.get("data_version", "3.0.0")
-        split = tf_cfg.get("split", "train")
+        split = tf_cfg.get("data_split", "train")
+        num_samples = tf_cfg.get("num_samples", None)
 
         print(f"Loading {dataset_name} version {version} with split {split}")
 
         # Load the dataset from HuggingFace
         dataset = load_dataset(dataset_name, version, split=split)
+        
+        # Limit samples if specified
+        if num_samples is not None:
+            dataset = dataset.select(range(min(num_samples, len(dataset))))
+            
+        return dataset
 
-    @staticmethod
-    def _load_local_data(tf_cfg: ConfigType):
-        print("Local")
-        pass
+    def _load_local_data(self, tf_cfg: ConfigType):
+        """
+        Load dataset from local files.
+        """
+        print("Loading local data...")
+        # TODO: Implement local data loading
+        # For now, return a sample dataset
+        return ["Sample text 1", "Sample text 2", "Sample text 3"]
 
     def _initialize_tf_config(self) -> ConfigType:
         """

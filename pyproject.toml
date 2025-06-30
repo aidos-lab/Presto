@@ -28,6 +28,7 @@ torchvision = "^0.18.1"
 torch-geometric = "^2.5.3"
 transformers = "^4.44.2"
 datasets = "^2.21.0"
+sentence-transformers = "^2.2.2"
 
 
 [tool.poetry.group.dev.dependencies]
