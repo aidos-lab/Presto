@@ -40,10 +40,14 @@ class SentenceTransformerModel(BasePretrainedModel):
         """
         Loads the SentenceTransformer model specified in the config.
 
-        The model is loaded from the `model_name` key in the config dictionary.
+        The model is loaded from the `name` key in the config dictionary.
         """
         model_name = self.config.get("name", "all-MiniLM-L6-v2")
-        self.model = ST(model_name)
+        
+        try:
+            self.model = ST(model_name)
+        except Exception as e:
+            raise RuntimeError(f"Failed to load SentenceTransformer model '{model_name}': {e}")
 
     def process_text(self, text: str):
         """

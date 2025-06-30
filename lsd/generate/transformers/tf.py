@@ -27,58 +27,62 @@ class Transformer(Base):
     def generate(self):
         """
         Generate latent representations using the loaded transformer model.
-        
+
         This method processes the loaded dataset through the transformer model
         to generate latent embeddings that are saved for further analysis.
         """
-        if not hasattr(self, 'dataset') or self.dataset is None:
+        if not hasattr(self, "dataset") or self.dataset is None:
             raise ValueError("Dataset not loaded. Call load_data() first.")
-        
-        if not hasattr(self, 'model') or self.model is None:
-            raise ValueError("Model not initialized. Call initialize_model() first.")
-        
+
+        if not hasattr(self, "model") or self.model is None:
+            raise ValueError(
+                "Model not initialized. Call initialize_model() first."
+            )
+
         # Extract text from dataset based on dataset type
         texts = self._extract_texts_from_dataset()
-        
+
         print(f"Generating embeddings for {len(texts)} text samples...")
-        
+
         # Generate embeddings using the model
         model_instance = self.model(self.tf_cfg)
         embeddings = model_instance.embed(texts)
-        
+
         # Convert to numpy array if it's a tensor
-        if hasattr(embeddings, 'numpy'):
+        if hasattr(embeddings, "numpy"):
             embeddings = embeddings.numpy()
-        elif hasattr(embeddings, 'detach'):
+        elif hasattr(embeddings, "detach"):
             embeddings = embeddings.detach().numpy()
-        
+
         return embeddings
-    
+
     def _extract_texts_from_dataset(self):
         """
         Extract text content from the loaded dataset.
-        
+
         Returns
         -------
         List[str]
             List of text strings extracted from the dataset.
         """
         texts = []
-        
+
         # Handle different dataset structures
-        if hasattr(self.dataset, 'to_iterable_dataset'):
+        if hasattr(self.dataset, "to_iterable_dataset"):
             # HuggingFace dataset object
             for item in self.dataset:
-                if 'article' in item:
-                    texts.append(item['article'])
-                elif 'text' in item:
-                    texts.append(item['text'])
-                elif 'sentence' in item:
-                    texts.append(item['sentence'])
+                if "article" in item:
+                    texts.append(item["article"])
+                elif "text" in item:
+                    texts.append(item["text"])
+                elif "sentence" in item:
+                    texts.append(item["sentence"])
                 else:
                     # Try to find any string field
                     for key, value in item.items():
-                        if isinstance(value, str) and len(value) > 10:  # Reasonable text length
+                        if (
+                            isinstance(value, str) and len(value) > 10
+                        ):  # Reasonable text length
                             texts.append(value)
                             break
         elif isinstance(self.dataset, list):
@@ -86,30 +90,32 @@ class Transformer(Base):
             if self.dataset and isinstance(self.dataset[0], dict):
                 # List of dictionaries (like HuggingFace format)
                 for item in self.dataset:
-                    if 'article' in item:
-                        texts.append(item['article'])
-                    elif 'text' in item:
-                        texts.append(item['text'])
-                    elif 'sentence' in item:
-                        texts.append(item['sentence'])
+                    if "article" in item:
+                        texts.append(item["article"])
+                    elif "text" in item:
+                        texts.append(item["text"])
+                    elif "sentence" in item:
+                        texts.append(item["sentence"])
                     else:
                         # Try to find any string field
                         for key, value in item.items():
-                            if isinstance(value, str) and len(value) > 10:  # Reasonable text length
+                            if (
+                                isinstance(value, str) and len(value) > 10
+                            ):  # Reasonable text length
                                 texts.append(value)
                                 break
             else:
                 # List of text strings
                 texts = self.dataset
-        elif hasattr(self.dataset, '__iter__'):
+        elif hasattr(self.dataset, "__iter__"):
             # Any iterable
             texts = list(self.dataset)
         else:
             raise ValueError(f"Unsupported dataset type: {type(self.dataset)}")
-            
+
         if not texts:
             raise ValueError("No text content found in dataset")
-            
+
         return texts
 
     def initialize_model(self, tf_cfg: ConfigType) -> None:
@@ -143,11 +149,11 @@ class Transformer(Base):
 
         # Load the dataset from HuggingFace
         dataset = load_dataset(dataset_name, version, split=split)
-        
+
         # Limit samples if specified
         if num_samples is not None:
             dataset = dataset.select(range(min(num_samples, len(dataset))))
-            
+
         return dataset
 
     def _load_local_data(self, tf_cfg: ConfigType):

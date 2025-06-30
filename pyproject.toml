@@ -1,40 +1,58 @@
-[tool.poetry]
+[project]
 name = "presto-multiverse"
 version = "0.1.4"
 description = "Presto: Projected Embedding Similarty based on Topological Overlays"
-authors = ["jeremy.wayland <jeremy.don.wayland@gmail.com>","corrina.coupette <coupette@mpi-inf.mpg.de>","Bastian Rieck <bastian@rieck.me>"]
+authors = [
+    {name = "jeremy.wayland", email = "jeremy.don.wayland@gmail.com"},
+    {name = "corrina.coupette", email = "coupette@mpi-inf.mpg.de"},
+    {name = "Bastian Rieck", email = "bastian@rieck.me"}
+]
 readme = "README.md"
-license = "BSD-3"
-packages = [
-    { include = "presto", from = "." },
-    { include = "lsd", from = "." },
+license = {text = "BSD-3"}
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "numpy>=1.26.4",
+    "numba>=0.59.0",
+    "scikit-learn>=1.4.1",
+    "pytest>=8.0.2",
+    "gudhi>=3.9.0",
+    "tqdm>=4.66.2",
+    "networkx>=3.2.1",
+    "omegaconf>=2.3.0",
+    "wandb>=0.16.4",
+    "python-dotenv>=1.0.1",
+    "phate>=1.0.11",
+    "torch>=2.2.0",
+    "umap-learn>=0.5.7",
+    "torchvision>=0.18.1",
+    "torch-geometric>=2.5.3",
+    "transformers>=4.44.2",
+    "datasets>=2.21.0",
+    "sentence-transformers>=2.2.2",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-numpy = "^1.26.4"
-scikit-learn = "^1.4.1.post1"
-pytest = "^8.0.2"
-gudhi = "^3.9.0"
-tqdm = "^4.66.2"
-networkx = "^3.2.1"
-omegaconf = "^2.3.0"
-wandb = "^0.16.4"
-python-dotenv = "^1.0.1"
-phate = "^1.0.11"
-torch = "^2.2.0"
-umap-learn = "^0.5.6"
-torchvision = "^0.18.1"
-torch-geometric = "^2.5.3"
-transformers = "^4.44.2"
-datasets = "^2.21.0"
-sentence-transformers = "^2.2.2"
-
-
-[tool.poetry.group.dev.dependencies]
-memory-profiler = "^0.61.0"
-pytest = "^8.2.2"
+[project.optional-dependencies]
+dev = [
+    "memory-profiler>=0.61.0",
+    "pytest>=8.2.2",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["presto", "lsd"]
+
+[tool.uv]
+dev-dependencies = [
+    "memory-profiler>=0.61.0",
+    "pytest>=8.2.2",
+]

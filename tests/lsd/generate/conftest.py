@@ -1,5 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
+import torch
 
 from lsd.generate.autoencoders.gym import Gym
 from lsd.generate.autoencoders.logger import Logger
