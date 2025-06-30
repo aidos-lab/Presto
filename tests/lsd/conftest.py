@@ -3,6 +3,71 @@ import os
 import tempfile
 from omegaconf import OmegaConf
 from contextlib import contextmanager
+from lsd.utils import ConfigType
+
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │ Functions                                                │
+#  ╰──────────────────────────────────────────────────────────╯
+
+
+def create_dictionary(input: str) -> ConfigType:
+    """Take in a yaml formatted string and return a dictionary.
+
+    Args:
+        input (str): A yaml formatted string.
+
+    Returns:
+        DictType: A omegaconf dictionary of the yaml string.
+    """
+    return OmegaConf.create(input)
+
+
+def create_tmp_yaml(input: str) -> str:
+    """Create a temporary yaml file.
+
+    Args:
+        input (str): A yaml formatted string.
+
+    Returns:
+        tmp_file_path: The path to the temporary yaml file.
+    """
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".yaml"
+    ) as temp_file:
+        temp_file.write(input)
+        tmp_file_path = temp_file.name
+    return tmp_file_path
+
+
+@contextmanager
+def set_env_var(key: str, value: str) -> None:
+    """
+    A context manager to temporarily set an environment variable.
+
+    Args:
+        key (str): The name of the environment variable.
+        value (str): The value to set for the environment variable.
+    """
+    old_value = os.getenv(key)
+    os.environ[key] = value
+    try:
+        yield
+    finally:
+        if old_value is not None:
+            os.environ[key] = old_value
+        else:
+            del os.environ[key]
+
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │ General Multiverse Configurations                        │
+#  ╰──────────────────────────────────────────────────────────╯
+
+
+@pytest.fixture
+def test_nested_dict():
+    return {"Test1": {"Test2": {"Test4": 1}, "Test3": 2}}
 
 
 @pytest.fixture
@@ -46,25 +111,6 @@ def test_multiverse1():
             - 50
             - 100
     """
-
-
-@pytest.fixture
-def test_dict1(test_multiverse1):
-    config = OmegaConf.create(test_multiverse1)
-    return config
-
-
-@pytest.fixture
-def test_yaml1_file(test_multiverse1):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_multiverse1)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
 
 
 @pytest.fixture
@@ -116,30 +162,6 @@ def test_multiverse2():
 
 
 @pytest.fixture
-def test_dict2(test_multiverse2):
-    config = OmegaConf.create(test_multiverse2)
-    return config
-
-
-@pytest.fixture
-def test_yaml2_file(test_multiverse2):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_multiverse2)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
-def test_nested_dict():
-    return {"Test1": {"Test2": {"Test4": 1}, "Test3": 2}}
-
-
-@pytest.fixture
 def test_multiverse3():
     return """
     data_choices:
@@ -172,25 +194,6 @@ def test_multiverse3():
 
 
 @pytest.fixture
-def test_dict3(test_multiverse3):
-    config = OmegaConf.create(test_multiverse3)
-    return config
-
-
-@pytest.fixture
-def test_yaml3_file(test_multiverse3):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_multiverse3)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
 def test_multiverse4():
     return """
     data_choices:
@@ -218,25 +221,6 @@ def test_multiverse4():
 
 
 @pytest.fixture
-def test_dict4(test_multiverse4):
-    config = OmegaConf.create(test_multiverse4)
-    return config
-
-
-@pytest.fixture
-def test_yaml4_file(test_multiverse4):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_multiverse4)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
 def test_multiverse5():
     return """
     data_choices:
@@ -258,72 +242,9 @@ def test_multiverse5():
     """
 
 
-@pytest.fixture
-def test_dict5(test_multiverse5):
-    config = OmegaConf.create(test_multiverse5)
-    return config
-
-
-@pytest.fixture
-def test_yaml5_file(test_multiverse5):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_multiverse5)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
-def test_ae_beta_multiverse():
-    return """
-    data_choices:
-      Autoencoder:
-        MNIST:
-          batch_size:
-            - 64
-          train_test_split:
-            - [0.7, 0.2, 0.1]
-          sample_size:
-            - 0.001
-
-    model_choices:
-      Autoencoder:
-        betaVAE:
-          beta:
-            - 0.1
-          gamma:
-            - 0
-          max_capacity:
-            - 20
-          C_max_iter:
-            - 1e4
-          hidden_dims:
-            - [4]
-    implementation_choices:
-      Autoencoder:
-        Adam:
-          lr:
-            - 0.1
-          epochs:
-            - 2
-    """
-
-
-@pytest.fixture
-def test_yaml_ae_beta_file(test_ae_beta_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_ae_beta_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
+#  ╭──────────────────────────────────────────────────────────╮
+#  │ Autoencoder Multiverse Configurations                    │
+#  ╰──────────────────────────────────────────────────────────╯
 
 
 @pytest.fixture
@@ -360,19 +281,6 @@ def test_ae_info_multiverse():
           epochs:
             - 1
     """
-
-
-@pytest.fixture
-def test_yaml_ae_info_file(test_ae_info_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_ae_info_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
 
 
 @pytest.fixture
@@ -416,19 +324,6 @@ def test_ae_wae_multiverse():
 
 
 @pytest.fixture
-def test_yaml_ae_wae_file(test_ae_wae_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_ae_wae_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
 def test_ae_no_train_multiverse():
     return """
     data_choices:
@@ -464,20 +359,48 @@ def test_ae_no_train_multiverse():
             - 0.75
           epochs:
             - 0
-"""
+  """
 
 
 @pytest.fixture
-def test_yaml_ae_no_train_file(test_ae_no_train_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_ae_no_train_multiverse)
-        temp_file_path = temp_file.name
+def test_ae_beta_multiverse():
+    return """
+    data_choices:
+      Autoencoder:
+        MNIST:
+          batch_size:
+            - 64
+          train_test_split:
+            - [0.7, 0.2, 0.1]
+          sample_size:
+            - 0.001
 
-    yield temp_file_path
+    model_choices:
+      Autoencoder:
+        betaVAE:
+          beta:
+            - 0.1
+          gamma:
+            - 0
+          max_capacity:
+            - 20
+          C_max_iter:
+            - 1e4
+          hidden_dims:
+            - [4]
+    implementation_choices:
+      Autoencoder:
+        Adam:
+          lr:
+            - 0.1
+          epochs:
+            - 2
+    """
 
-    os.remove(temp_file_path)
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │ DimReduction Multiverse Configurations                   │
+#  ╰──────────────────────────────────────────────────────────╯
 
 
 @pytest.fixture
@@ -506,19 +429,6 @@ def test_dr_umap_multiverse():
 
 
 @pytest.fixture
-def test_yaml_dr_umap_file(test_dr_umap_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_umap_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
 def test_dr_tsne_multiverse():
     return """
     data_choices:
@@ -539,19 +449,6 @@ def test_dr_tsne_multiverse():
           n_jobs:
             - 1
     """
-
-
-@pytest.fixture
-def test_yaml_dr_tsne_file(test_dr_tsne_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_tsne_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
 
 
 @pytest.fixture
@@ -584,19 +481,6 @@ def test_dr_phate_multiverse():
 
 
 @pytest.fixture
-def test_yaml_dr_phate_file(test_dr_phate_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_phate_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
 def test_dr_isomap_multiverse():
     return """
     data_choices:
@@ -622,19 +506,6 @@ def test_dr_isomap_multiverse():
 
 
 @pytest.fixture
-def test_yaml_dr_isomap_file(test_dr_isomap_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_isomap_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
 def test_dr_lle_multiverse():
     return """
     data_choices:
@@ -657,19 +528,6 @@ def test_dr_lle_multiverse():
           n_jobs:
             - 1
     """
-
-
-@pytest.fixture
-def test_yaml_dr_lle_file(test_dr_lle_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_lle_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
 
 
 @pytest.fixture
@@ -699,19 +557,6 @@ def test_dr_local_data_multiverse():
           n_jobs:
             - 1
     """
-
-
-@pytest.fixture
-def test_yaml_dr_local_data_file(test_dr_local_data_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_local_data_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
 
 
 @pytest.fixture
@@ -773,19 +618,6 @@ def test_dr_manifold_data_multiverse():
 
 
 @pytest.fixture
-def test_yaml_dr_manifold_data_file(test_dr_manifold_data_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_manifold_data_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
-
-
-@pytest.fixture
 def test_dr_pca_training_multiverse():
     return """
     data_choices:
@@ -815,19 +647,6 @@ def test_dr_pca_training_multiverse():
           n_jobs:
             - 1
     """
-
-
-@pytest.fixture
-def test_yaml_dr_pca_training_file(test_dr_pca_training_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_dr_pca_training_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
 
 
 @pytest.fixture
@@ -872,34 +691,210 @@ def test_ae_seeded_multiverse():
     """
 
 
+#  ╭──────────────────────────────────────────────────────────╮
+#  │ Transformer Multiverse Configurations                    │
+#  ╰──────────────────────────────────────────────────────────╯
+
+
+@pytest.fixture
+def test_tf_multiverse():
+    return """
+  data_choices:
+    Transformer:
+      CNN:
+        name:
+          - cnn_dailymail
+        num_samples:
+          - 100
+        version:
+          - '3.0.0'
+        split:
+          - train
+        host:
+          - huggingface
+
+  model_choices:
+    Transformer:
+      Mistral:
+        name:
+          - distilbert-base-uncased
+        module:
+          - lsd.generate.transformers.models.huggingface
+        version: 
+          - '1.0'
+
+  implementation_choices:
+    Transformer:
+      Tokenizer:
+        name:
+          - standard_tokenizer
+        aggregation: 
+          - mean
+        version:
+          - v1
+"""
+
+
+#  ╭──────────────────────────────────────────────────────────╮
+#  │ Dictionary and File Fixtures                             │
+#  ╰──────────────────────────────────────────────────────────╯
+
+
+# Dictionaries
+@pytest.fixture
+def test_dict1(test_multiverse1):
+    return create_dictionary(test_multiverse1)
+
+
+@pytest.fixture
+def test_dict2(test_multiverse2):
+    return create_dictionary(test_multiverse2)
+
+
+@pytest.fixture
+def test_dict3(test_multiverse3):
+    return create_dictionary(test_multiverse3)
+
+
+@pytest.fixture
+def test_dict4(test_multiverse4):
+    return create_dictionary(test_multiverse4)
+
+
+@pytest.fixture
+def test_dict5(test_multiverse5):
+    return create_dictionary(test_multiverse5)
+
+
+# Files
+@pytest.fixture
+def test_yaml1_file(test_multiverse1):
+    tmp_file_path = create_tmp_yaml(test_multiverse1)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml2_file(test_multiverse2):
+    tmp_file_path = create_tmp_yaml(test_multiverse2)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml3_file(test_multiverse3):
+    tmp_file_path = create_tmp_yaml(test_multiverse3)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml4_file(test_multiverse4):
+    tmp_file_path = create_tmp_yaml(test_multiverse4)
+    yield tmp_file_path
+    os.remove(tmp_filepath)
+
+
+@pytest.fixture
+def test_yaml5_file(test_multiverse5):
+    tmp_file_path = create_tmp_yaml(test_multiverse5)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_ae_no_train_file(test_ae_no_train_multiverse):
+    tmp_file_path = create_tmp_yaml(test_ae_no_train_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_ae_info_file(test_ae_info_multiverse):
+    tmp_file_path = create_tmp_yaml(test_ae_info_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_ae_wae_file(test_ae_wae_multiverse):
+    tmp_file_path = create_tmp_yaml(test_ae_wae_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_ae_beta_file(test_ae_beta_multiverse):
+    tmp_file_path = create_tmp_yaml(test_ae_beta_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_dr_umap_file(test_dr_umap_multiverse):
+    tmp_file_path = create_tmp_yaml(test_dr_umap_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_dr_tsne_file(test_dr_tsne_multiverse):
+    tmp_file_path = create_tmp_yaml(test_dr_tsne_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_dr_phate_file(test_dr_phate_multiverse):
+    tmp_file_path = create_tmp_yaml(test_dr_phate_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_dr_isomap_file(test_dr_isomap_multiverse):
+    tmp_file_path = create_tmp_yaml(test_dr_isomap_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_dr_lle_file(test_dr_lle_multiverse):
+    tmp_file_path = create_tmp_yaml(test_dr_lle_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_dr_local_data_file(test_dr_local_data_multiverse):
+    tmp_file_path = create_tmp_yaml(test_dr_local_data_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_dr_manifold_data_file(test_dr_manifold_data_multiverse):
+    tmp_file_path = create_tmp_yaml(test_dr_manifold_data_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
+@pytest.fixture
+def test_yaml_dr_pca_training_file(test_dr_pca_training_multiverse):
+    tmp_file_path = create_tmp_yaml(test_dr_pca_training_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
+
+
 @pytest.fixture
 def test_yaml_ae_seeded_file(test_ae_seeded_multiverse):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp_file:
-        temp_file.write(test_ae_seeded_multiverse)
-        temp_file_path = temp_file.name
-
-    yield temp_file_path
-
-    os.remove(temp_file_path)
+    tmp_file_path = create_tmp_yaml(test_ae_seeded_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)
 
 
-@contextmanager
-def set_env_var(key: str, value: str):
-    """
-    A context manager to temporarily set an environment variable.
-
-    Args:
-        key (str): The name of the environment variable.
-        value (str): The value to set for the environment variable.
-    """
-    old_value = os.getenv(key)
-    os.environ[key] = value
-    try:
-        yield
-    finally:
-        if old_value is not None:
-            os.environ[key] = old_value
-        else:
-            del os.environ[key]
+@pytest.fixture
+def test_yaml_tf_file(test_tf_multiverse):
+    tmp_file_path = create_tmp_yaml(test_tf_multiverse)
+    yield tmp_file_path
+    os.remove(tmp_file_path)

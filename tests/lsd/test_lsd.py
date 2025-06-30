@@ -9,7 +9,7 @@ import omegaconf
 import pytest
 from memory_profiler import profile
 
-from lsd.config import AutoencoderMultiverse
+from lsd.config import AutoencoderMultiverse, TransformerMultiverse
 from lsd.generate.autoencoders.models.wae import WAE
 from lsd.lsd import LSD
 from .conftest import set_env_var
@@ -514,3 +514,19 @@ def test_generate_io(
 
             ae_lsd.clean()
             assert not os.path.isdir(ae_lsd.outDir)
+
+
+def test_tf_generation(test_yaml_tf_file):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tf_lsd = LSD(
+            "TransformerMultiverse",
+            outDir=tmp_dir,
+        )
+
+        tf_lsd.cfg.model_choices = test_yaml_tf_file
+        tf_lsd.cfg.data_choices = test_yaml_tf_file
+        tf_lsd.cfg.implementation_choices = test_yaml_tf_file
+
+        tf_lsd.generate()
+        
+        
