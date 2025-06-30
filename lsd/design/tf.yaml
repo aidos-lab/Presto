@@ -1,3 +1,72 @@
 #  ╭──────────────────────────────────────────────────────────╮
-#  │ Transformer Sample Configuration                         │
+#  │ Transformer Multiverse Configuration                     │
 #  ╰──────────────────────────────────────────────────────────╯
+
+data_choices:
+  Transformer:
+    CNN:
+      name: cnn_dailymail
+      version: ['3.0.0']
+      split: ['train']
+      host: ['huggingface']
+      num_samples: [1000, 5000]
+    
+    ArXiv:
+      name: arxiv
+      version: ['1.0.0']
+      split: ['train']
+      host: ['huggingface']
+      num_samples: [1000, 5000]
+    
+    LocalText:
+      name: local_corpus
+      path: ['./data/text_corpus.txt']
+      host: ['local']
+      num_samples: [1000]
+
+model_choices:
+  Transformer:
+    DistilBERT:
+      name: ['distilbert-base-uncased']
+      module: ['lsd.generate.transformers.models.huggingface']
+      max_length: [512]
+    
+    MiniLM:
+      name: ['sentence-transformers/all-MiniLM-L6-v2']
+      module: ['lsd.generate.transformers.models.sbert']
+      max_length: [384]
+    
+    MPNET:
+      name: ['sentence-transformers/all-mpnet-base-v2']
+      module: ['lsd.generate.transformers.models.sbert']
+      max_length: [384]
+    
+    Mistral:
+      name: ['mistralai/Mistral-7B-Instruct-v0.1']
+      module: ['lsd.generate.transformers.models.huggingface']
+      max_length: [512, 1024]
+    
+    RoBERTa:
+      name: ['roberta-base']
+      module: ['lsd.generate.transformers.models.huggingface']
+      max_length: [512]
+
+implementation_choices:
+  Transformer:
+    Tokenizer:
+      name: ['standard_tokenizer']
+      aggregation: ['mean', 'cls']
+      batch_size: [16, 32]
+      device: ['cpu', 'cuda']
+    
+    SentenceEmbedder:
+      name: ['sentence_embedder']
+      aggregation: ['mean']
+      batch_size: [32, 64]
+      device: ['cpu', 'cuda']
+      normalize_embeddings: [true, false]
+
+logging:
+  wandb_logging: false
+  out_file: true
+  dev: false
