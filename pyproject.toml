@@ -35,6 +35,11 @@ dev = [
     "pytest>=8.2.2",
 ]
 
+[tool.pytest.ini_options]
+markers = [
+    "high_compute: marks tests as high compute (deselect with '-m \"not high_compute\"')",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["presto", "lsd"]
 
