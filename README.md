@@ -22,7 +22,7 @@ If you happen to find `Presto` useful, please cite:
 	title={Mapping the multiverse of latent representations},
 	author={Wayland, Jeremy and Coupette†, Corinna and Rieck†, Bastian},
 	booktitle={International Conference on Machine Learning (ICML)},
-	pages={to appear},
+	pages={52372-52402},
 	year={2024}
 }
 ```
