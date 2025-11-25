@@ -32,7 +32,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "memory-profiler>=0.61.0",
     "pytest>=8.2.2",
 ]
 
