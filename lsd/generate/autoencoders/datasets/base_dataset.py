@@ -95,12 +95,10 @@ class DataModule(ABC):
         """
         seed = self.config.get("train_test_seed", 42)
         generator = torch.Generator().manual_seed(seed)
-        self.train_ds, self.test_ds, self.val_ds = (
-            torch.utils.data.random_split(
-                self.entire_ds,
-                self.config.train_test_split,
-                generator=generator,
-            )
+        self.train_ds, self.test_ds, self.val_ds = torch.utils.data.random_split(
+            self.entire_ds,
+            self.config.train_test_split,
+            generator=generator,
         )
 
     def train_dataloader(self) -> DataLoader:

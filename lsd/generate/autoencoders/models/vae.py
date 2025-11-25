@@ -340,9 +340,9 @@ class BaseVAE(nn.Module):
         encoder = nn.Sequential(*modules)
 
         # Tracking Encoder Shapes
-        encoded_shape = encoder(
-            torch.rand(1, in_channels, img_size, img_size)
-        ).shape[1:]
+        encoded_shape = encoder(torch.rand(1, in_channels, img_size, img_size)).shape[
+            1:
+        ]
         num_features = functools.reduce(
             operator.mul,
             list(encoded_shape),

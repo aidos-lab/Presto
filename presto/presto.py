@@ -105,9 +105,7 @@ class Presto:
         self.max_homology_dim = max_homology_dim
         self.homology_dims = list(range(0, max_homology_dim + 1))
         self.landscape_resolution = resolution
-        self.LS = Landscape(
-            resolution=self.landscape_resolution, keep_endpoints=False
-        )
+        self.LS = Landscape(resolution=self.landscape_resolution, keep_endpoints=False)
 
         self._projectionsX = None
         self._projectionsY = None
@@ -379,11 +377,7 @@ class Presto:
         - random_projections : list
             List of random projections.
         """
-        desc = (
-            f"Generating Projections for {tag}"
-            if tag
-            else "Generating Projections"
-        )
+        desc = f"Generating Projections for {tag}" if tag else "Generating Projections"
         rng = np.random.default_rng(seed)
         random_projections = []
         seeds = rng.choice(2**16 - 1, n_projections, replace=False).tolist()
@@ -417,11 +411,7 @@ class Presto:
         - landscapes : dict
             Dictionary containing persistence landscapes for each homology dimension.
         """
-        desc = (
-            f"Generating Landscapes for {tag}"
-            if tag
-            else "Generating Landscapes"
-        )
+        desc = f"Generating Landscapes for {tag}" if tag else "Generating Landscapes"
         landscapes = []
         for X_ in tqdm(
             projections,
@@ -447,9 +437,7 @@ class Presto:
     #  ╰──────────────────────────────────────────────────────────╯
 
     @staticmethod
-    def compute_presto_scores(
-        landscapeX, landscapeY, score_type: str = "aggregate"
-    ):
+    def compute_presto_scores(landscapeX, landscapeY, score_type: str = "aggregate"):
         prestos = Presto._compute_landscape_norm(
             Presto._subtract_landscapes(landscapeX, landscapeY),
             score_type=score_type,
@@ -458,7 +446,7 @@ class Presto:
 
     @staticmethod
     def compute_local_presto_sensitivity(
-        landscape_equivalence_classes: List[List[Dict[int, np.array]]]
+        landscape_equivalence_classes: List[List[Dict[int, np.array]]],
     ) -> float:
         """
         PS^2_k(MM | i) := sqrt( 1/q_i * sum_{Q \in QQ_i} PV^2_k(LL[Q]) ),
@@ -469,16 +457,13 @@ class Presto:
         """
         q_i = len(landscape_equivalence_classes)
         sum_of_variances = sum(
-            Presto.compute_presto_variance(Q)
-            for Q in landscape_equivalence_classes
+            Presto.compute_presto_variance(Q) for Q in landscape_equivalence_classes
         )
         return np.sqrt(sum_of_variances / q_i)
 
     @staticmethod
     def compute_global_presto_sensitivity(
-        landscape_equivalence_classes_per_dim: List[
-            List[List[Dict[int, np.array]]]
-        ]
+        landscape_equivalence_classes_per_dim: List[List[List[Dict[int, np.array]]]],
     ) -> float:
         """
         PS^2_k(MM) := sqrt( 1/c * sum_{i \in [c]} 1/q_i * sum_{Q \in QQ_i} PV^2_k(LL[Q]) ),
@@ -489,23 +474,20 @@ class Presto:
         """
         c = len(landscape_equivalence_classes_per_dim)
         sum_of_local_sensitivities = sum(
-            Presto.compute_local_presto_sensitivity(
-                landscape_equivalence_classes
-            )
-            ** 2
+            Presto.compute_local_presto_sensitivity(landscape_equivalence_classes) ** 2
             for landscape_equivalence_classes in landscape_equivalence_classes_per_dim
         )
         return np.sqrt(sum_of_local_sensitivities / c)
 
     @staticmethod
     def compute_individual_presto_sensitivity(
-        landscapes: List[Dict[int, np.array]]
+        landscapes: List[Dict[int, np.array]],
     ) -> float:
         return Presto.compute_presto_coordinate_sensitivity(landscapes)
 
     @staticmethod
     def compute_presto_coordinate_sensitivity(
-        landscapes: List[Dict[int, np.array]]
+        landscapes: List[Dict[int, np.array]],
     ) -> float:
         """
         PCS^2_k(theta | MM) := sqrt( PV^2_k(LL[theta^{\pm 1}]) )
@@ -524,8 +506,8 @@ class Presto:
         """
         N = len(landscapes)
         homology_dims = range(max(landscapes[0]))
-        landscape_norm_means, landscape_norms = (
-            Presto._compute_landscape_norm_means(landscapes, return_norms=True)
+        landscape_norm_means, landscape_norms = Presto._compute_landscape_norm_means(
+            landscapes, return_norms=True
         )
         dim_sums = 0
         for dim in homology_dims:
@@ -541,7 +523,7 @@ class Presto:
 
     @staticmethod
     def _add_landscapes_abs(
-        landscapes: List[Dict[int, np.array]]
+        landscapes: List[Dict[int, np.array]],
     ) -> Dict[int, np.array]:
         res = dict()
         for i in landscapes[0].keys():
@@ -559,7 +541,7 @@ class Presto:
 
     @staticmethod
     def _pivot_landscapes(
-        landscapes: Dict[int, List[np.array]]
+        landscapes: Dict[int, List[np.array]],
     ) -> List[Dict[int, np.array]]:
         dimensions = sorted(landscapes.keys())
         n_landscapes = len(landscapes[0])
@@ -595,8 +577,7 @@ class Presto:
         N = len(landscapes)
         max_homology_dimension = max(landscapes[0].keys())
         landscape_norms = [
-            Presto._compute_landscape_norm(L, score_type="separate")
-            for L in landscapes
+            Presto._compute_landscape_norm(L, score_type="separate") for L in landscapes
         ]
         landscape_norm_means = {
             i: sum(L[i] for L in landscape_norms) / N
@@ -623,9 +604,7 @@ class Presto:
         - avg : dict
             Dictionary containing the average persistence landscape for each homology dimension.
         """
-        desc = (
-            f"Averaging Landscapes for {tag}" if tag else "Averaging Landscapes"
-        )
+        desc = f"Averaging Landscapes for {tag}" if tag else "Averaging Landscapes"
         avg = {}
         for landscape in tqdm(L, desc=desc, total=len(L)):
             for dim in landscape.keys():

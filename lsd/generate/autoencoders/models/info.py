@@ -112,9 +112,7 @@ class InfoVAE(BaseVAE):
 
         batch_size = input.size(0)
         bias_corr = batch_size * (batch_size - 1)
-        kld_weight = kwargs[
-            "M_N"
-        ]  # Account for the minibatch samples from the dataset
+        kld_weight = kwargs["M_N"]  # Account for the minibatch samples from the dataset
 
         recons_loss = F.mse_loss(recons, input)
         mmd_loss = self.compute_mmd(

@@ -415,9 +415,7 @@ class Atom:
         G.add_nodes_from([(i, 0) for i in range(n_probes)])
         G.add_nodes_from([(i, 1) for i in range(n_probes)])
         for i in range(n_probes):
-            edges = [
-                ((i, 0), (j, 1)) for j in np.argwhere(MMS[i] <= epsilon).ravel()
-            ]
+            edges = [((i, 0), (j, 1)) for j in np.argwhere(MMS[i] <= epsilon).ravel()]
             if edges:
                 G.add_edges_from(edges)
         return G

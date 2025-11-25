@@ -86,9 +86,7 @@ class Gym:
         """
         self.config = config
         self.logger = logger
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
-        )
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._set_seed()
 
         self.model = self._init_model()
@@ -111,9 +109,7 @@ class Gym:
         start_time = time.time()
 
         if self.config.epochs == 0:
-            self._log(
-                "No training epochs specified. Returning untrained model."
-            )
+            self._log("No training epochs specified. Returning untrained model.")
             self._finalize_training(start_time)
             return self.model.module
 
@@ -190,9 +186,7 @@ class Gym:
         start_time : float
             The starting time of the training process to compute the elapsed time.
         """
-        test_loss = self._compute_recon_loss(
-            self.model, self.dm.test_dataloader()
-        )
+        test_loss = self._compute_recon_loss(self.model, self.dm.test_dataloader())
         self._log(
             f"Epoch {self.config.epochs} | Test reconstruction loss: {test_loss:.4f}"
         )
@@ -230,9 +224,7 @@ class Gym:
 
     def _clip_and_step(self) -> None:
         """Clips gradients and performs an optimizer step."""
-        clip_grad_norm_(
-            self.model.parameters(), max_norm=self.config.clip_max_norm
-        )
+        clip_grad_norm_(self.model.parameters(), max_norm=self.config.clip_max_norm)
         self.optimizer.step()
 
     def _extract_latent_space(
@@ -242,9 +234,7 @@ class Gym:
         embedding = torch.Tensor()
         for x, _ in loader:
             train_data = x.float().to(self.device)
-            batch_embedding = (
-                self.model.module.latent(train_data).detach().cpu()
-            )
+            batch_embedding = self.model.module.latent(train_data).detach().cpu()
             embedding = torch.cat((embedding, batch_embedding))
         return embedding
 
@@ -322,9 +312,7 @@ class Gym:
         """Logs a message using the provided logger."""
         self.logger.log(message)
 
-    def _log_epoch_stats(
-        self, epoch: int, stats: Dict[str, torch.Tensor]
-    ) -> None:
+    def _log_epoch_stats(self, epoch: int, stats: Dict[str, torch.Tensor]) -> None:
         """Logs training loss statistics for a given epoch."""
         reported_loss = self.loss.item()
         self._log(f"Epoch {epoch + 1} | Train loss: {reported_loss:.4f}")

@@ -133,15 +133,11 @@ class Autoencoder(Base):
         trainer_cfg = omegaconf.OmegaConf.create({})
         trainer_cfg.experiment = self.params.get("experiment", "")
         trainer_cfg.id = extract_yaml_id(self.params.get("file", ""))
-        trainer_cfg.model = self.params.get("model_choices", {}).get(
+        trainer_cfg.model = self.params.get("model_choices", {}).get("module", "")
+        trainer_cfg.dataset = self.params.get("data_choices", {}).get("module", "")
+        trainer_cfg.optimizer = self.params.get("implementation_choices", {}).get(
             "module", ""
         )
-        trainer_cfg.dataset = self.params.get("data_choices", {}).get(
-            "module", ""
-        )
-        trainer_cfg.optimizer = self.params.get(
-            "implementation_choices", {}
-        ).get("module", "")
         trainer_cfg.generators = [
             self.params.get("data_choices", {}).get("name", ""),
             self.params.get("model_choices", {}).get("name", ""),
@@ -198,16 +194,10 @@ class Autoencoder(Base):
             trainer_cfg.experiment, "latent_spaces"
         )
 
-        self.modelsDir = self._create_directory(
-            trainer_cfg.experiment, "models"
-        )
+        self.modelsDir = self._create_directory(trainer_cfg.experiment, "models")
 
-        self.outFile = os.path.join(
-            self.latentsDir, f"universe_{trainer_cfg.id}.pkl"
-        )
-        self.modelFile = os.path.join(
-            self.modelsDir, f"model_{trainer_cfg.id}.pkl"
-        )
+        self.outFile = os.path.join(self.latentsDir, f"universe_{trainer_cfg.id}.pkl")
+        self.modelFile = os.path.join(self.modelsDir, f"model_{trainer_cfg.id}.pkl")
 
     def train(self) -> None:
         """

@@ -61,7 +61,5 @@ def mnist(**kwargs):
     labels = bundle["y_train"]
     mask = range(len(data))
     if kwargs["num_samples"]:
-        mask = generate_sampling_mask(
-            len(data), kwargs["num_samples"], kwargs["seed"]
-        )
+        mask = generate_sampling_mask(len(data), kwargs["num_samples"], kwargs["seed"])
     return data[mask], labels[mask]
