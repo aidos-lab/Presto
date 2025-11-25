@@ -404,7 +404,7 @@ def test_dr_pca_training(test_yaml_dr_pca_training_file):
             L = pickle.load(f)
 
         assert isinstance(L, np.ndarray)
-        assert L.shape == (100, 20)
+        assert L.shape == (100, 3)  # swiss_roll data has 3 dimensions
 
         with open(null_model, "rb") as f:
             L = pickle.load(f)

@@ -2,8 +2,21 @@ import pytest
 import numpy as np
 import tempfile
 import torch
-from unittest.mock import Mock, patch
+import sys
+from unittest.mock import Mock, patch, MagicMock
 
+# Create persistent mocks for external dependencies
+mock_datasets = MagicMock()
+mock_datasets.load_dataset = MagicMock()
+mock_transformers = MagicMock()
+mock_sentence_transformers = MagicMock()
+
+# Install the mocks in sys.modules before importing our modules
+sys.modules['datasets'] = mock_datasets
+sys.modules['transformers'] = mock_transformers
+sys.modules['sentence_transformers'] = mock_sentence_transformers
+
+# Now import our modules
 from lsd.generate.transformers.tf import Transformer
 from lsd.generate.transformers.models.huggingface import HuggingFaceModel
 from lsd.generate.transformers.models.sbert import SentenceTransformerModel
@@ -320,11 +333,17 @@ class TestTransformerIntegration:
     
     def test_initialize_functions(self):
         """Test that initialize functions return the correct classes."""
-        from lsd.generate.transformers.models.huggingface import initialize as hf_init
-        from lsd.generate.transformers.models.sbert import initialize as sbert_init
-        
-        assert hf_init() == HuggingFaceModel
-        assert sbert_init() == SentenceTransformerModel
+        # We already imported these modules at the top with mocks
+        # so we can safely import the initialize functions
+        with patch('sys.modules', {**sys.modules, 
+                                  'datasets': mock_datasets,
+                                  'transformers': mock_transformers,
+                                  'sentence_transformers': mock_sentence_transformers}):
+            from lsd.generate.transformers.models.huggingface import initialize as hf_init
+            from lsd.generate.transformers.models.sbert import initialize as sbert_init
+            
+            assert hf_init() == HuggingFaceModel
+            assert sbert_init() == SentenceTransformerModel
 
     def test_transformer_configs_exist(self):
         """Test that required transformer configurations exist."""

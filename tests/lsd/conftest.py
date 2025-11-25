@@ -535,11 +535,9 @@ def test_dr_local_data_multiverse():
     return """
     data_choices:
       DimReduction:
-        MNIST:
-          num_samples:
-            - 1000
-          path:
-            - /Users/jeremy.wayland/Downloads/mnist.npz
+        iris:
+          generator:
+            - load_iris
           seed:
             - 68
           
@@ -622,13 +620,17 @@ def test_dr_pca_training_multiverse():
     return """
     data_choices:
       DimReduction:
-        MNIST:
+        swiss_roll:
           num_samples:
             - 100
-          path:
-            - /Users/jeremy.wayland/Downloads/mnist.npz
+          generator:
+            - swiss_roll
           seed:
             - 68
+          hole:
+            - False
+          num_classes:
+            - 3
           
     model_choices:
       DimReduction:
@@ -792,7 +794,7 @@ def test_yaml3_file(test_multiverse3):
 def test_yaml4_file(test_multiverse4):
     tmp_file_path = create_tmp_yaml(test_multiverse4)
     yield tmp_file_path
-    os.remove(tmp_filepath)
+    os.remove(tmp_file_path)
 
 
 @pytest.fixture
