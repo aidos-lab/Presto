@@ -256,6 +256,7 @@ def test_design(
 
 
 @profile
+@pytest.mark.high_compute
 def test_ae_generation(
     test_yaml_ae_beta_file,
     test_yaml_ae_info_file,
@@ -288,6 +289,7 @@ def test_ae_generation(
             wae_lsd.generate()
 
 
+@pytest.mark.high_compute
 def test_ae_seeds(test_yaml_ae_seeded_file):
     with tempfile.TemporaryDirectory() as tmp_dir:
         with set_env_var("WANDB", "False"):
@@ -300,6 +302,7 @@ def test_ae_seeds(test_yaml_ae_seeded_file):
             lsd.generate()
 
 
+@pytest.mark.high_compute
 def test_dr_generation(
     test_yaml_dr_umap_file,
     test_yaml_dr_tsne_file,
@@ -353,6 +356,7 @@ def test_dr_generation(
             phate_lsd.generate()
 
 
+@pytest.mark.high_compute
 def test_dr_data(
     test_yaml_dr_local_data_file,
     test_yaml_dr_manifold_data_file,
@@ -380,8 +384,8 @@ def test_dr_data(
         dr_manifold_data_lsd.generate()
 
 
+@pytest.mark.high_compute
 def test_dr_pca_training(test_yaml_dr_pca_training_file):
-
     with tempfile.TemporaryDirectory() as tmp_dir:
         # MNIST
         dr_lsd = LSD("DimReductionMultiverse", outDir=tmp_dir)
@@ -412,6 +416,7 @@ def test_dr_pca_training(test_yaml_dr_pca_training_file):
         assert L is None
 
 
+@pytest.mark.high_compute
 def test_generate_io(
     test_yaml_dr_lle_file,
     test_yaml_ae_no_train_file,
@@ -516,6 +521,7 @@ def test_generate_io(
             assert not os.path.isdir(ae_lsd.outDir)
 
 
+@pytest.mark.high_compute
 def test_tf_generation(test_yaml_tf_file):
     with tempfile.TemporaryDirectory() as tmp_dir:
         tf_lsd = LSD(

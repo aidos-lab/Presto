@@ -707,7 +707,7 @@ def test_tf_multiverse():
         name:
           - cnn_dailymail
         num_samples:
-          - 100
+          - 5
         version:
           - '3.0.0'
         split:

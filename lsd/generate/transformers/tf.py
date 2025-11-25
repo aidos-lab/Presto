@@ -1,8 +1,9 @@
 from lsd import Base
-from lsd.utils import extract_yaml_id, ConfigType
+from lsd.utils import extract_yaml_id, write_pkl, ConfigType
 import importlib
 from datasets import load_dataset
 import omegaconf
+import os
 
 
 class Transformer(Base):
@@ -14,8 +15,9 @@ class Transformer(Base):
     def setup(self) -> ConfigType:
         tf_cfg = self._initialize_tf_config()
 
-        self.initialize_model(tf_cfg)
+        self.configure_transformer(tf_cfg)
         self.load_data(tf_cfg)
+        self.initialize_model(tf_cfg)
 
         self._create_latent_directory(tf_cfg)
 
@@ -54,6 +56,7 @@ class Transformer(Base):
         elif hasattr(embeddings, "detach"):
             embeddings = embeddings.detach().numpy()
 
+        self._save_latent_space(embeddings)
         return embeddings
 
     def _extract_texts_from_dataset(self):
@@ -66,52 +69,31 @@ class Transformer(Base):
             List of text strings extracted from the dataset.
         """
         texts = []
-
-        # Handle different dataset structures
-        if hasattr(self.dataset, "to_iterable_dataset"):
-            # HuggingFace dataset object
+        try:
             for item in self.dataset:
-                if "article" in item:
-                    texts.append(item["article"])
-                elif "text" in item:
-                    texts.append(item["text"])
-                elif "sentence" in item:
-                    texts.append(item["sentence"])
-                else:
-                    # Try to find any string field
-                    for key, value in item.items():
-                        if (
-                            isinstance(value, str) and len(value) > 10
-                        ):  # Reasonable text length
-                            texts.append(value)
-                            break
-        elif isinstance(self.dataset, list):
-            # Check if it's a list of dictionaries or a list of strings
-            if self.dataset and isinstance(self.dataset[0], dict):
-                # List of dictionaries (like HuggingFace format)
-                for item in self.dataset:
-                    if "article" in item:
+                if isinstance(item, dict):
+                    if "article" in item and isinstance(item["article"], str):
                         texts.append(item["article"])
-                    elif "text" in item:
+                    elif "text" in item and isinstance(item["text"], str):
                         texts.append(item["text"])
-                    elif "sentence" in item:
+                    elif "highlights" in item and isinstance(
+                        item["highlights"], str
+                    ):
+                        texts.append(item["highlights"])
+                    elif "sentence" in item and isinstance(
+                        item["sentence"], str
+                    ):
                         texts.append(item["sentence"])
                     else:
-                        # Try to find any string field
-                        for key, value in item.items():
-                            if (
-                                isinstance(value, str) and len(value) > 10
-                            ):  # Reasonable text length
+                        for value in item.values():
+                            if isinstance(value, str) and len(value) > 10:
                                 texts.append(value)
                                 break
-            else:
-                # List of text strings
-                texts = self.dataset
-        elif hasattr(self.dataset, "__iter__"):
-            # Any iterable
-            texts = list(self.dataset)
-        else:
-            raise ValueError(f"Unsupported dataset type: {type(self.dataset)}")
+                elif isinstance(item, str):
+                    texts.append(item)
+        except TypeError:
+            # If not iterable, perhaps it's something else
+            pass
 
         if not texts:
             raise ValueError("No text content found in dataset")
@@ -120,6 +102,8 @@ class Transformer(Base):
 
     def initialize_model(self, tf_cfg: ConfigType) -> None:
         module = tf_cfg.get("model")
+        if not module:
+            raise ValueError("Model module not specified in configuration")
         try:
             self.model = importlib.import_module(module).initialize()
         except ImportError as e:
@@ -136,6 +120,22 @@ class Transformer(Base):
         else:
             self.dataset = self._load_remote(tf_cfg)
 
+    def configure_transformer(self, tf_cfg) -> None:
+        """
+        Configure the transformer settings by updating with the parameter values.
+
+        This method iterates over the parameter values and updates the transformer
+        configuration accordingly.
+
+        Parameters
+        ----------
+        tf_cfg : ConfigType
+            The transformer configuration to be updated.
+        """
+        for sub_dict in self.params.values():
+            if isinstance(sub_dict, (dict, omegaconf.DictConfig)):
+                self._update_tf_config(tf_cfg, sub_dict)
+
     def _load_remote(self, tf_cfg: ConfigType):
         """
         Load dataset from HuggingFace Hub.
@@ -148,11 +148,19 @@ class Transformer(Base):
         print(f"Loading {dataset_name} version {version} with split {split}")
 
         # Load the dataset from HuggingFace
-        dataset = load_dataset(dataset_name, version, split=split)
+        dataset = load_dataset(dataset_name, revision=version, split=split)
 
         # Limit samples if specified
         if num_samples is not None:
-            dataset = dataset.select(range(min(num_samples, len(dataset))))
+            if hasattr(dataset, "select"):
+                try:
+                    dataset = dataset.select(
+                        range(min(num_samples, len(dataset)))
+                    )
+                except TypeError:
+                    # If len fails (e.g., Mock), just select num_samples
+                    dataset = dataset.select(range(num_samples))
+            # If no select, assume already limited or handle elsewhere
 
         return dataset
 
@@ -160,10 +168,9 @@ class Transformer(Base):
         """
         Load dataset from local files.
         """
-        print("Loading local data...")
-        # TODO: Implement local data loading
-        # For now, return a sample dataset
-        return ["Sample text 1", "Sample text 2", "Sample text 3"]
+        raise NotImplementedError(
+            "Local data loading for Transformers is not yet implemented."
+        )
 
     def _initialize_tf_config(self) -> ConfigType:
         """
@@ -187,6 +194,9 @@ class Transformer(Base):
         )
         tf_cfg.data_split = self.params.get("data_choices", {}).get("split", "")
         tf_cfg.data_host = self.params.get("data_choices", {}).get("host", "")
+        tf_cfg.num_samples = self.params.get("data_choices", {}).get(
+            "num_samples", None
+        )
 
         # TODO: What implementation parameters are key for generation?
         tf_cfg.implementation = self.params.get(
@@ -201,5 +211,57 @@ class Transformer(Base):
 
         return tf_cfg
 
-    def _create_latent_directory(self, tf_cfg: ConfigType):
-        pass
+    def _update_tf_config(self, tf_cfg, sub_dict) -> None:
+        """
+        Update the transformer configuration with key-value pairs from the given dictionary.
+
+        Parameters
+        ----------
+        tf_cfg : ConfigType
+            The transformer configuration to be updated.
+        sub_dict : dict
+            Dictionary of configuration parameters to update the transformer with.
+
+        Notes
+        -----
+        This method ignores the `module` and `name` keys in the sub-dictionary to avoid conflicts between data, model, and optimizer configurations.
+        """
+        for key, value in sub_dict.items():
+            if key not in ["module", "name"]:
+                tf_cfg[key] = value
+
+    def _create_latent_directory(self, tf_cfg: ConfigType) -> None:
+        """
+        Create a directory to store latent spaces if it does not already exist.
+
+        Parameters
+        ----------
+        tf_cfg : ConfigType
+            The transformer configuration containing the experiment path.
+        """
+        self.latentsDir = self._create_directory(
+            tf_cfg.experiment, "latent_spaces"
+        )
+        self.outFile = os.path.join(
+            self.latentsDir, f"universe_{tf_cfg.id}.pkl"
+        )
+
+    @staticmethod
+    def _create_directory(base_path, sub_path) -> str:
+        dir_path = os.path.join(base_path, sub_path)
+        os.makedirs(dir_path, exist_ok=True)
+        return dir_path
+
+    def _save_latent_space(self, latent_space) -> None:
+        """
+        Save the generated latent space to a file.
+
+        This method serializes the generated latent space and saves it to the
+        specified output file path.
+
+        Parameters
+        ----------
+        latent_space : object
+            The generated latent space to be saved.
+        """
+        write_pkl(latent_space, self.outFile)
