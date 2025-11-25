@@ -74,9 +74,7 @@ def X(rng):
 
 
 @pytest.fixture
-def projectionsX(
-    presto, random_projector, X, n_projections, n_components, seed
-):
+def projectionsX(presto, random_projector, X, n_projections, n_components, seed):
     return presto._generate_projections(
         random_projector,
         X,
@@ -87,9 +85,7 @@ def projectionsX(
 
 
 @pytest.fixture
-def projectionsX2(
-    presto, random_projector, X, n_projections, n_components, seed
-):
+def projectionsX2(presto, random_projector, X, n_projections, n_components, seed):
     return presto._generate_projections(
         random_projector,
         X,
@@ -131,9 +127,7 @@ def Y(rng):
 
 
 @pytest.fixture
-def projectionsY(
-    presto, random_projector, Y, n_projections, n_components, seed
-):
+def projectionsY(presto, random_projector, Y, n_projections, n_components, seed):
     return presto._generate_projections(
         random_projector,
         Y,

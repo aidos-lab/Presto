@@ -37,9 +37,7 @@ class Transformer(Base):
             raise ValueError("Dataset not loaded. Call load_data() first.")
 
         if not hasattr(self, "model") or self.model is None:
-            raise ValueError(
-                "Model not initialized. Call initialize_model() first."
-            )
+            raise ValueError("Model not initialized. Call initialize_model() first.")
 
         # Extract text from dataset based on dataset type
         texts = self._extract_texts_from_dataset()
@@ -76,13 +74,9 @@ class Transformer(Base):
                         texts.append(item["article"])
                     elif "text" in item and isinstance(item["text"], str):
                         texts.append(item["text"])
-                    elif "highlights" in item and isinstance(
-                        item["highlights"], str
-                    ):
+                    elif "highlights" in item and isinstance(item["highlights"], str):
                         texts.append(item["highlights"])
-                    elif "sentence" in item and isinstance(
-                        item["sentence"], str
-                    ):
+                    elif "sentence" in item and isinstance(item["sentence"], str):
                         texts.append(item["sentence"])
                     else:
                         for value in item.values():
@@ -107,9 +101,7 @@ class Transformer(Base):
         try:
             self.model = importlib.import_module(module).initialize()
         except ImportError as e:
-            raise ImportError(
-                f"Failed to initialize model from module '{module}': {e}"
-            )
+            raise ImportError(f"Failed to initialize model from module '{module}': {e}")
 
     def load_data(self, tf_cfg: ConfigType):
         """
@@ -154,9 +146,7 @@ class Transformer(Base):
         if num_samples is not None:
             if hasattr(dataset, "select"):
                 try:
-                    dataset = dataset.select(
-                        range(min(num_samples, len(dataset)))
-                    )
+                    dataset = dataset.select(range(min(num_samples, len(dataset))))
                 except TypeError:
                     # If len fails (e.g., Mock), just select num_samples
                     dataset = dataset.select(range(num_samples))
@@ -189,9 +179,7 @@ class Transformer(Base):
         tf_cfg.id = extract_yaml_id(self.params.get("file", ""))
         tf_cfg.model = self.params.get("model_choices", {}).get("module", "")
         tf_cfg.dataset = self.params.get("data_choices", {}).get("name", "")
-        tf_cfg.data_version = self.params.get("data_choices", {}).get(
-            "version", ""
-        )
+        tf_cfg.data_version = self.params.get("data_choices", {}).get("version", "")
         tf_cfg.data_split = self.params.get("data_choices", {}).get("split", "")
         tf_cfg.data_host = self.params.get("data_choices", {}).get("host", "")
         tf_cfg.num_samples = self.params.get("data_choices", {}).get(
@@ -199,9 +187,9 @@ class Transformer(Base):
         )
 
         # TODO: What implementation parameters are key for generation?
-        tf_cfg.implementation = self.params.get(
-            "implementation_choices", {}
-        ).get("module", "")
+        tf_cfg.implementation = self.params.get("implementation_choices", {}).get(
+            "module", ""
+        )
 
         tf_cfg.generators = [
             self.params.get("data_choices", {}).get("name", ""),
@@ -239,12 +227,8 @@ class Transformer(Base):
         tf_cfg : ConfigType
             The transformer configuration containing the experiment path.
         """
-        self.latentsDir = self._create_directory(
-            tf_cfg.experiment, "latent_spaces"
-        )
-        self.outFile = os.path.join(
-            self.latentsDir, f"universe_{tf_cfg.id}.pkl"
-        )
+        self.latentsDir = self._create_directory(tf_cfg.experiment, "latent_spaces")
+        self.outFile = os.path.join(self.latentsDir, f"universe_{tf_cfg.id}.pkl")
 
     @staticmethod
     def _create_directory(base_path, sub_path) -> str:

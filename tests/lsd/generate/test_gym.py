@@ -9,13 +9,12 @@ def test_device_initialization_cpu(gym_fixture):
 
 
 def test_train_epoch(gym_fixture):
-    with patch("torch.utils.data.DataLoader") as mock_dataloader, patch(
-        "torch.optim.Optimizer"
-    ) as mock_optimizer:
+    with (
+        patch("torch.utils.data.DataLoader") as mock_dataloader,
+        patch("torch.optim.Optimizer") as mock_optimizer,
+    ):
 
-        mock_dataloader.return_value = [
-            (torch.randn(5, 10), torch.randn(5, 10))
-        ]
+        mock_dataloader.return_value = [(torch.randn(5, 10), torch.randn(5, 10))]
         gym_fixture.dm.train_dataloader.return_value = mock_dataloader
 
         mock_optimizer_instance = MagicMock()
@@ -27,14 +26,10 @@ def test_train_epoch(gym_fixture):
 
 def test_compute_recon_loss(gym_fixture):
     with patch("torch.utils.data.DataLoader") as mock_dataloader:
-        mock_dataloader.return_value = [
-            (torch.randn(5, 10), torch.randn(5, 10))
-        ]
+        mock_dataloader.return_value = [(torch.randn(5, 10), torch.randn(5, 10))]
         gym_fixture.dm.test_dataloader.return_value = mock_dataloader
 
-        loss = gym_fixture._compute_recon_loss(
-            gym_fixture.model, mock_dataloader
-        )
+        loss = gym_fixture._compute_recon_loss(gym_fixture.model, mock_dataloader)
         assert isinstance(loss, torch.Tensor)
 
 

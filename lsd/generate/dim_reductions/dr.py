@@ -226,9 +226,7 @@ class DimReduction(Base):
         -------
         None
         """
-        max_dim = self._parse_max_ambient_dimension(
-            self.projector_cfg.max_ambient_dim
-        )
+        max_dim = self._parse_max_ambient_dimension(self.projector_cfg.max_ambient_dim)
 
         if self._should_apply_pca(max_dim):
             self.data = self._apply_pca(self.data, max_dim)
@@ -267,9 +265,7 @@ class DimReduction(Base):
         projector_cfg = omegaconf.OmegaConf.create({})
         projector_cfg.experiment = self.params.get("experiment", "")
         projector_cfg.id = extract_yaml_id(self.params.get("file", ""))
-        projector_cfg.model = self.params.get("model_choices", {}).get(
-            "module", ""
-        )
+        projector_cfg.model = self.params.get("model_choices", {}).get("module", "")
         projector_cfg.used_pca = False
         return projector_cfg
 
@@ -350,13 +346,9 @@ class DimReduction(Base):
         projector_cfg : ConfigType
             The projector configuration containing the experiment path.
         """
-        self.latentsDir = os.path.join(
-            projector_cfg.experiment, "latent_spaces/"
-        )
+        self.latentsDir = os.path.join(projector_cfg.experiment, "latent_spaces/")
         os.makedirs(self.latentsDir, exist_ok=True)
-        self.outFile = os.path.join(
-            self.latentsDir, f"universe_{projector_cfg.id}.pkl"
-        )
+        self.outFile = os.path.join(self.latentsDir, f"universe_{projector_cfg.id}.pkl")
         # Create directories for saving latent spaces and models
 
     def _create_model_directory(self, projector_cfg) -> None:

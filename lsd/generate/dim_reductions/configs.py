@@ -276,9 +276,7 @@ class Phate(Projector):
     """
 
     # Key Attributes
-    name: str = (
-        "Potential of Heat-diffusion for Affinity-based Transition Embedding"
-    )
+    name: str = "Potential of Heat-diffusion for Affinity-based Transition Embedding"
     module: str = "lsd.generate.dim_reductions.models.phate"
     knn: int = 5
     decay: Optional[int] = 40

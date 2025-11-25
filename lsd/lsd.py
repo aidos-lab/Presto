@@ -1,4 +1,5 @@
 "Latent Space Designer: Let LSD take you into the multiverse"
+
 import os
 import importlib
 import omegaconf
@@ -147,9 +148,7 @@ class LSD:
         self._validate_outDir(outDir)
 
         self.experimentName = (
-            experimentName
-            if experimentName
-            else self._generate_experiment_name()
+            experimentName if experimentName else self._generate_experiment_name()
         )
         self.outDir = os.path.join(outDir, self.experimentName)
         self._multiverse = None
@@ -263,9 +262,7 @@ class LSD:
         str
             The path to the latent spaces directory.
         """
-        return self._validate_directory(
-            os.path.join(self.outDir, "latent_spaces/")
-        )
+        return self._validate_directory(os.path.join(self.outDir, "latent_spaces/"))
 
     @property
     def models(self) -> str:
@@ -430,9 +427,7 @@ class LSD:
         for G in generators:
             gen_cfg = getattr(self.module, G)
             params, vectors = self._design_parameter_space(gen_cfg, label, G)
-            configs.extend(
-                self._generate_individual_configs(params, vectors, gen_cfg)
-            )
+            configs.extend(self._generate_individual_configs(params, vectors, gen_cfg))
         return configs
 
     @staticmethod
@@ -497,9 +492,7 @@ class LSD:
         """
         self._multiverse = {}
         for label in self.multiverse_labels:
-            params = self.filter_params(
-                getattr(self.cfg, label), label, self.cfg.base
-            )
+            params = self.filter_params(getattr(self.cfg, label), label, self.cfg.base)
             self.__setattr__(label, params)
             self._multiverse[label] = params
 
@@ -748,9 +741,7 @@ class LSD:
             If the multiverse does not contain required labels.
         """
         if not isinstance(multiverse, (dict, omegaconf.DictConfig)):
-            raise TypeError(
-                "Multiverse must be a dictionary or omegaconf.DictConfig."
-            )
+            raise TypeError("Multiverse must be a dictionary or omegaconf.DictConfig.")
         for label in self.multiverse_labels:
             if label not in multiverse:
                 raise ValueError(f"Multiverse must have {label} key.")

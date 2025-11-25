@@ -115,9 +115,7 @@ def test_multiverse_getter_setter(
 
         assert lsd.data_choices == test_dict2["data_choices"]
         assert lsd.model_choices == test_dict2["model_choices"]
-        assert (
-            lsd.implementation_choices == test_dict2["implementation_choices"]
-        )
+        assert lsd.implementation_choices == test_dict2["implementation_choices"]
 
         lsd.cfg.model_choices = test_yaml1_file
         lsd.cfg.data_choices = test_yaml1_file
@@ -129,9 +127,7 @@ def test_multiverse_getter_setter(
         assert lsd.data_choices == test_dict1["data_choices"]
         assert lsd.model_choices != test_dict1["model_choices"]
         assert lsd.model_choices == test_dict2["model_choices"]
-        assert (
-            lsd.implementation_choices == test_dict1["implementation_choices"]
-        )
+        assert lsd.implementation_choices == test_dict1["implementation_choices"]
 
 
 def test_cartesian_product(test_yaml2_file, test_dict4):
@@ -143,9 +139,7 @@ def test_cartesian_product(test_yaml2_file, test_dict4):
         label = "data_choices"
         parameters = ["RIDICULOUS"]
 
-        assert list(tf_lsd._cartesian_product(label, "MNIST", parameters)) == [
-            ()
-        ]
+        assert list(tf_lsd._cartesian_product(label, "MNIST", parameters)) == [()]
         assert list(
             tf_lsd._cartesian_product(label, "Ridiculous Model", parameters)
         ) == [()]
@@ -234,8 +228,7 @@ def test_design(
         assert cfg0.data_choices.name == "MNIST"
         assert cfg0.data_choices.num_samples == 1000
         assert (
-            cfg0.model_choices.name
-            == "Uniform Manifold Approximation and Projection"
+            cfg0.model_choices.name == "Uniform Manifold Approximation and Projection"
         )
         assert cfg0.model_choices.n_neighbors == 16
         assert cfg0.model_choices.min_dist == 0
@@ -247,8 +240,7 @@ def test_design(
         assert cfg1.data_choices.name == "MNIST"
         assert cfg1.data_choices.num_samples == 1000
         assert (
-            cfg1.model_choices.name
-            == "Uniform Manifold Approximation and Projection"
+            cfg1.model_choices.name == "Uniform Manifold Approximation and Projection"
         )
         assert cfg1.model_choices.n_neighbors == 16
         assert cfg1.model_choices.min_dist == 0
@@ -367,9 +359,7 @@ def test_dr_data(
 
         dr_local_data_lsd.cfg.model_choices = test_yaml_dr_local_data_file
         dr_local_data_lsd.cfg.data_choices = test_yaml_dr_local_data_file
-        dr_local_data_lsd.cfg.implementation_choices = (
-            test_yaml_dr_local_data_file
-        )
+        dr_local_data_lsd.cfg.implementation_choices = test_yaml_dr_local_data_file
 
         dr_local_data_lsd.generate()
 
@@ -534,5 +524,3 @@ def test_tf_generation(test_yaml_tf_file):
         tf_lsd.cfg.implementation_choices = test_yaml_tf_file
 
         tf_lsd.generate()
-        
-        

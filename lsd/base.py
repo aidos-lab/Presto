@@ -1,4 +1,4 @@
-" Base class for Multiverse Generators."
+"Base class for Multiverse Generators."
 
 from abc import ABC, abstractmethod
 from lsd.utils import ConfigType

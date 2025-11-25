@@ -40,12 +40,14 @@ def mock_huggingface_model():
     """Mock HuggingFace model for testing."""
     mock_model = MagicMock()
     mock_model.eval = MagicMock()
-    
+
     # Mock output structure
     mock_output = MagicMock()
-    mock_output.last_hidden_state = torch.randn(1, 10, 768)  # batch=1, seq_len=10, hidden=768
+    mock_output.last_hidden_state = torch.randn(
+        1, 10, 768
+    )  # batch=1, seq_len=10, hidden=768
     mock_model.return_value = mock_output
-    
+
     return mock_model
 
 
@@ -54,8 +56,8 @@ def mock_huggingface_tokenizer():
     """Mock HuggingFace tokenizer for testing."""
     mock_tokenizer = MagicMock()
     mock_tokenizer.return_value = {
-        'input_ids': torch.tensor([[101, 2023, 2003, 2019, 2742, 102]]),
-        'attention_mask': torch.tensor([[1, 1, 1, 1, 1, 1]])
+        "input_ids": torch.tensor([[101, 2023, 2003, 2019, 2742, 102]]),
+        "attention_mask": torch.tensor([[1, 1, 1, 1, 1, 1]]),
     }
     return mock_tokenizer
 
@@ -76,5 +78,5 @@ def sample_text_dataset():
         {"article": "This is the first article about machine learning."},
         {"article": "This is the second article about deep learning."},
         {"text": "This is a text sample for testing purposes."},
-        {"sentence": "This is a sentence for testing."}
+        {"sentence": "This is a sentence for testing."},
     ]

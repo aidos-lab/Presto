@@ -227,9 +227,7 @@ def get_wandb_env() -> Dict[str, str]:
     wandb_tag = os.getenv("WANDB_TAG", "LSD")
 
     wandb_enabled = (
-        os.getenv("WANDB", "False").lower() == "true"
-        and wandb_project
-        and wandb_entity
+        os.getenv("WANDB", "False").lower() == "true" and wandb_project and wandb_entity
     )
 
     # Return configuration as a dictionary

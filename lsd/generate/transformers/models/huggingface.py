@@ -54,11 +54,11 @@ class HuggingFaceModel(BasePretrainedModel):
         Defaults to 'distilbert-base-uncased' if no name is provided.
         """
         model_name = self.config.get("name", "distilbert-base-uncased")
-        
+
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModel.from_pretrained(model_name)
-            
+
             # Set model to evaluation mode
             self.model.eval()
         except Exception as e:
@@ -80,13 +80,9 @@ class HuggingFaceModel(BasePretrainedModel):
         """
         if isinstance(text, str):
             text = [text]
-        
+
         return self.tokenizer(
-            text,
-            padding=True,
-            truncation=True,
-            return_tensors="pt",
-            max_length=512
+            text, padding=True, truncation=True, return_tensors="pt", max_length=512
         )
 
     def embed(self, text: Union[str, List[str]]):
@@ -106,28 +102,30 @@ class HuggingFaceModel(BasePretrainedModel):
         """
         # Process text
         inputs = self.process_text(text)
-        
+
         # Generate embeddings
         with torch.no_grad():
             outputs = self.model(**inputs)
-            
+
             # Get last hidden states
             last_hidden_states = outputs.last_hidden_state
-            
+
             # Apply mean pooling with attention mask
-            attention_mask = inputs['attention_mask']
-            
+            attention_mask = inputs["attention_mask"]
+
             # Expand attention mask to match hidden states dimensions
-            attention_mask_expanded = attention_mask.unsqueeze(-1).expand(last_hidden_states.size()).float()
-            
+            attention_mask_expanded = (
+                attention_mask.unsqueeze(-1).expand(last_hidden_states.size()).float()
+            )
+
             # Apply mask and compute mean
             masked_embeddings = last_hidden_states * attention_mask_expanded
             summed_embeddings = torch.sum(masked_embeddings, dim=1)
             summed_mask = torch.clamp(attention_mask_expanded.sum(1), min=1e-9)
-            
+
             # Mean pooling
             embeddings = summed_embeddings / summed_mask
-            
+
         return embeddings
 
 

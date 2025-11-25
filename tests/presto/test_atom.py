@@ -66,9 +66,7 @@ def test_mms_save_load(atom, MMS):
         assert os.path.exists(temp_path), "Failed to save MMS."
         loaded_mms = atom._load_data(temp_path)
         assert np.array_equal(MMS, loaded_mms), "Loaded MMS does not match."
-        assert np.array_equal(
-            atom.MMS, loaded_mms
-        ), "Loaded MMS does not match."
+        assert np.array_equal(atom.MMS, loaded_mms), "Loaded MMS does not match."
 
 
 def test_validate_distance_matrix_valid(atom):

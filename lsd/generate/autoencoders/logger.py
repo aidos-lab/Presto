@@ -21,9 +21,7 @@ class Logger:
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
 
-        formatter = logging.Formatter(
-            "%(asctime)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
         if out_file:
             logs_dir = os.path.join(exp, "logs/")

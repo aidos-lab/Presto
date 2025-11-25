@@ -218,9 +218,7 @@ def noisy_annulus(**kwargs):
     R = kwargs["outer_radius"]
     f = kwargs["noise"]
     if r >= R:
-        raise RuntimeError(
-            "Inner radius must be less than or equal to outer radius"
-        )
+        raise RuntimeError("Inner radius must be less than or equal to outer radius")
 
     if kwargs.get("seed"):
         np.random.seed(kwargs["seed"])
