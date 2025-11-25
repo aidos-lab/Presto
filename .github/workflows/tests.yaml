@@ -32,4 +32,4 @@ jobs:
 
       - name: Run tests
         run: |
-          uv run python -m pytest tests/ -v -m "no high_compute" --disable-warnings
+          uv run python -m pytest tests/ -v -m "not high_compute" --disable-warnings
