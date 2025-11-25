@@ -10,6 +10,8 @@ __pycache__
 wandb/
 uv.lock
 
+test_experiment
+
 
 
 # Byte-compiled / optimized / DLL files
