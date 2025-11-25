@@ -7,7 +7,9 @@ experiments
 .venv
 __pycache__
 *.md
-wandb
+wandb/
+uv.lock
+
 
 
 # Byte-compiled / optimized / DLL files
